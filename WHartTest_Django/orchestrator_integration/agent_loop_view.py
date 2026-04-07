@@ -51,6 +51,7 @@ from .playwright_instructions import PLAYWRIGHT_SCRIPT_INSTRUCTION
 from .stop_signal import should_stop, clear_stop_signal
 from langgraph_integration.models import ChatSession, LLMConfig
 from langgraph_integration.views import (
+    _extract_requirement_doc_images_for_message,
     create_llm_instance,
     create_sse_data,
     get_effective_system_prompt_async,
@@ -361,6 +362,93 @@ async def _collect_linked_image_data_urls(
             data_urls.append(result)
 
     return data_urls
+
+
+async def _prepare_agent_loop_human_message(
+    user_message: str,
+    *,
+    project: Project,
+    supports_vision: bool,
+    uploaded_images_base64: Optional[List[str]] = None,
+) -> tuple[Any, Dict[str, Any], str]:
+    """
+    规范化 Agent Loop 的用户消息。
+
+    - 将需求文档中的 `docimg://` 占位符替换为可访问的 `/api/.../images/...` URL
+    - 当模型支持视觉时，把需求文档图片与普通 HTTP(S) 图片一并转成多模态输入
+    - 返回：LangChain HumanMessage content、additional_kwargs、展示用文本
+    """
+    display_message = (user_message or "").strip()
+    uploaded_images_base64 = uploaded_images_base64 or []
+
+    (
+        display_message,
+        requirement_doc_image_data_urls,
+        requirement_document_id,
+    ) = await _extract_requirement_doc_images_for_message(display_message, project)
+
+    if requirement_doc_image_data_urls and not supports_vision:
+        logger.warning(
+            "AgentLoopStreamAPI: Requirement document images detected but current model does not support vision"
+        )
+
+    linked_image_data_urls: List[str] = []
+    linked_image_urls = _extract_linked_image_urls(display_message)
+    if linked_image_urls:
+        logger.info(
+            "AgentLoopStreamAPI: Extracted %s candidate linked image URLs from message",
+            len(linked_image_urls),
+        )
+        if supports_vision:
+            linked_image_data_urls = await _collect_linked_image_data_urls(
+                display_message,
+                linked_urls=linked_image_urls,
+            )
+            if linked_image_data_urls:
+                logger.info(
+                    "AgentLoopStreamAPI: Loaded %s linked images for multimodal input",
+                    len(linked_image_data_urls),
+                )
+        else:
+            logger.warning(
+                "AgentLoopStreamAPI: Found %s linked image URLs but current model does not support vision",
+                len(linked_image_urls),
+            )
+    elif "http://" in display_message.lower() or "https://" in display_message.lower():
+        logger.warning(
+            "AgentLoopStreamAPI: Message contains URL text but extractor found 0 valid URLs"
+        )
+
+    multimodal_image_data_urls = requirement_doc_image_data_urls + linked_image_data_urls
+
+    additional_kwargs: Dict[str, Any] = {}
+    if requirement_document_id:
+        additional_kwargs["requirement_document_id"] = requirement_document_id
+        if requirement_doc_image_data_urls:
+            additional_kwargs["image_source"] = "requirement_document"
+
+    if supports_vision and (uploaded_images_base64 or multimodal_image_data_urls):
+        human_message_content: Any = [{"type": "text", "text": display_message}]
+        for data_url in multimodal_image_data_urls:
+            human_message_content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": data_url},
+                }
+            )
+        for image_base64 in uploaded_images_base64:
+            human_message_content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{image_base64}"
+                    },
+                }
+            )
+    else:
+        human_message_content = display_message
+
+    return human_message_content, additional_kwargs, display_message
 
 
 def process_mcp_tool_output(content: Any) -> tuple:
@@ -891,58 +979,21 @@ class AgentLoopStreamAPIView(View):
                 ) + PLAYWRIGHT_SCRIPT_INSTRUCTION
                 logger.info(f"AgentLoopStreamAPI: 已追加脚本生成指令")
 
-            # 9. 构建用户消息（支持多模态：上传图片 + 链接图片）
-            linked_image_data_urls: List[str] = []
-            linked_image_urls = _extract_linked_image_urls(user_message)
-            if linked_image_urls:
-                logger.info(
-                    "AgentLoopStreamAPI: Extracted %s candidate image URLs from message",
-                    len(linked_image_urls),
-                )
-                if active_config.supports_vision:
-                    linked_image_data_urls = await _collect_linked_image_data_urls(
-                        user_message,
-                        linked_urls=linked_image_urls,
-                    )
-                    if linked_image_data_urls:
-                        logger.info(
-                            "AgentLoopStreamAPI: Loaded %s linked images for multimodal input",
-                            len(linked_image_data_urls),
-                        )
-                else:
-                    logger.warning(
-                        "AgentLoopStreamAPI: Found %s linked image URLs but model %s does not support vision",
-                        len(linked_image_urls),
-                        active_config.name,
-                    )
-            elif (
-                "http://" in user_message.lower() or "https://" in user_message.lower()
-            ):
-                logger.warning(
-                    "AgentLoopStreamAPI: Message contains URL text but extractor found 0 valid URLs"
-                )
-
-            if uploaded_images_base64 or linked_image_data_urls:
-                human_message_content = [{"type": "text", "text": user_message}]
-                for data_url in linked_image_data_urls:
-                    human_message_content.append(
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": data_url},
-                        }
-                    )
-                for image_base64 in uploaded_images_base64 or []:
-                    human_message_content.append(
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{image_base64}"
-                            },
-                        }
-                    )
-            else:
-                human_message_content = user_message
-            user_msg = HumanMessage(content=human_message_content)
+            # 9. 构建用户消息（支持多模态：上传图片 + HTTP(S) 图片 + 需求文档图片）
+            (
+                human_message_content,
+                human_message_kwargs,
+                display_user_message,
+            ) = await _prepare_agent_loop_human_message(
+                user_message,
+                project=project,
+                supports_vision=active_config.supports_vision,
+                uploaded_images_base64=uploaded_images_base64,
+            )
+            user_msg = HumanMessage(
+                content=human_message_content,
+                additional_kwargs=human_message_kwargs,
+            )
 
             # 10. 获取工具名列表用于 HITL
             tool_names = [t.name for t in tools] if tools else None
@@ -954,6 +1005,7 @@ class AgentLoopStreamAPIView(View):
                     "session_id": session_id,
                     "thread_id": thread_id,
                     "project_id": project_id,
+                    "display_message": display_user_message,
                     "mode": "agent_loop",
                     "created_at": chat_session.created_at.isoformat()
                     if chat_session and chat_session.created_at
