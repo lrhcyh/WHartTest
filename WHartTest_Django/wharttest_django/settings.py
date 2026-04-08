@@ -152,6 +152,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",  # 安全增强中间件（HTTPS 重定向、安全头等）。
     "django.contrib.sessions.middleware.SessionMiddleware",  # 会话读写中间件。
     "corsheaders.middleware.CorsMiddleware",  # CORS 中间件需放在 CommonMiddleware 前。
+    "django.middleware.locale.LocaleMiddleware",  # 根据请求语言协商激活当前语言。
     "django.middleware.common.CommonMiddleware",  # 通用请求处理（URL 规范化等）。
     "django.middleware.csrf.CsrfViewMiddleware",  # CSRF 防护中间件。
     "django.contrib.auth.middleware.AuthenticationMiddleware",  # 将用户对象绑定到 request。
@@ -268,6 +269,12 @@ AUTH_PASSWORD_VALIDATORS = [
 # 默认语言为简体中文。
 LANGUAGE_CODE = "zh-Hans"
 
+# 明确声明当前项目支持的语言。
+LANGUAGES = [
+    ("zh-hans", "简体中文"),
+    ("en", "English"),
+]
+
 # 默认时区为亚洲/上海。
 TIME_ZONE = "Asia/Shanghai"
 
@@ -276,6 +283,9 @@ USE_I18N = True
 
 # 启用时区感知时间处理。
 USE_TZ = True
+
+# 项目级翻译资源目录。
+LOCALE_PATHS = [BASE_DIR / "locale"]
 
 
 # 静态文件（CSS、JavaScript、图片）

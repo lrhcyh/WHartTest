@@ -12,7 +12,7 @@
             v-model="selectedProjectId"
             :loading="projectStore.loading"
             :disabled="projectStore.loading"
-            placeholder="请选择项目"
+            :placeholder="t('layout.projectPlaceholder')"
             style="width: 200px; margin-left: 10px;"
             @change="handleProjectChange"
             @popup-visible-change="handlePopupVisibleChange"
@@ -27,6 +27,7 @@
         </div>
       </div>
       <div class="user-info">
+        <AppLocaleToggle />
         <button
           type="button"
           class="theme-switch-button"
@@ -44,13 +45,13 @@
             :href="versionInfo?.releaseUrl || 'https://github.com/mgdaaslab/WHartTest/releases'"
             target="_blank"
           >
-            当前版本: {{ currentVersion }}
+            {{ tl('当前版本:') }} {{ currentVersion }}
             <span class="update-dot"></span>
           </a>
           <template #content>
             <div class="version-update-info">
               <div class="version-update-header">
-                <span class="update-title">🎉 新版本可用</span>
+                <span class="update-title">🎉 {{ tl('新版本可用') }}</span>
                 <span class="update-version">v{{ versionInfo?.latest }}</span>
               </div>
               <div class="version-update-notes" v-if="releaseNotesPreview">
@@ -61,12 +62,12 @@
                 :href="versionInfo?.releaseUrl || 'https://github.com/mgdaaslab/WHartTest/releases'"
                 target="_blank"
               >
-                点击查看完整更新日志
+                {{ tl('点击查看完整更新日志') }}
               </a>
             </div>
           </template>
         </a-popover>
-        <span v-else class="version-badge">当前版本: {{ currentVersion }}</span>
+        <span v-else class="version-badge">{{ tl('当前版本:') }} {{ currentVersion }}</span>
         
         <a-avatar class="avatar">
           <span>{{ userInitial }}</span>
@@ -80,10 +81,10 @@
             <div class="dropdown-user-info">
               <div class="dropdown-username">{{ username }}</div>
               <div class="dropdown-email" v-if="user?.email">{{ user.email }}</div>
-              <div class="dropdown-role" v-if="user?.is_staff">管理员</div>
+              <div class="dropdown-role" v-if="user?.is_staff">{{ tl('管理员') }}</div>
             </div>
             <a-divider style="margin: 4px 0" />
-            <a-doption @click="handleLogout">登出</a-doption>
+            <a-doption @click="handleLogout">{{ t('layout.logout') }}</a-doption>
           </template>
         </a-dropdown>
       </div>
@@ -100,8 +101,9 @@
         class="sider"
       >
         <a-menu
+          :key="`main-menu-${locale}`"
           mode="vertical"
-          :default-selected-keys="[activeMenu]"
+          :selected-keys="[activeMenu]"
           v-model:open-keys="openKeys"
           :auto-open-selected="true"
           :collapsed="collapsed"
@@ -111,92 +113,92 @@
 
           <a-menu-item key="dashboard">
             <template #icon><icon-home /></template>
-            <router-link to="/dashboard">首页</router-link>
+            <router-link to="/dashboard">{{ dashboardMenuLabel }}</router-link>
           </a-menu-item>
 
           <a-menu-item key="projects" v-if="hasProjectsPermission">
             <template #icon><icon-storage /></template>
-            <router-link to="/projects">项目管理</router-link>
+            <router-link to="/projects">{{ projectsMenuLabel }}</router-link>
           </a-menu-item>
 
           <a-menu-item key="requirements" v-if="hasRequirementsPermission">
             <template #icon><icon-file /></template>
-            <a href="#" @click="checkProjectAndNavigate($event, '/requirements')">需求管理</a>
+            <a href="#" @click="checkProjectAndNavigate($event, '/requirements')">{{ requirementsMenuLabel }}</a>
           </a-menu-item>
 
           <a-menu-item key="ui-automation" v-if="hasUiAutomationPermission">
             <template #icon><icon-computer /></template>
-            <a href="#" @click="checkProjectAndNavigate($event, '/ui-automation')">UI自动化</a>
+            <a href="#" @click="checkProjectAndNavigate($event, '/ui-automation')">{{ automationMenuLabel }}</a>
           </a-menu-item>
 
           <a-menu-item key="task-center" v-if="hasTaskCenterPermission">
             <template #icon><icon-schedule /></template>
-            <a href="#" @click="checkProjectAndNavigate($event, '/task-center')">任务中心</a>
+            <a href="#" @click="checkProjectAndNavigate($event, '/task-center')">{{ tasksMenuLabel }}</a>
           </a-menu-item>
 
           <!-- 测试管理子菜单 -->
           <a-sub-menu key="test-management" v-if="hasTestManagementMenuItems">
             <template #icon><icon-experiment /></template>
             <template #title>
-              <span @click="handleTestManagementClick">测试管理</span>
+              <span @click="handleTestManagementClick">{{ testManagementMenuLabel }}</span>
             </template>
             <a-menu-item key="testcases" v-if="hasTestcasesPermission">
               <template #icon><icon-code-block /></template>
-              <a href="#" @click="checkProjectAndNavigate($event, '/testcases')">用例管理</a>
+              <a href="#" @click="checkProjectAndNavigate($event, '/testcases')">{{ caseManagementMenuLabel }}</a>
             </a-menu-item>
             <a-menu-item key="testsuites" v-if="hasTestSuitesPermission">
               <template #icon><icon-folder /></template>
-              <a href="#" @click="checkProjectAndNavigate($event, '/testsuites')">测试套件</a>
+              <a href="#" @click="checkProjectAndNavigate($event, '/testsuites')">{{ suitesMenuLabel }}</a>
             </a-menu-item>
             <a-menu-item key="test-executions" v-if="hasTestExecutionsPermission">
               <template #icon><icon-history /></template>
-              <a href="#" @click="checkProjectAndNavigate($event, '/test-executions')">执行历史</a>
+              <a href="#" @click="checkProjectAndNavigate($event, '/test-executions')">{{ executionHistoryMenuLabel }}</a>
             </a-menu-item>
           </a-sub-menu>
 
           <a-menu-item key="langgraph-chat" v-if="hasLangGraphChatPermission">
             <template #icon><icon-message /></template>
-            <a href="#" @click="checkProjectAndNavigate($event, '/langgraph-chat')">LLM对话</a>
+            <a href="#" @click="checkProjectAndNavigate($event, '/langgraph-chat')">{{ chatMenuLabel }}</a>
           </a-menu-item>
 
           <a-menu-item key="knowledge-management" v-if="hasKnowledgePermission">
             <template #icon><icon-book /></template>
-            <a href="#" @click="checkProjectAndNavigate($event, '/knowledge-management')">知识库管理</a>
+            <a href="#" @click="checkProjectAndNavigate($event, '/knowledge-management')">{{ knowledgeMenuLabel }}</a>
           </a-menu-item>
 
           <!-- 系统管理子菜单 -->
           <a-sub-menu key="settings" v-if="hasSystemMenuItems">
             <template #icon><icon-settings /></template>
             <template #title>
-              <span @click="handleSystemManagementClick">系统管理</span>
+              <span @click="handleSystemManagementClick">{{ systemMenuLabel }}</span>
             </template>
             <a-menu-item key="users" v-if="hasUsersPermission">
               <template #icon><icon-user /></template>
-              <a href="#" @click="checkProjectAndNavigate($event, '/users')">用户管理</a>
+              <a href="#" @click="checkProjectAndNavigate($event, '/users')">{{ usersMenuLabel }}</a>
             </a-menu-item>
             <a-menu-item key="organizations" v-if="hasOrganizationsPermission">
               <template #icon><icon-apps /></template>
-              <a href="#" @click="checkProjectAndNavigate($event, '/organizations')">组织管理</a>
+              <a href="#" @click="checkProjectAndNavigate($event, '/organizations')">{{ organizationsMenuLabel }}</a>
             </a-menu-item>
             <a-menu-item key="permissions" v-if="hasPermissionsPermission">
               <template #icon><icon-safe /></template>
-              <a href="#" @click="checkProjectAndNavigate($event, '/permissions')">权限管理</a>
+              <a href="#" @click="checkProjectAndNavigate($event, '/permissions')">{{ permissionsMenuLabel }}</a>
             </a-menu-item>
             <a-menu-item key="llm-configs" v-if="hasLlmConfigsPermission">
               <template #icon><icon-tool /></template>
-              <a href="#" @click="checkProjectAndNavigate($event, '/llm-configs')">LLM配置</a>
+              <a href="#" @click="checkProjectAndNavigate($event, '/llm-configs')">{{ modelsMenuLabel }}</a>
             </a-menu-item>
             <a-menu-item key="api-keys" v-if="hasApiKeysPermission">
               <template #icon><icon-safe /></template>
-              <a href="#" @click="checkProjectAndNavigate($event, '/api-keys')">KEY管理</a>
+              <a href="#" @click="checkProjectAndNavigate($event, '/api-keys')">{{ apiKeysMenuLabel }}</a>
             </a-menu-item>
             <a-menu-item key="remote-mcp-configs" v-if="hasMcpConfigsPermission">
               <template #icon><icon-cloud /></template>
-              <a href="#" @click="checkProjectAndNavigate($event, '/remote-mcp-configs')">MCP配置</a>
+              <a href="#" @click="checkProjectAndNavigate($event, '/remote-mcp-configs')">{{ mcpMenuLabel }}</a>
             </a-menu-item>
             <a-menu-item key="skills" v-if="hasSkillsPermission">
               <template #icon><icon-apps /></template>
-              <a href="#" @click="checkProjectAndNavigate($event, '/skills')">Skills管理</a>
+              <a href="#" @click="checkProjectAndNavigate($event, '/skills')">{{ skillsMenuLabel }}</a>
             </a-menu-item>
           </a-sub-menu>
         </a-menu>
@@ -212,7 +214,7 @@
               <icon-menu-fold v-if="!collapsed" />
               <icon-menu-unfold v-else />
             </template>
-            <span v-if="!collapsed">收起</span>
+            <span v-if="!collapsed">{{ tl('收起') }}</span>
           </a-button>
         </div>
       </a-layout-sider>
@@ -235,7 +237,9 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/authStore';
 import { useProjectStore } from '@/store/projectStore';
 import { useThemeStore } from '@/store/themeStore';
+import { useAppI18n } from '@/composables/useAppI18n';
 import { brandLogoUrl } from '@/utils/assetUrl';
+import AppLocaleToggle from '@/components/AppLocaleToggle.vue';
 import {
   getCurrentVersion,
   formatVersion,
@@ -289,11 +293,31 @@ const router = useRouter();
 const authStore = useAuthStore();
 const projectStore = useProjectStore();
 const themeStore = useThemeStore();
+const { locale, t, tl } = useAppI18n();
 
 // 版本信息
 const currentVersion = ref(formatVersion(getCurrentVersion()));
 const versionInfo = ref<VersionInfo | null>(null);
 const hasUpdate = computed(() => versionInfo.value?.hasUpdate ?? false);
+const dashboardMenuLabel = computed(() => (locale.value === 'en-US' ? 'Home' : tl('首页')));
+const projectsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Projects' : tl('项目管理')));
+const requirementsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Requirements' : tl('需求管理')));
+const automationMenuLabel = computed(() => (locale.value === 'en-US' ? 'Automation' : tl('UI自动化')));
+const tasksMenuLabel = computed(() => (locale.value === 'en-US' ? 'Tasks' : tl('任务中心')));
+const knowledgeMenuLabel = computed(() => (locale.value === 'en-US' ? 'RAG' : tl('知识库管理')));
+const apiKeysMenuLabel = computed(() => (locale.value === 'en-US' ? 'Keys' : tl('KEY管理')));
+const testManagementMenuLabel = computed(() => (locale.value === 'en-US' ? 'Testing' : tl('测试管理')));
+const caseManagementMenuLabel = computed(() => (locale.value === 'en-US' ? 'Cases' : tl('用例管理')));
+const suitesMenuLabel = computed(() => (locale.value === 'en-US' ? 'Suites' : tl('测试套件')));
+const executionHistoryMenuLabel = computed(() => (locale.value === 'en-US' ? 'History' : tl('执行历史')));
+const chatMenuLabel = computed(() => (locale.value === 'en-US' ? 'Chat' : tl('LLM对话')));
+const systemMenuLabel = computed(() => (locale.value === 'en-US' ? 'Admin' : tl('系统管理')));
+const usersMenuLabel = computed(() => (locale.value === 'en-US' ? 'Users' : tl('用户管理')));
+const organizationsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Teams' : tl('组织管理')));
+const permissionsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Access' : tl('权限管理')));
+const modelsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Models' : tl('LLM配置')));
+const mcpMenuLabel = computed(() => (locale.value === 'en-US' ? 'MCP' : tl('MCP配置')));
+const skillsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Skills' : tl('Skills管理')));
 
 // 更新说明预览（显示完整内容）
 const releaseNotesPreview = computed(() => {
@@ -327,7 +351,9 @@ const userInitial = computed(() => {
   return username.value.charAt(0).toUpperCase();
 });
 
-const themeButtonLabel = computed(() => themeStore.isBlack ? '切换到默认主题' : '切换到黑色主题');
+const themeButtonLabel = computed(() => (
+  themeStore.isBlack ? t('layout.themeToDefault') : t('layout.themeToBlack')
+));
 
 // 当前激活的菜单项
 const activeMenu = computed(() => {
@@ -510,7 +536,7 @@ const handleSystemManagementClick = (event: MouseEvent) => {
 const checkProjectAndNavigate = (event: MouseEvent, path: string) => {
   if (!projectStore.currentProjectId) {
     event.preventDefault();
-    Message.warning('请先选择或创建项目');
+    Message.warning(tl('请先选择或创建项目'));
     return;
   }
   router.push(path);

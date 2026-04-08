@@ -5,7 +5,7 @@
       <div class="search-box">
         <a-input-search
           v-model="searchKeyword"
-          placeholder="搜索权限名称"
+          :placeholder="text.searchPermission"
           allow-clear
           style="width: 300px"
           @search="handleSearch"
@@ -18,7 +18,7 @@
             size="small"
             @click="toggleExpandAll"
           >
-            {{ isAllExpanded ? '收起全部' : '展开全部' }}
+            {{ isAllExpanded ? text.collapseAll : text.expandAll }}
           </a-button>
           <a-button
             type="primary"
@@ -26,7 +26,7 @@
             @click="handleSavePermissions"
           >
             <template #icon><icon-save /></template>
-            保存权限
+            {{ text.savePermissions }}
           </a-button>
         </a-space>
       </div>
@@ -61,12 +61,12 @@
                   size="small"
                   class="permission-tag"
                 >
-                  已有
+                  {{ text.existing }}
                 </a-tag>
               </div>
             </template>
           </a-tree>
-          <a-empty v-else description="暂无权限数据" />
+          <a-empty v-else :description="text.noPermissionData" />
         </div>
       </a-spin>
     </div>
@@ -77,6 +77,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { Message, Modal } from '@arco-design/web-vue';
 import { IconSave } from '@arco-design/web-vue/es/icon';
+import { useAppI18n } from '@/composables/useAppI18n';
 import {
   getPermissionList,
   getUserPermissions,
@@ -108,6 +109,49 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'refresh'): void;
 }>();
+const { isEnglish } = useAppI18n();
+
+const text = computed(() => (
+  isEnglish.value
+    ? {
+        searchPermission: 'Search permissions',
+        collapseAll: 'Collapse All',
+        expandAll: 'Expand All',
+        savePermissions: 'Save Permissions',
+        existing: 'Existing',
+        noPermissionData: 'No permission data',
+        fetchPermissionListFailed: 'Failed to fetch permission list',
+        fetchPermissionListError: 'An error occurred while fetching permissions',
+        fetchEntityPermissionsFailed: (entityType: string) => `Failed to fetch ${entityType} permissions`,
+        fetchPermissionsError: 'An error occurred while fetching permissions',
+        user: 'user',
+        group: 'group',
+        confirmSaveTitle: 'Confirm saving permissions',
+        confirmSaveContent: (entityType: string, count: number) => `Save current permission settings?\n\nThis will fully replace the ${entityType} permission list. The ${count} checked permission(s) will become all direct permissions for this ${entityType}.`,
+        saveSuccess: 'Permissions saved successfully',
+        saveFailed: 'Failed to save permissions',
+        saveError: 'An error occurred while saving permissions',
+      }
+    : {
+        searchPermission: '搜索权限名称',
+        collapseAll: '收起全部',
+        expandAll: '展开全部',
+        savePermissions: '保存权限',
+        existing: '已有',
+        noPermissionData: '暂无权限数据',
+        fetchPermissionListFailed: '获取权限列表失败',
+        fetchPermissionListError: '获取权限列表时发生错误',
+        fetchEntityPermissionsFailed: (entityType: string) => `获取${entityType}权限失败`,
+        fetchPermissionsError: '获取权限时发生错误',
+        user: '用户',
+        group: '组织',
+        confirmSaveTitle: '确认保存权限',
+        confirmSaveContent: (entityType: string, count: number) => `确定要保存当前的权限设置吗？\n\n注意：此操作将完全替换${entityType}的权限列表，当前勾选的 ${count} 个权限将成为${entityType}的全部直接权限。`,
+        saveSuccess: '权限保存成功',
+        saveFailed: '权限保存失败',
+        saveError: '保存权限时发生错误',
+      }
+));
 
 // 响应式数据
 const loading = ref(false);
@@ -271,11 +315,11 @@ const fetchAllPermissions = async () => {
     if (response.success && response.data) {
       allPermissions.value = response.data;
     } else {
-      Message.error(response.error || '获取权限列表失败');
+      Message.error(response.error || text.value.fetchPermissionListFailed);
     }
   } catch (error) {
     console.error('获取权限列表出错:', error);
-    Message.error('获取权限列表时发生错误');
+    Message.error(text.value.fetchPermissionListError);
   } finally {
     loading.value = false;
   }
@@ -297,11 +341,11 @@ const fetchUserPermissions = async () => {
       userPermissions.value = response.data;
       updateCheckedKeys();
     } else {
-      Message.error(response.error || `获取${props.type === 'user' ? '用户' : '组织'}权限失败`);
+      Message.error(response.error || text.value.fetchEntityPermissionsFailed(props.type === 'user' ? text.value.user : text.value.group));
     }
   } catch (error) {
     console.error('获取权限出错:', error);
-    Message.error('获取权限时发生错误');
+    Message.error(text.value.fetchPermissionsError);
   }
 };
 
@@ -411,11 +455,11 @@ const hasMatchedDescendants = (nodes: PermissionTreeNode[], keyword: string): bo
 
 // 保存权限（完全替换）
 const handleSavePermissions = () => {
-  const entityType = props.type === 'user' ? '用户' : '组织';
+  const entityType = props.type === 'user' ? text.value.user : text.value.group;
 
   Modal.confirm({
-    title: '确认保存权限',
-    content: `确定要保存当前的权限设置吗？\n\n注意：此操作将完全替换${entityType}的权限列表，当前勾选的 ${selectedPermissionIds.value.length} 个权限将成为${entityType}的全部直接权限。`,
+    title: text.value.confirmSaveTitle,
+    content: text.value.confirmSaveContent(entityType, selectedPermissionIds.value.length),
     onOk: async () => {
       saveLoading.value = true;
       try {
@@ -427,15 +471,15 @@ const handleSavePermissions = () => {
         }
 
         if (response.success) {
-          Message.success(response.message || '权限保存成功');
+          Message.success(response.message || text.value.saveSuccess);
           await fetchUserPermissions();
           emit('refresh');
         } else {
-          Message.error(response.error || '权限保存失败');
+          Message.error(response.error || text.value.saveFailed);
         }
       } catch (error) {
         console.error('保存权限出错:', error);
-        Message.error('保存权限时发生错误');
+        Message.error(text.value.saveError);
       } finally {
         saveLoading.value = false;
       }
