@@ -26,6 +26,7 @@
           v-if="supportsDocxEditor"
           type="outline"
           @click="goToDocxEditor"
+          :loading="docxEditorLoading"
         >
           <template #icon><icon-edit /></template>
           进入在线编辑
@@ -498,6 +499,7 @@ const projectStore = useProjectStore();
 const loading = ref(false);
 const splitLoading = ref(false);
 const reviewLoading = ref(false);
+const docxEditorLoading = ref(false);
 const document = ref<DocumentDetail | null>(null);
 const expandedModules = ref<string[]>([]);
 
@@ -673,9 +675,43 @@ const goBack = () => {
   router.push('/requirements');
 };
 
-const goToDocxEditor = () => {
-  if (!document.value?.id) return;
-  router.push(`/requirements/${document.value.id}/docx-editor`);
+const goToDocxEditor = async () => {
+  if (!document.value?.id || docxEditorLoading.value) return;
+
+  const pendingWindow = window.open('', '_blank');
+  if (pendingWindow) {
+    pendingWindow.document.write('<title>进入在线编辑</title><p>处理中...</p>');
+  }
+
+  docxEditorLoading.value = true;
+  try {
+    const response = await RequirementDocumentService.launchOnlineEditor(document.value.id);
+    if (response.status !== 'success' || !response.data?.launch_url) {
+      throw new Error(response.message || '打开在线编辑失败');
+    }
+
+    const launchUrl = response.data.launch_url;
+    if (pendingWindow && !pendingWindow.closed) {
+      pendingWindow.opener = null;
+      pendingWindow.location.href = launchUrl;
+    } else {
+      window.location.href = launchUrl;
+    }
+  } catch (error) {
+    if (pendingWindow && !pendingWindow.closed) {
+      pendingWindow.close();
+    }
+
+    const message = error instanceof Error ? error.message : '打开在线编辑失败';
+    if (message.includes('未接入') || message.toLowerCase().includes('not integrated')) {
+      Message.warning(message || '在线编辑功能未接入，请先配置 docx-editor 连接。');
+      return;
+    }
+
+    Message.error(message || '打开在线编辑失败');
+  } finally {
+    docxEditorLoading.value = false;
+  }
 };
 
 // 查看评审报告

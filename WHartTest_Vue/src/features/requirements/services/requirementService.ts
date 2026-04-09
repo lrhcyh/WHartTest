@@ -18,6 +18,7 @@ import type {
   ContextCheckResponse,
   DocumentStructureResponse,
   DocxEditorSession,
+  DocxEditorLaunchResult
 } from '../types';
 
 // API基础路径
@@ -126,6 +127,34 @@ export class RequirementDocumentService {
         errors: { detail: response.error }
       };
     }
+  }
+
+  /**
+   * 发起在线编辑
+   */
+  static async launchOnlineEditor(id: string): Promise<ApiResponse<DocxEditorLaunchResult>> {
+    const response = await request<DocxEditorLaunchResult>({
+      url: `${BASE_URL}/documents/${id}/launch-online-editor/`,
+      method: 'POST'
+    }) as any;
+
+    if (response.success) {
+      return {
+        status: 'success',
+        code: 200,
+        message: response.message || 'Online editor launched successfully',
+        data: response.data!,
+        errors: null
+      };
+    }
+
+    return {
+      status: 'error',
+      code: response.status || 500,
+      message: response.error || 'Failed to launch online editor',
+      data: null,
+      errors: { detail: response.error }
+    };
   }
 
   /**
