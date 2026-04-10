@@ -208,39 +208,46 @@ const filterTreeData = (treeData: PermissionTreeNode[], keyword: string): Permis
 // 构建权限树
 const buildPermissionTree = (permissions: Permission[], userPerms: Permission[]): PermissionTreeNode[] => {
   const userPermIds = new Set(userPerms.map(p => p.id));
+  const useEn = isEnglish.value;
 
   // 按第一层分类和第二层子分类进行分组
   const groupedByCategory = permissions.reduce((categories, permission) => {
-    const appLabelCn = permission.content_type.app_label_cn || permission.content_type.app_label;
+    const appLabelDisplay = useEn
+      ? (permission.content_type.app_label_en || permission.content_type.app_label_cn || permission.content_type.app_label)
+      : (permission.content_type.app_label_cn || permission.content_type.app_label);
     const appLabelSort = permission.content_type.app_label_sort || 999;
-    const appLabelSubcategory = permission.content_type.app_label_subcategory;
+    const appLabelSubcategory = useEn
+      ? (permission.content_type.app_label_subcategory_en || permission.content_type.app_label_subcategory)
+      : permission.content_type.app_label_subcategory;
     const appLabelSubcategorySort = permission.content_type.app_label_subcategory_sort || 999;
     const appLabel = permission.content_type.app_label;
     const model = permission.content_type.model;
 
-    if (!categories[appLabelCn]) {
-      categories[appLabelCn] = {
+    if (!categories[appLabelDisplay]) {
+      categories[appLabelDisplay] = {
         sortOrder: appLabelSort,
         subcategories: {}
       };
     }
-    
+
     const subcategoryKey = appLabelSubcategory || appLabel;
-    if (!categories[appLabelCn].subcategories[subcategoryKey]) {
-      categories[appLabelCn].subcategories[subcategoryKey] = {
+    if (!categories[appLabelDisplay].subcategories[subcategoryKey]) {
+      categories[appLabelDisplay].subcategories[subcategoryKey] = {
         app_label: appLabel,
         app_label_subcategory: appLabelSubcategory,
         app_label_subcategory_sort: appLabelSubcategorySort,
         models: {}
       };
     }
-    if (!categories[appLabelCn].subcategories[subcategoryKey].models[model]) {
-      categories[appLabelCn].subcategories[subcategoryKey].models[model] = {
-        model_cn: permission.content_type.model_cn || permission.content_type.model_verbose || model,
+    if (!categories[appLabelDisplay].subcategories[subcategoryKey].models[model]) {
+      categories[appLabelDisplay].subcategories[subcategoryKey].models[model] = {
+        model_cn: useEn
+          ? (permission.content_type.model_en || permission.content_type.model_cn || permission.content_type.model_verbose || model)
+          : (permission.content_type.model_cn || permission.content_type.model_verbose || model),
         permissions: []
       };
     }
-    categories[appLabelCn].subcategories[subcategoryKey].models[model].permissions.push(permission);
+    categories[appLabelDisplay].subcategories[subcategoryKey].models[model].permissions.push(permission);
     return categories;
   }, {} as Record<string, { sortOrder: number; subcategories: Record<string, { app_label: string; app_label_subcategory: string; app_label_subcategory_sort: number; models: Record<string, { model_cn: string; permissions: Permission[] }> }> }>);
 
@@ -272,7 +279,7 @@ const buildPermissionTree = (permissions: Permission[], userPerms: Permission[])
             isGroup: true,
             children: modelData.permissions.map(permission => ({
               id: permission.id,
-              title: permission.name_cn || permission.name,
+              title: useEn ? (permission.name_en || permission.name) : (permission.name_cn || permission.name),
               isGroup: false,
               hasPermission: userPermIds.has(permission.id),
               permission,
@@ -288,7 +295,7 @@ const buildPermissionTree = (permissions: Permission[], userPerms: Permission[])
             isGroup: true,
             children: modelData.permissions.map(permission => ({
               id: permission.id,
-              title: permission.name_cn || permission.name,
+              title: useEn ? (permission.name_en || permission.name) : (permission.name_cn || permission.name),
               isGroup: false,
               hasPermission: userPermIds.has(permission.id),
               permission,

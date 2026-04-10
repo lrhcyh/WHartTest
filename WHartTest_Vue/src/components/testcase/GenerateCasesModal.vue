@@ -300,23 +300,23 @@ const paginationConfig = reactive({
 const pageText = computed(() => (
   isEnglish.value
     ? {
-        modalTitle: 'AI-generated test cases',
-        currentProject: 'Current project',
-        generateMode: 'Generation mode',
-        requirementDocument: 'Requirement document',
-        requirementModule: 'Requirement module',
-        selectPrompt: 'Select prompt',
+        modalTitle: 'AI generate cases',
+        currentProject: 'Project',
+        generateMode: 'Mode',
+        requirementDocument: 'Req. document',
+        requirementModule: 'Req. module',
+        selectPrompt: 'Prompt',
         knowledgeBase: 'Knowledge base',
-        linkedKnowledgeBase: 'Linked knowledge base',
-        saveModule: 'Save module',
+        linkedKnowledgeBase: 'Knowledge base',
+        saveModule: 'Save to',
         selectCases: 'Select cases',
         selectPlaceholder: 'Please select',
-        requirementModulePlaceholder: 'Select a requirement document first, then choose one or more modules',
-        noGeneralPrompts: 'No general prompts available yet. Create one first.',
-        noKnowledgeBase: 'Do not use a knowledge base',
-        selectKnowledgeBase: 'Select a knowledge base',
-        searchCaseName: 'Search case name',
-        filterModule: 'Filter module',
+        requirementModulePlaceholder: 'Select a document first, then choose modules',
+        noGeneralPrompts: 'No prompts yet. Create one first.',
+        noKnowledgeBase: 'None',
+        selectKnowledgeBase: 'Select knowledge base',
+        searchCaseName: 'Search case',
+        filterModule: 'Module',
         priority: 'Priority',
         selectedCountPrefix: 'Selected',
         selectedCountSuffix: '',
@@ -388,10 +388,10 @@ const pageText = computed(() => (
 const generateModeOptions = computed(() => (
   isEnglish.value
     ? [
-        { value: 'full', label: 'Full generation' },
+        { value: 'full', label: 'Full' },
         { value: 'title_only', label: 'Title only' },
-        { value: 'kb_complete', label: 'Knowledge base completion' },
-        { value: 'kb_generate', label: 'Knowledge-based generation' },
+        { value: 'kb_complete', label: 'KB complete' },
+        { value: 'kb_generate', label: 'KB generate' },
       ]
     : [
         { value: 'full', label: '完整生成' },

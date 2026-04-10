@@ -208,7 +208,7 @@ const columns = computed(() => [
   {
     title: pageText.value.organizationId,
     dataIndex: 'id',
-    width: 80,
+    width: 160,
     align: 'center',
   },
   {
