@@ -10,14 +10,18 @@ class DocxEditorClientError(RuntimeError):
     pass
 
 
+class DocxEditorNotConfiguredError(DocxEditorClientError):
+    pass
+
+
 def create_docx_editor_session(document, pushback_url: str) -> dict:
     base_url = str(getattr(settings, "DOCX_EDITOR_BASE_URL", "") or "").strip().rstrip("/")
     public_base_url = str(getattr(settings, "DOCX_EDITOR_PUBLIC_BASE_URL", "") or "").strip().rstrip("/")
     service_key = str(getattr(settings, "DOCX_EDITOR_SERVICE_KEY", "") or "").strip()
     if not base_url:
-        raise DocxEditorClientError("DOCX_EDITOR_BASE_URL 未配置")
+        raise DocxEditorNotConfiguredError("在线编辑服务未配置，请联系管理员配置 DOCX Editor 服务。")
     if not service_key:
-        raise DocxEditorClientError("DOCX_EDITOR_SERVICE_KEY 未配置")
+        raise DocxEditorNotConfiguredError("在线编辑服务未配置，请联系管理员配置 DOCX Editor 服务。")
     if not document.file:
         raise DocxEditorClientError("该文档没有原始文件")
 
@@ -60,7 +64,9 @@ def create_docx_editor_session(document, pushback_url: str) -> dict:
                 timeout=60,
             )
         except requests.RequestException as exc:
-            raise DocxEditorClientError(f"DOCX Editor 调用失败: {exc}") from exc
+            raise DocxEditorClientError(
+                "在线编辑服务不可用，请确认 DOCX Editor 服务已部署并正常运行。"
+            ) from exc
 
     try:
         payload = response.json()
@@ -71,6 +77,10 @@ def create_docx_editor_session(document, pushback_url: str) -> dict:
         detail = ""
         if isinstance(payload, dict):
             detail = str(payload.get("error") or payload.get("detail") or "").strip()
+        if not detail and response.status_code in (502, 503):
+            raise DocxEditorClientError(
+                "在线编辑服务不可用，请确认 DOCX Editor 服务已部署并正常运行。"
+            )
         if not detail:
             detail = (response.text or "").strip()[:1000]
         raise DocxEditorClientError(detail or f"DOCX Editor 返回异常状态码 {response.status_code}")

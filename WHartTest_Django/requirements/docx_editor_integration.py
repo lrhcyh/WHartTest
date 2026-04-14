@@ -134,8 +134,13 @@ def launch_requirement_document_in_docx_editor(
         payload = response.text
 
     if response.status_code >= 400:
+        detail = _extract_message(payload, "")
+        if not detail and response.status_code in (502, 503):
+            raise DocxEditorIntegrationError(
+                "在线编辑服务不可用，请确认 DOCX Editor 服务已部署并正常运行。"
+            )
         raise DocxEditorIntegrationError(
-            _extract_message(payload, f"docx-editor 返回异常状态码: {response.status_code}")
+            detail or f"docx-editor 返回异常状态码: {response.status_code}"
         )
 
     launch_payload = _extract_launch_payload(payload)

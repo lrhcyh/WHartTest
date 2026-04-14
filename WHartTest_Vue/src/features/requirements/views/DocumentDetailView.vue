@@ -703,7 +703,7 @@ const goToDocxEditor = async () => {
     }
 
     const message = error instanceof Error ? error.message : '打开在线编辑失败';
-    if (message.includes('未接入') || message.toLowerCase().includes('not integrated')) {
+    if (message.includes('未接入') || message.includes('未配置') || message.includes('不可用') || message.includes('未部署') || message.toLowerCase().includes('not integrated')) {
       Message.warning(message || '在线编辑功能未接入，请先配置 docx-editor 连接。');
       return;
     }

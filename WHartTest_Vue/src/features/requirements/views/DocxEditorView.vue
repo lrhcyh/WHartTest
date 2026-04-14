@@ -5,8 +5,23 @@
     </div>
 
     <template v-else>
+      <div v-if="serviceUnavailable" class="service-unavailable">
+        <a-empty
+          description=""
+        >
+          <template #image>
+            <icon-exclamation-circle style="font-size: 64px; color: var(--color-text-3);" />
+          </template>
+          <div style="text-align: center;">
+            <div style="font-size: 16px; color: var(--color-text-1); margin-bottom: 8px;">在线编辑服务暂不可用</div>
+            <div style="color: var(--color-text-3); margin-bottom: 16px;">{{ pageError }}</div>
+            <a-button type="primary" @click="goBack">返回文档详情</a-button>
+          </div>
+        </a-empty>
+      </div>
+
       <a-alert
-        v-if="pageError"
+        v-else-if="pageError"
         type="error"
         :show-icon="true"
         :closable="false"
@@ -42,12 +57,13 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { onBeforeRouteLeave, useRoute } from 'vue-router';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
 import { RequirementDocumentService } from '../services/requirementService';
 import type { DocumentDetail } from '../types';
 
 const route = useRoute();
+const router = useRouter();
 
 const loading = ref(false);
 const sessionLoading = ref(false);
@@ -67,6 +83,20 @@ const supportsDocxEditor = computed(() => {
   if (!document.value?.file) return false;
   return document.value.document_type === 'doc' || document.value.document_type === 'docx';
 });
+
+const serviceUnavailable = computed(() => {
+  if (!pageError.value) return false;
+  return pageError.value.includes('未配置') || pageError.value.includes('不可用');
+});
+
+const goBack = () => {
+  const documentId = route.params.id as string;
+  if (documentId) {
+    router.push(`/requirements/${documentId}`);
+  } else {
+    router.push('/requirements');
+  }
+};
 
 const clearSyncTimer = () => {
   if (syncTimer !== null) {
@@ -300,6 +330,14 @@ onBeforeRouteLeave(async () => {
   justify-content: center;
   align-items: center;
   padding: 96px 0;
+}
+
+.service-unavailable {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 96px 24px;
 }
 
 @media (max-width: 960px) {

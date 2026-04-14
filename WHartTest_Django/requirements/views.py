@@ -12,7 +12,7 @@ import os
 from wharttest_django.viewsets import BaseModelViewSet
 from wharttest_django.permissions import permission_required
 from prompts.models import UserPrompt
-from .docx_editor_client import DocxEditorClientError, create_docx_editor_session
+from .docx_editor_client import DocxEditorClientError, DocxEditorNotConfiguredError, create_docx_editor_session
 from .models import (
     RequirementDocument,
     RequirementModule,
@@ -276,6 +276,12 @@ class RequirementDocumentViewSet(BaseModelViewSet):
 
         try:
             payload = create_docx_editor_session(document, pushback_url=pushback_url)
+        except DocxEditorNotConfiguredError as exc:
+            logger.error("DOCX Editor not configured for document %s: %s", document.id, exc)
+            return Response(
+                {"error": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         except DocxEditorClientError as exc:
             logger.error("DOCX Editor session creation failed for document %s: %s", document.id, exc)
             return Response(
