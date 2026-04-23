@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Message, Modal } from '@arco-design/web-vue'
 import { testcaseService } from '../../services/testcaseService'
 import type { ApiTestCase } from '../../types/testcase'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import { useEnvironmentStore } from '../../stores/environmentStore'
 import TestCaseSearch from './TestCaseSearch.vue'
 import TestCaseFilter from './TestCaseFilter.vue'
@@ -13,9 +14,11 @@ import ReferencedInterfacesDialog from './ReferencedInterfacesDialog.vue'
 
 const projectStore = useProjectStore()
 const environmentStore = useEnvironmentStore()
+const themeStore = useThemeStore()
 const router = useRouter()
 const loading = ref(false)
 const testcases = ref<ApiTestCase[]>([])
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 const emit = defineEmits(['run'])
 
@@ -208,9 +211,9 @@ fetchTestCases()
 </script>
 
 <template>
-  <div class="h-full flex flex-col gap-4 p-4">
+  <div class="api-testcases-panel h-full flex flex-col gap-4 p-4" :class="isDarkTheme ? 'api-testcases--dark' : 'api-testcases--light'">
     <!-- 搜索区域 -->
-    <div class="bg-gray-800/50 rounded-lg shadow-dark px-6 py-5 space-y-4">
+    <div class="panel-shell rounded-lg px-6 py-5 space-y-4">
       <div class="flex items-center gap-4">
         <div class="flex-1">
           <TestCaseSearch
@@ -244,7 +247,7 @@ fetchTestCases()
     </div>
 
     <!-- 内容区域 -->
-    <div class="flex-1 bg-gray-800/50 rounded-lg shadow-dark overflow-hidden">
+    <div class="panel-shell flex-1 overflow-hidden">
       <div class="p-6">
         <TestCaseTable
           :data="testcases"
@@ -260,7 +263,7 @@ fetchTestCases()
     </div>
 
     <!-- 分页区域 -->
-    <div class="bg-gray-800/50 rounded-lg shadow-dark px-6 py-5">
+    <div class="panel-shell px-6 py-5">
       <a-pagination
         v-model:current="pagination.current"
         v-model:page-size="pagination.page_size"
@@ -285,6 +288,56 @@ fetchTestCases()
 </template>
 
 <style scoped>
+.api-testcases-panel {
+  min-height: 0;
+  --tc-panel-bg: color-mix(in srgb, var(--theme-card-bg) 92%, var(--theme-page-bg) 8%);
+  --tc-panel-border: rgba(148, 163, 184, 0.16);
+  --tc-panel-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --tc-input-bg: #ffffff;
+  --tc-input-border: rgba(148, 163, 184, 0.18);
+  --tc-input-bg-hover: color-mix(in srgb, var(--theme-card-bg) 88%, var(--theme-page-bg) 12%);
+  --tc-table-header-bg: color-mix(in srgb, var(--theme-card-bg) 76%, var(--theme-page-bg) 24%);
+  --tc-row-hover: rgba(15, 23, 42, 0.04);
+  --tc-text: var(--theme-text);
+  --tc-text-muted: var(--theme-text-secondary);
+  --tc-text-subtle: var(--theme-text-tertiary);
+  --tc-link: var(--theme-accent);
+  --tc-link-hover: var(--theme-accent-hover);
+  --tc-secondary-bg: rgba(148, 163, 184, 0.08);
+  --tc-secondary-bg-hover: rgba(148, 163, 184, 0.14);
+  --tc-secondary-border: rgba(148, 163, 184, 0.18);
+  --tc-secondary-text: var(--theme-text-secondary);
+  --tc-secondary-text-hover: var(--theme-text);
+  --tc-more-bg: linear-gradient(to right, #e2e8f0, #cbd5e1);
+  --tc-more-bg-hover: linear-gradient(to right, #cbd5e1, #94a3b8);
+  --tc-more-text: #334155;
+}
+
+.api-testcases--dark {
+  --tc-panel-bg: rgba(31, 41, 55, 0.58);
+  --tc-panel-border: rgba(148, 163, 184, 0.12);
+  --tc-panel-shadow: 0 18px 32px rgba(2, 6, 23, 0.28);
+  --tc-input-bg: rgba(30, 41, 59, 0.5);
+  --tc-input-border: rgba(148, 163, 184, 0.1);
+  --tc-input-bg-hover: rgba(30, 41, 59, 0.72);
+  --tc-table-header-bg: rgba(30, 41, 59, 0.5);
+  --tc-row-hover: rgba(30, 41, 59, 0.5);
+  --tc-secondary-bg: rgba(148, 163, 184, 0.1);
+  --tc-secondary-bg-hover: rgba(148, 163, 184, 0.2);
+  --tc-secondary-border: rgba(148, 163, 184, 0.2);
+  --tc-secondary-text: #94a3b8;
+  --tc-secondary-text-hover: #e2e8f0;
+  --tc-more-bg: linear-gradient(to right, rgb(71, 85, 105), rgb(51, 65, 85));
+  --tc-more-bg-hover: linear-gradient(to right, rgb(100, 116, 139), rgb(71, 85, 105));
+  --tc-more-text: rgb(226, 232, 240);
+}
+
+.panel-shell {
+  background: var(--tc-panel-bg);
+  border: 1px solid var(--tc-panel-border);
+  box-shadow: var(--tc-panel-shadow);
+}
+
 /* 自定义滚动条 */
 .custom-scrollbar {
   scrollbar-width: none !important;
@@ -298,57 +351,58 @@ fetchTestCases()
 :deep(.arco-pagination) {
   .arco-pagination-item {
     border-radius: 4px !important;
-    color: #94a3b8 !important;
+    color: var(--tc-text-subtle) !important;
     background-color: transparent !important;
     border: 1px solid transparent !important;
 
     &:hover {
-      color: #60a5fa !important;
-      background-color: rgba(59, 130, 246, 0.1) !important;
-      border-color: rgba(59, 130, 246, 0.2) !important;
+      color: var(--tc-link-hover) !important;
+      background-color: rgba(var(--theme-accent-rgb), 0.1) !important;
+      border-color: rgba(var(--theme-accent-rgb), 0.22) !important;
     }
 
     &.arco-pagination-item-active {
-      background-color: rgba(59, 130, 246, 0.2) !important;
-      color: #60a5fa !important;
-      border-color: rgba(59, 130, 246, 0.3) !important;
+      background-color: rgba(var(--theme-accent-rgb), 0.14) !important;
+      color: var(--tc-link-hover) !important;
+      border-color: rgba(var(--theme-accent-rgb), 0.28) !important;
     }
   }
 
   .arco-pagination-jumper {
     .arco-input {
       border-radius: 4px !important;
-      background-color: rgba(30, 41, 59, 0.5) !important;
-      border: 1px solid rgba(148, 163, 184, 0.1) !important;
-      color: #e2e8f0 !important;
+      background-color: var(--tc-input-bg) !important;
+      border: 1px solid var(--tc-input-border) !important;
+      color: var(--tc-text) !important;
 
       &:hover, &:focus {
-        border-color: rgba(59, 130, 246, 0.5) !important;
-        background-color: rgba(30, 41, 59, 0.7) !important;
+        border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+        background-color: var(--tc-input-bg-hover) !important;
       }
     }
   }
 
   .arco-pagination-total {
-    color: #94a3b8 !important;
+    color: var(--tc-text-subtle) !important;
   }
 
   .arco-select-view {
-    background-color: rgba(30, 41, 59, 0.5) !important;
-    border: 1px solid rgba(148, 163, 184, 0.1) !important;
+    background-color: var(--tc-input-bg) !important;
+    border: 1px solid var(--tc-input-border) !important;
     border-radius: 4px !important;
+    color: var(--tc-text) !important;
 
     &:hover {
-      border-color: rgba(59, 130, 246, 0.5) !important;
-      background-color: rgba(30, 41, 59, 0.7) !important;
+      border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+      background-color: var(--tc-input-bg-hover) !important;
     }
   }
 }
 
 .custom-reset-button {
-  background: rgba(148, 163, 184, 0.1) !important;
-  border: 1px solid rgba(148, 163, 184, 0.2) !important;
-  color: #94a3b8 !important;
+  background: var(--tc-secondary-bg) !important;
+  border: 1px solid var(--tc-secondary-border) !important;
+  color: var(--tc-secondary-text) !important;
   padding: 0 24px !important;
   height: 36px !important;
   border-radius: 8px !important;
@@ -356,9 +410,9 @@ fetchTestCases()
   transition: all 0.3s ease !important;
 
   &:hover {
-    background: rgba(148, 163, 184, 0.2) !important;
-    border-color: rgba(148, 163, 184, 0.3) !important;
-    color: #e2e8f0 !important;
+    background: var(--tc-secondary-bg-hover) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.22) !important;
+    color: var(--tc-secondary-text-hover) !important;
     transform: translateY(-1px) !important;
   }
 
@@ -387,5 +441,57 @@ fetchTestCases()
     transform: translateY(1px) !important;
     box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3) !important;
   }
+}
+
+:global(.arco-modal) {
+  background: #ffffff !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16) !important;
+}
+
+:global(.arco-modal .arco-modal-header) {
+  background: #ffffff !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14) !important;
+}
+
+:global(.arco-modal .arco-modal-title) {
+  color: #0f172a !important;
+}
+
+:global(.arco-modal .arco-modal-content),
+:global(.arco-modal .arco-modal-body) {
+  background: #ffffff !important;
+  color: #475569 !important;
+}
+
+:global(.arco-modal .arco-modal-footer) {
+  background: #ffffff !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.14) !important;
+}
+
+:global(body.api-testing-theme .arco-modal) {
+  background: rgb(31, 41, 55) !important;
+  border-color: rgba(75, 85, 99, 0.5) !important;
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.35) !important;
+}
+
+:global(body.api-testing-theme .arco-modal .arco-modal-header) {
+  background: rgb(31, 41, 55) !important;
+  border-bottom-color: rgba(75, 85, 99, 0.4) !important;
+}
+
+:global(body.api-testing-theme .arco-modal .arco-modal-title) {
+  color: rgb(226, 232, 240) !important;
+}
+
+:global(body.api-testing-theme .arco-modal .arco-modal-content),
+:global(body.api-testing-theme .arco-modal .arco-modal-body) {
+  background: rgb(31, 41, 55) !important;
+  color: rgb(148, 163, 184) !important;
+}
+
+:global(body.api-testing-theme .arco-modal .arco-modal-footer) {
+  background: rgb(31, 41, 55) !important;
+  border-top-color: rgba(75, 85, 99, 0.4) !important;
 }
 </style>

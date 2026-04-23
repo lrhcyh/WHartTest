@@ -50,13 +50,13 @@ const handleDeleteClick = (func: Function, event: Event) => {
 </script>
 
 <template>
-  <div class="w-56 flex flex-col">
-    <div class="flex-1 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+  <div class="w-56 flex flex-col function-list-panel">
+    <div class="flex-1 function-list-shell rounded-lg overflow-hidden">
       <!-- 顶部标题和搜索栏 -->
-      <div class="p-4 border-b border-gray-700/50">
+      <div class="p-4 function-list-header">
         <div class="flex justify-between items-center mb-4">
           <div class="flex items-center gap-2">
-            <h2 class="text-lg font-medium text-gray-100">函数列表</h2>
+            <h2 class="text-lg font-medium function-list-title">函数列表</h2>
           </div>
           <a-button type="text" size="small" @click="emit('create')">
             <template #icon><icon-plus /></template>
@@ -87,22 +87,22 @@ const handleDeleteClick = (func: Function, event: Event) => {
                   <div
                     v-for="func in filteredFunctions"
                     :key="func.id"
-                    class="px-4 py-2 cursor-pointer transition-colors bg-[rgb(70,84,102,0.4)] hover:bg-[rgb(47,66,114,0.4)] rounded-lg"
+                    class="function-list-item px-4 py-2 cursor-pointer transition-colors rounded-lg"
                     :class="{ 
-                      'bg-[rgb(47,66,114,0.4)]': selectedFunction?.id === func.id
+                      'is-selected': selectedFunction?.id === func.id
                     }"
                     @click="emit('select', func)"
                   >
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <IconCode class="text-blue-500 w-4 h-4" />
-                        <span class="text-[#e5e6e8] truncate">{{ func.name }}</span>
+                        <span class="function-list-item-title truncate">{{ func.name }}</span>
                       </div>
                       <div class="flex items-center">
                         <a-button
                           type="text"
                           size="mini"
-                          class="!p-0 !text-[#6b7785] hover:!text-[#86909c]"
+                          class="item-action !p-0"
                           @click="(e) => handleEditClick(func, e)"
                         >
                           <template #icon><icon-edit /></template>
@@ -110,7 +110,7 @@ const handleDeleteClick = (func: Function, event: Event) => {
                         <a-button
                           type="text"
                           size="mini"
-                          class="!p-0 !text-[#6b7785] hover:!text-[#86909c]"
+                          class="item-action !p-0"
                           @click="(e) => handleDeleteClick(func, e)"
                         >
                           <template #icon><icon-delete /></template>
@@ -127,3 +127,61 @@ const handleDeleteClick = (func: Function, event: Event) => {
     </div>
   </div>
 </template> 
+
+<style lang="postcss" scoped>
+.function-list-shell {
+  background: var(--func-shell-bg);
+  border: 1px solid var(--func-shell-border);
+  box-shadow: var(--func-shell-shadow);
+}
+
+.function-list-header {
+  border-bottom: 1px solid var(--func-shell-border);
+}
+
+.function-list-title,
+.function-list-item-title {
+  color: var(--func-text);
+}
+
+.function-list-shell :deep(.arco-input-wrapper) {
+  background: var(--func-input-bg) !important;
+  border-color: var(--func-input-border) !important;
+
+  &:hover,
+  &:focus-within {
+    border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+    background: var(--func-input-hover-bg) !important;
+  }
+}
+
+.function-list-shell :deep(.arco-input),
+.function-list-shell :deep(.arco-input::placeholder),
+.function-list-shell :deep(.arco-input-prefix),
+.function-list-shell :deep(.arco-empty-description) {
+  color: var(--func-text-subtle) !important;
+}
+
+.function-list-shell :deep(.arco-input) {
+  color: var(--func-text) !important;
+}
+
+.function-list-item {
+  background: color-mix(in srgb, var(--func-card-bg) 88%, var(--theme-page-bg) 12%);
+  border: 1px solid transparent;
+}
+
+.function-list-item:hover,
+.function-list-item.is-selected {
+  background: rgba(var(--theme-accent-rgb), 0.1);
+  border-color: rgba(var(--theme-accent-rgb), 0.22);
+}
+
+.item-action {
+  color: var(--func-text-subtle) !important;
+}
+
+.item-action:hover {
+  color: var(--func-text-muted) !important;
+}
+</style>

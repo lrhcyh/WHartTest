@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import { testcaseService } from '../../services/testcaseService'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 
 interface ReferencedInterface {
   interface: {
@@ -32,10 +33,12 @@ const emit = defineEmits<{
 }>()
 
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
 const loading = ref(false)
 const interfaces = ref<ReferencedInterface[]>([])
 const currentPage = ref(1)
 const pageSize = ref(10)
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 const currentPageData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
@@ -139,6 +142,7 @@ watch(
     :width="1000"
     :mask-closable="true"
     :footer="false"
+    :modal-class="isDarkTheme ? 'referenced-interfaces-modal referenced-interfaces-modal--dark' : 'referenced-interfaces-modal referenced-interfaces-modal--light'"
     unmount-on-close
     @update:visible="val => emit('update:visible', val)"
     @cancel="handleClose"
@@ -206,7 +210,7 @@ watch(
               </template>
             </a-table>
           </div>
-          <div v-if="interfaces?.length > 0" class="flex justify-end pt-4 mt-auto border-t border-gray-700">
+          <div v-if="interfaces?.length > 0" class="pagination-shell flex justify-end pt-4 mt-auto border-t">
             <a-pagination
               v-model:current="currentPage"
               :total="interfaces?.length || 0"
@@ -227,93 +231,108 @@ watch(
 
 <style scoped>
 @reference "tailwindcss";
-.referenced-interfaces-dialog {
-  @apply relative;
-  z-index: 1000;
+:deep(.referenced-interfaces-modal--light) {
+  --rid-modal-bg: rgba(255, 255, 255, 0.99);
+  --rid-modal-border: rgba(148, 163, 184, 0.18);
+  --rid-header-bg: rgba(248, 250, 252, 0.96);
+  --rid-row-bg: rgba(255, 255, 255, 0.96);
+  --rid-row-hover: rgba(59, 130, 246, 0.06);
+  --rid-text: var(--color-text-1);
+  --rid-text-muted: var(--color-text-2);
+  --rid-text-subtle: var(--color-text-3);
+  --rid-tag-bg: rgba(226, 232, 240, 0.92);
+  --rid-tag-text: rgb(71, 85, 105);
 }
 
-.dialog-card {
-  @apply !bg-gray-800 !border-gray-700 rounded-xl overflow-hidden flex flex-col;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 20px -4px rgba(0, 0, 0, 0.5) !important;
-  animation: dialogSlideIn 0.2s ease-out;
+:deep(.referenced-interfaces-modal--dark) {
+  --rid-modal-bg: rgba(17, 24, 39, 0.98);
+  --rid-modal-border: rgba(71, 85, 105, 0.32);
+  --rid-header-bg: rgba(31, 41, 55, 0.9);
+  --rid-row-bg: rgba(31, 41, 55, 0.78);
+  --rid-row-hover: rgba(51, 65, 85, 0.78);
+  --rid-text: rgb(226, 232, 240);
+  --rid-text-muted: rgb(203, 213, 225);
+  --rid-text-subtle: rgb(148, 163, 184);
+  --rid-tag-bg: rgba(51, 65, 85, 0.88);
+  --rid-tag-text: rgb(226, 232, 240);
 }
 
-@keyframes dialogSlideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+:deep(.referenced-interfaces-modal .arco-modal) {
+  background: var(--rid-modal-bg) !important;
+  border: 1px solid var(--rid-modal-border) !important;
+  border-radius: 12px !important;
 }
 
-:deep(.arco-card-header) {
-  @apply !border-gray-700 !bg-gray-800/80 !backdrop-blur-sm;
-  padding: 16px 8px !important;
-  border-bottom-width: 1px !important;
+:deep(.referenced-interfaces-modal .arco-modal-header),
+:deep(.referenced-interfaces-modal .arco-modal-footer) {
+  background: var(--rid-modal-bg) !important;
+  border-color: var(--rid-modal-border) !important;
 }
 
-:deep(.arco-card-body) {
-  @apply !bg-gray-800/80 !backdrop-blur-sm !flex-1 !overflow-hidden;
-  padding: 16px 8px !important;
+:deep(.referenced-interfaces-modal .arco-modal-title) {
+  color: var(--rid-text) !important;
 }
 
-/* 表格样式 */
-:deep(.arco-table) {
+:deep(.referenced-interfaces-modal .arco-modal-body) {
+  background: var(--rid-modal-bg) !important;
+}
+
+:deep(.referenced-interfaces-modal .arco-table) {
   background: transparent !important;
 }
 
-/* 表格容器样式 */
-:deep(.arco-table-container) {
+:deep(.referenced-interfaces-modal .arco-table-container) {
   @apply !h-full;
   border: none !important;
   background: transparent !important;
 }
 
-:deep(.arco-table-body) {
+:deep(.referenced-interfaces-modal .arco-table-body) {
   @apply !h-full !overflow-auto;
 }
 
-:deep(.arco-table-header) {
+:deep(.referenced-interfaces-modal .arco-table-header) {
   @apply !sticky !top-0 !z-10;
   border: none !important;
-  background: rgba(31, 41, 55, 0.8) !important;
+  background: var(--rid-header-bg) !important;
   backdrop-filter: blur(8px) !important;
 }
 
-:deep(.arco-table-size-small .arco-table-th) {
+:deep(.referenced-interfaces-modal .arco-table-size-small .arco-table-th) {
   padding: 8px 4px !important;
   white-space: nowrap !important;
   background: transparent !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #94a3b8 !important;
+  border-bottom: 1px solid var(--rid-modal-border) !important;
+  color: var(--rid-text-subtle) !important;
   font-weight: 500 !important;
   height: 36px !important;
   line-height: 20px !important;
 }
 
-:deep(.arco-table-size-small .arco-table-td) {
+:deep(.referenced-interfaces-modal .arco-table-size-small .arco-table-td) {
   padding: 8px 4px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #e2e8f0 !important;
-  background: transparent !important;
+  border-bottom: 1px solid var(--rid-modal-border) !important;
+  color: var(--rid-text-muted) !important;
+  background: var(--rid-row-bg) !important;
   height: 36px !important;
   line-height: 20px !important;
 }
 
-:deep(.arco-table-td), :deep(.arco-table-th) {
+:deep(.referenced-interfaces-modal .arco-table-tr:hover .arco-table-td) {
+  background: var(--rid-row-hover) !important;
+}
+
+:deep(.referenced-interfaces-modal .arco-table-td),
+:deep(.referenced-interfaces-modal .arco-table-th) {
   @apply !align-middle;
 }
 
-:deep(.arco-typography) {
-  color: #e2e8f0 !important;
+:deep(.referenced-interfaces-modal .arco-typography) {
+  color: var(--rid-text-muted) !important;
   margin-bottom: 0 !important;
 }
 
-/* 标签样式 */
-:deep(.arco-tag) {
+:deep(.referenced-interfaces-modal .arco-tag) {
   border: none !important;
   font-weight: 500 !important;
   padding: 2px 8px !important;
@@ -325,7 +344,14 @@ watch(
   align-items: center !important;
   justify-content: center !important;
   min-width: 60px !important;
+}
 
+:deep(.referenced-interfaces-modal .arco-tag:not(.arco-tag-blue):not(.arco-tag-green):not(.arco-tag-orange):not(.arco-tag-red):not(.arco-tag-purple)) {
+  color: var(--rid-tag-text) !important;
+  background: var(--rid-tag-bg) !important;
+}
+
+:deep(.referenced-interfaces-modal .arco-tag) {
   &.arco-tag-blue {
     color: #60a5fa !important;
     background-color: rgba(59, 130, 246, 0.1) !important;
@@ -352,8 +378,7 @@ watch(
   }
 }
 
-/* Loading 样式 */
-:deep(.arco-spin) {
+:deep(.referenced-interfaces-modal .arco-spin) {
   .arco-spin-dot-list {
     .arco-spin-dot-item {
       background-color: #60a5fa !important;
@@ -361,8 +386,7 @@ watch(
   }
 }
 
-/* 自定义表格样式 */
-:deep(.custom-table) {
+:deep(.referenced-interfaces-modal .custom-table) {
   .arco-table-body,
   .arco-scrollbar,
   .arco-scrollbar-container,
@@ -380,42 +404,56 @@ watch(
   }
 }
 
-/* 分页样式 */
-:deep(.arco-pagination) {
+.pagination-shell {
+  border-top-color: var(--rid-modal-border) !important;
+}
+
+:deep(.referenced-interfaces-modal .arco-pagination) {
   .arco-pagination-item {
-    @apply !bg-transparent !border-gray-700 !text-gray-400;
+    background: transparent !important;
+    border-color: var(--rid-modal-border) !important;
+    color: var(--rid-text-subtle) !important;
 
     &:hover {
-      @apply !border-blue-500 !text-blue-500 !bg-blue-500/10;
+      border-color: #2563eb !important;
+      color: #2563eb !important;
+      background: rgba(59, 130, 246, 0.1) !important;
     }
 
     &.arco-pagination-item-active {
-      @apply !border-blue-500 !text-blue-500 !bg-blue-500/10;
+      border-color: #2563eb !important;
+      color: #2563eb !important;
+      background: rgba(59, 130, 246, 0.1) !important;
     }
   }
 
   .arco-pagination-total {
-    @apply !text-gray-400;
+    color: var(--rid-text-subtle) !important;
   }
 
   .arco-select-view {
-    @apply !bg-transparent !border-gray-700 !text-gray-400;
+    background: transparent !important;
+    border-color: var(--rid-modal-border) !important;
+    color: var(--rid-text-subtle) !important;
 
     &:hover {
-      @apply !border-blue-500;
+      border-color: #2563eb !important;
     }
   }
 
   .arco-pagination-jumper {
     .arco-input {
-      @apply !bg-transparent !border-gray-700 !text-gray-400;
+      background: transparent !important;
+      border-color: var(--rid-modal-border) !important;
+      color: var(--rid-text-subtle) !important;
 
       &:hover {
-        @apply !border-blue-500;
+        border-color: #2563eb !important;
       }
 
       &:focus {
-        @apply !border-blue-500 !ring-1 !ring-blue-500/20;
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2) !important;
       }
     }
   }

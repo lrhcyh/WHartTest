@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-700/30">
-    <div class="p-4 border-b border-gray-700/30">
-      <h3 class="text-lg font-medium text-gray-200">基本信息</h3>
+  <div class="basic-info-shell rounded-lg border">
+    <div class="basic-info-header p-4 border-b">
+      <h3 class="basic-title text-lg font-medium">基本信息</h3>
     </div>
     <div class="p-4">
       <div class="grid grid-cols-2 gap-4">
@@ -86,11 +86,37 @@ defineProps<{
 
 <style scoped>
 @reference "tailwindcss";
+.basic-info-shell {
+  background: color-mix(in srgb, var(--api-report-card-bg) 88%, var(--theme-page-bg) 12%);
+  border-color: var(--api-report-shell-border);
+  backdrop-filter: blur(10px);
+}
+
+.basic-info-header {
+  border-color: var(--api-report-shell-border);
+}
+
+.basic-title {
+  color: var(--api-report-text);
+}
+
+.basic-info-shell .text-gray-400 {
+  color: var(--api-report-text-subtle);
+}
+
+.basic-info-shell .text-gray-200,
+.basic-info-shell .text-gray-300 {
+  color: var(--api-report-text-muted);
+}
+
 .info-item {
-  @apply flex items-start gap-3 p-3 rounded-lg bg-gray-800/30 border border-gray-700/30 transition-all duration-200;
+  @apply flex items-start gap-3 p-3 rounded-lg transition-all duration-200;
+  background: var(--api-report-inline-bg);
+  border: 1px solid var(--api-report-inline-border);
   
   &:hover {
-    @apply bg-gray-800/50 border-gray-600/50;
+    background: var(--api-report-card-hover);
+    border-color: rgba(var(--theme-accent-rgb), 0.12);
   }
 }
 </style> 

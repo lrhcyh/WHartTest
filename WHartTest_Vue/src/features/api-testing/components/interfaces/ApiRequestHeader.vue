@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { IconSend, IconSave, IconRight, IconDown, IconBug } from '@arco-design/web-vue/es/icon'
+import { IconSend, IconSave, IconBug } from '@arco-design/web-vue/es/icon'
 import { useEnvironmentStore } from '../../stores/environmentStore'
 import type { ApiInterface } from '../../services/interfaceService'
 import { quickDebugInterface, type QuickDebugInterfaceRequest } from '../../services/interfaceService'
@@ -40,30 +40,15 @@ const currentEnvironmentBaseUrl = computed(() => {
   return currentEnv?.base_url || ''
 })
 
-// 跟踪展开的模块ID
-const expandedModules = ref<number[]>([])
-
-// 处理模块数据，添加level属性，只显示展开的模块
+// 处理模块数据，添加level属性
 const processModules = (modules: ApiModule[], level = 0): (ApiModule & { level: number })[] => {
   return modules.reduce((acc: (ApiModule & { level: number })[], module) => {
     acc.push({ ...module, level })
-    if (module.children?.length && expandedModules.value.includes(module.id)) {
+    if (module.children?.length) {
       acc.push(...processModules(module.children, level + 1))
     }
     return acc
   }, [])
-}
-
-// 处理模块展开/收起
-const toggleModule = (moduleId: number, event: Event) => {
-  event.preventDefault()
-  event.stopPropagation()
-  const index = expandedModules.value.indexOf(moduleId)
-  if (index === -1) {
-    expandedModules.value.push(moduleId)
-  } else {
-    expandedModules.value.splice(index, 1)
-  }
 }
 
 interface ApiModule {
@@ -89,6 +74,23 @@ const props = withDefaults(defineProps<Props>(), {
 const processedModules = computed(() => {
   return processModules(props.modules)
 })
+
+const normalizeModuleValue = (moduleValue: unknown) => {
+  if (typeof moduleValue === 'object' && moduleValue !== null && 'value' in moduleValue) {
+    return normalizeModuleValue((moduleValue as { value?: unknown }).value)
+  }
+
+  if (typeof moduleValue === 'boolean') {
+    return undefined
+  }
+
+  if (moduleValue === null || moduleValue === undefined || moduleValue === '') {
+    return undefined
+  }
+
+  const normalizedId = Number(moduleValue)
+  return Number.isFinite(normalizedId) && normalizedId > 0 ? normalizedId : undefined
+}
 
 // 接口名称
 const apiName = ref('')
@@ -153,19 +155,7 @@ watch(() => props.interface, (newInterface) => {
     apiName.value = newInterface.name || ''
     selectedMethod.value = newInterface.method || 'GET'
     requestUrl.value = newInterface.url || ''
-    selectedModule.value = newInterface.module
-
-    // 如果有 module_info，展开所有父模块
-    if (newInterface.module_info) {
-      let currentModule = newInterface.module_info
-      while (currentModule) {
-        if (currentModule.id && !expandedModules.value.includes(currentModule.id)) {
-          expandedModules.value.push(currentModule.id)
-        }
-        // 找到父模块
-        currentModule = props.modules.find(m => m.id === (currentModule as any).parent) as ApiModule | undefined
-      }
-    }
+    selectedModule.value = normalizeModuleValue(newInterface.module)
   } else {
     // 清空表单数据
     apiName.value = ''
@@ -208,7 +198,7 @@ const handleQuickDebug = async () => {
 </script>
 
 <template>
-  <div class="p-4 border-b border-gray-700">
+  <div class="api-request-header p-4 border-b">
     <!-- URL输入区域 -->
     <div class="flex gap-2 mb-3">
       <!-- 请求方法选择 -->
@@ -240,10 +230,10 @@ const handleQuickDebug = async () => {
         placeholder="请输入请求路径"
         size="large"
         allow-clear
-        class="menu-item rounded-lg"
+        class="menu-item request-url-input rounded-lg"
       >
         <template #prefix v-if="currentEnvironmentBaseUrl">
-          <span class="text-gray-500">{{ currentEnvironmentBaseUrl }}</span>
+          <span class="request-base-url">{{ currentEnvironmentBaseUrl }}</span>
         </template>
       </a-input>
 
@@ -288,7 +278,7 @@ const handleQuickDebug = async () => {
     <!-- 接口信息区域 -->
     <div class="flex gap-2">
       <!-- 模块选择 -->
-      <div class="border border-gray-600 rounded-lg" style="width: 20%">
+      <div class="module-select-shell rounded-lg" style="width: 20%">
         <a-select
           v-model="selectedModule"
           placeholder="请选择模块"
@@ -300,17 +290,10 @@ const handleQuickDebug = async () => {
             v-for="module in processedModules"
             :key="module.id"
             :value="module.id"
+            :label="module.name"
           >
             <div class="flex items-center gap-2" :style="{ paddingLeft: `${module.level * 16}px` }">
-              <div
-                v-if="module.children?.length"
-                class="w-4 h-4 flex items-center justify-center cursor-pointer"
-                @click="toggleModule(module.id, $event)"
-              >
-                <icon-right v-if="!expandedModules.includes(module.id)" class="!w-3 !h-3 !text-[#6b7785]" />
-                <icon-down v-else class="!w-3 !h-3 !text-[#6b7785]" />
-              </div>
-              <span v-else class="w-4"></span>
+              <span class="w-4"></span>
               {{ module.name }}
             </div>
           </a-option>
@@ -324,15 +307,45 @@ const handleQuickDebug = async () => {
         size="large"
         allow-clear
         :style="{ width: '80%' }"
-        class="menu-item rounded-lg"
+        class="menu-item api-name-input rounded-lg"
       />
     </div>
   </div>
 </template>
 
 <style scoped>
+.api-request-header {
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+.request-base-url {
+  color: var(--color-text-3);
+}
+
+.module-select-shell {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+:global(body.api-testing-theme) .api-request-header {
+  border-color: rgb(55, 65, 81);
+}
+
+:global(body.api-testing-theme) .request-base-url {
+  color: rgb(107, 114, 128);
+}
+
+:global(body.api-testing-theme) .module-select-shell {
+  border-color: rgb(75, 85, 99);
+}
+
 /* 输入框menu-item样式 */
 a-input.menu-item {
+  box-shadow: inset 0 1px 0 0 rgba(148, 163, 184, 0.12) !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+}
+
+:global(body.api-testing-theme) a-input.menu-item {
   box-shadow: inset 0 1px 0 0 rgba(148, 163, 184, 0.2) !important;
   background-color: rgba(17, 24, 39, 0.8) !important;
   border: 1px solid rgba(75, 85, 99, 0.4) !important;
@@ -386,22 +399,35 @@ a-input.menu-item {
 
 /* 输入框样式 */
 :deep(.arco-input-wrapper) {
+  background-color: rgba(255, 255, 255, 0.96);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+:deep(.arco-input-wrapper input) {
+  color: var(--color-text-1);
+}
+
+:deep(.arco-input-wrapper input::placeholder) {
+  color: var(--color-text-3);
+}
+
+:global(body.api-testing-theme) .api-request-header :deep(.arco-input-wrapper) {
   background-color: rgb(17 24 39 / 0.6);
   border-color: rgb(55 65 81);
 }
 
-:deep(.arco-input-wrapper input) {
+:global(body.api-testing-theme) .api-request-header :deep(.arco-input-wrapper input) {
   color: rgb(229 231 235);
 }
 
-:deep(.arco-input-wrapper input::placeholder) {
+:global(body.api-testing-theme) .api-request-header :deep(.arco-input-wrapper input::placeholder) {
   color: rgb(107 114 128);
 }
 
 /* 按钮样式 */
 :deep(.arco-btn-outline) {
-  border-color: rgb(75 85 99);
-  color: rgb(209 213 219);
+  border-color: rgba(148, 163, 184, 0.28);
+  color: var(--color-text-2);
 }
 
 :deep(.arco-btn-outline:hover) {
@@ -409,14 +435,19 @@ a-input.menu-item {
   color: rgb(59 130 246);
 }
 
+:global(body.api-testing-theme) .api-request-header :deep(.arco-btn-outline) {
+  border-color: rgb(75 85 99);
+  color: rgb(209 213 219);
+}
+
 /* 下拉菜单样式 */
-:global(.arco-dropdown) {
+:global(body.api-testing-theme .arco-dropdown) {
   width: 108px !important;
   box-sizing: border-box !important;
   padding: 4px 0 !important;
 }
 
-:global(body .arco-dropdown .arco-dropdown-list.arco-dropdown-list) {
+:global(body.api-testing-theme .arco-dropdown .arco-dropdown-list.arco-dropdown-list) {
   background-color: rgb(31 41 55);
   border-radius: 0;
   padding: 0 !important;
@@ -426,26 +457,45 @@ a-input.menu-item {
 
 /* 模块选择下拉框样式 */
 :deep(.arco-select-view) {
-  box-shadow: inset 0 1px 0 0 rgba(148, 163, 184, 0.2) !important;
-  background-color: rgba(17, 24, 39, 0.8) !important;
-  border: 1px solid rgba(75, 85, 99, 0.4) !important;
+  box-shadow: inset 0 1px 0 0 rgba(148, 163, 184, 0.12) !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
   border-radius: 0.5rem;
 }
 
 :deep(.arco-select-view:hover) {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border-color: rgba(59, 130, 246, 0.36) !important;
+}
+
+:deep(.arco-select-view-value) {
+  color: var(--color-text-1);
+}
+
+:deep(.arco-select-view-value::placeholder) {
+  color: var(--color-text-3);
+}
+
+:global(body.api-testing-theme) .api-request-header :deep(.arco-select-view) {
+  box-shadow: inset 0 1px 0 0 rgba(148, 163, 184, 0.2) !important;
+  background-color: rgba(17, 24, 39, 0.8) !important;
+  border: 1px solid rgba(75, 85, 99, 0.4) !important;
+}
+
+:global(body.api-testing-theme) .api-request-header :deep(.arco-select-view:hover) {
   background-color: rgba(17, 24, 39, 0.8) !important;
   border-color: rgba(75, 85, 99, 0.6) !important;
 }
 
-:deep(.arco-select-view-value) {
+:global(body.api-testing-theme) .api-request-header :deep(.arco-select-view-value) {
   color: rgb(229 231 235);
 }
 
-:deep(.arco-select-view-value::placeholder) {
+:global(body.api-testing-theme) .api-request-header :deep(.arco-select-view-value::placeholder) {
   color: rgb(107 114 128);
 }
 
-:global(.arco-select-dropdown) {
+:global(body.api-testing-theme .arco-select-dropdown) {
   background-color: rgb(31 41 55) !important;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
   border: none !important;
@@ -453,36 +503,36 @@ a-input.menu-item {
   margin: 4px 0 !important;
 }
 
-:global(.arco-select-dropdown .arco-select-option) {
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option) {
   padding: 0 !important;
   background: rgb(70 84 102 / 0.4) !important;
   margin: 2px 0 !important;
   border-radius: 4px !important;
 }
 
-:global(.arco-select-dropdown .arco-select-option:hover) {
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option:hover) {
   background: rgb(47 66 114 / 0.4) !important;
 }
 
-:global(.arco-select-dropdown .arco-select-option-active),
-:global(.arco-select-dropdown .arco-select-option-selected) {
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option-active),
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option-selected) {
   background: rgb(47 66 114 / 0.4) !important;
 }
 
-:global(.arco-select-dropdown .arco-select-option .arco-btn) {
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option .arco-btn) {
   background-color: transparent !important;
   border: none !important;
 }
 
-:global(.arco-select-dropdown .arco-select-option .arco-btn:hover) {
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option .arco-btn:hover) {
   background-color: transparent !important;
 }
 
-:global(.arco-select-dropdown .arco-select-option .arco-btn .arco-icon) {
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option .arco-btn .arco-icon) {
   color: #6b7785 !important;
 }
 
-:global(.arco-select-dropdown .arco-select-option .arco-btn:hover .arco-icon) {
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option .arco-btn:hover .arco-icon) {
   color: #86909c !important;
 }
 </style>

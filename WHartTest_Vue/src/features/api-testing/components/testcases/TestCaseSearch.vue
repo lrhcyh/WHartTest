@@ -49,19 +49,24 @@ const handleReset = () => {
 
 <style scoped>
 :deep(.arco-input-wrapper) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
-  border-color: rgba(148, 163, 184, 0.1) !important;
+  background-color: var(--tc-input-bg) !important;
+  border-color: var(--tc-input-border) !important;
 
   &:hover, &:focus-within {
-    border-color: #60a5fa !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+    background-color: var(--tc-input-bg-hover) !important;
   }
 
   .arco-input {
-    color: #e2e8f0 !important;
+    color: var(--tc-text) !important;
+  }
+
+  .arco-input::placeholder {
+    color: var(--tc-text-subtle) !important;
   }
 
   .arco-input-prefix, .arco-input-suffix {
-    color: #94a3b8 !important;
+    color: var(--tc-text-subtle) !important;
   }
 }
 </style>

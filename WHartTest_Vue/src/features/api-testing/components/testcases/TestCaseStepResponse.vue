@@ -55,17 +55,17 @@ const responseActiveTab = ref('response')
 </script>
 
 <template>
-  <div v-if="response" class="h-full flex flex-col">
+  <div v-if="response" class="testcase-step-response h-full flex flex-col">
     <!-- 顶部响应概要 -->
-    <div class="flex items-center gap-4 px-4 pt-4 pb-2 border-t border-b border-gray-700">
-      <div class="text-gray-400">响应内容</div>
+    <div class="response-summary flex items-center gap-4 px-4 pt-4 pb-2 border-t border-b">
+      <div class="response-summary-text">响应内容</div>
       <div class="flex-1"></div>
       <div class="flex items-center gap-4 flex-shrink-0">
         <a-tag v-if="statusCode" :color="statusCode === 200 ? 'green' : 'red'" class="w-10 flex justify-center items-center">
           {{ statusCode }}
         </a-tag>
-        <span v-if="response.time" class="text-gray-400">{{ response.time.toFixed(3) }} ms</span>
-        <span v-if="response.size" class="text-gray-400">{{ response.size }} bytes</span>
+        <span v-if="response.time" class="response-summary-text">{{ response.time.toFixed(3) }} ms</span>
+        <span v-if="response.size" class="response-summary-text">{{ response.size }} bytes</span>
       </div>
     </div>
 
@@ -75,11 +75,11 @@ const responseActiveTab = ref('response')
         <a-tab-pane key="response" title="响应体">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="response.data?.response?.content" class="bg-gray-900/50 rounded-lg shadow-inner relative group">
+              <div v-if="response.data?.response?.content" class="response-code-block rounded-lg shadow-inner relative group">
                 <div class="copy-button" @click="copyContent(responseContent)" title="复制">
                   <icon-copy />
                 </div>
-                <pre class="p-4 text-gray-300 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ responseContent }}</pre>
+                <pre class="response-code-text p-4 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ responseContent }}</pre>
               </div>
               <a-empty v-else description="暂无响应数据" />
             </div>
@@ -89,11 +89,11 @@ const responseActiveTab = ref('response')
         <a-tab-pane key="headers" title="响应头">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="response.data?.response?.headers" class="bg-gray-900/50 rounded-lg shadow-inner relative group">
+              <div v-if="response.data?.response?.headers" class="response-code-block rounded-lg shadow-inner relative group">
                 <div class="copy-button" @click="copyContent(responseHeadersContent)" title="复制">
                   <icon-copy />
                 </div>
-                <pre class="p-4 text-gray-300 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ responseHeadersContent }}</pre>
+                <pre class="response-code-text p-4 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ responseHeadersContent }}</pre>
               </div>
               <a-empty v-else description="暂无响应头数据" />
             </div>
@@ -103,11 +103,11 @@ const responseActiveTab = ref('response')
         <a-tab-pane key="request" title="请求信息">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="response.data?.request" class="bg-gray-900/50 rounded-lg shadow-inner relative group">
+              <div v-if="response.data?.request" class="response-code-block rounded-lg shadow-inner relative group">
                 <div class="copy-button" @click="copyContent(requestContent)" title="复制">
                   <icon-copy />
                 </div>
-                <pre class="p-4 text-gray-300 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ requestContent }}</pre>
+                <pre class="response-code-text p-4 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ requestContent }}</pre>
               </div>
               <a-empty v-else description="暂无请求数据" />
             </div>
@@ -117,7 +117,7 @@ const responseActiveTab = ref('response')
         <a-tab-pane key="validation" title="验证结果">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="response.data?.validation_results?.length" class="bg-gray-900/50 rounded-lg shadow-inner p-4">
+              <div v-if="response.data?.validation_results?.length" class="response-code-block rounded-lg shadow-inner p-4">
                 <div v-for="(result, index) in response.data.validation_results" :key="index"
                   class="flex flex-col p-3 rounded-md mb-3"
                   :class="{'bg-green-900/10': result.check_result === 'pass', 'bg-red-900/10': result.check_result !== 'pass'}"
@@ -127,18 +127,18 @@ const responseActiveTab = ref('response')
                       <a-tag :color="result.check_result === 'pass' ? 'green' : 'red'" class="!font-medium !flex-shrink-0">
                         {{ result.check_result === 'pass' ? '通过' : '失败' }}
                       </a-tag>
-                      <span class="text-gray-300">{{ result.comparator }}: {{ result.check }}</span>
+                      <span class="response-code-text">{{ result.comparator }}: {{ result.check }}</span>
                     </div>
                   </div>
                   <div class="ml-1 flex flex-col gap-2">
                     <div class="flex flex-col gap-1">
-                      <div class="text-gray-400 text-sm">实际值:
-                        <span class="text-gray-300 font-mono">{{ result.check_value }}</span>
+                      <div class="response-summary-text text-sm">实际值:
+                        <span class="response-code-text font-mono">{{ result.check_value }}</span>
                       </div>
                     </div>
                     <div class="flex flex-col gap-1">
-                      <div class="text-gray-400 text-sm">期望值:
-                        <span class="text-gray-300 font-mono">{{ result.expect_value }}</span>
+                      <div class="response-summary-text text-sm">期望值:
+                        <span class="response-code-text font-mono">{{ result.expect_value }}</span>
                       </div>
                     </div>
                     <div v-if="result.message" class="mt-1 text-red-400 text-sm">{{ result.message }}</div>
@@ -153,14 +153,14 @@ const responseActiveTab = ref('response')
         <a-tab-pane key="variables" title="提取变量">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="response.data?.extracted_variables" class="bg-gray-900/50 rounded-lg shadow-inner p-4">
+              <div v-if="response.data?.extracted_variables" class="response-code-block rounded-lg shadow-inner p-4">
                 <div v-for="(value, key) in response.data.extracted_variables" :key="key"
-                  class="flex flex-col p-3 rounded-md mb-3 bg-gray-800/30 hover:bg-gray-800/50"
+                  class="response-var-item flex flex-col p-3 rounded-md mb-3"
                 >
                   <div class="flex items-center">
                     <span class="text-blue-400 font-medium font-mono">${{ key }}</span>
                   </div>
-                  <div class="mt-2 text-gray-300 font-mono text-sm break-all">{{ value }}</div>
+                  <div class="response-code-text mt-2 font-mono text-sm break-all">{{ value }}</div>
                 </div>
               </div>
               <a-empty v-else description="暂无提取变量" />
@@ -171,11 +171,11 @@ const responseActiveTab = ref('response')
         <a-tab-pane key="complete" title="完整数据">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="response" class="bg-gray-900/50 rounded-lg shadow-inner relative group">
+              <div v-if="response" class="response-code-block rounded-lg shadow-inner relative group">
                 <div class="copy-button" @click="copyContent(completeContent)" title="复制">
                   <icon-copy />
                 </div>
-                <pre class="p-4 text-gray-300 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ completeContent }}</pre>
+                <pre class="response-code-text p-4 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ completeContent }}</pre>
               </div>
               <a-empty v-else description="暂无响应数据" />
             </div>
@@ -186,12 +186,12 @@ const responseActiveTab = ref('response')
   </div>
 
   <!-- 无响应时的提示 -->
-  <div v-else class="h-full flex flex-col">
-    <div class="flex items-center gap-4 px-4 pt-4 pb-2 border-t border-b border-gray-700">
-      <div class="text-gray-400">响应内容</div>
+  <div v-else class="testcase-step-response h-full flex flex-col">
+    <div class="response-summary flex items-center gap-4 px-4 pt-4 pb-2 border-t border-b">
+      <div class="response-summary-text">响应内容</div>
     </div>
     <div class="flex-1 flex items-center justify-center">
-      <div class="flex flex-col items-center justify-center text-gray-500">
+      <div class="response-empty flex flex-col items-center justify-center">
         <div class="w-16 h-16 mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
@@ -207,6 +207,10 @@ const responseActiveTab = ref('response')
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+.testcase-step-response {
+  color: var(--tcf-text-muted);
+}
+
 :deep(.arco-tabs) {
   @apply h-full flex flex-col;
 
@@ -219,7 +223,7 @@ const responseActiveTab = ref('response')
   }
 
   .arco-tabs-header {
-    @apply border-b border-gray-700;
+    border-bottom: 1px solid var(--tcf-panel-border) !important;
   }
 
   .arco-tabs-nav-tab {
@@ -227,10 +231,10 @@ const responseActiveTab = ref('response')
   }
 
   .arco-tabs-tab {
-    @apply text-gray-400;
+    color: var(--tcf-text-subtle) !important;
 
     &.arco-tabs-tab-active {
-      @apply text-blue-500;
+      color: rgb(59, 130, 246) !important;
     }
   }
 }
@@ -250,16 +254,57 @@ const responseActiveTab = ref('response')
 }
 
 :deep(.arco-btn-text) {
-  @apply bg-gray-800/80 p-2 rounded hover:bg-blue-500/20 hover:text-blue-500;
+  background: var(--tcf-control-bg) !important;
+  color: var(--tcf-text-muted) !important;
+  @apply p-2 rounded;
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.12) !important;
+    color: rgb(59, 130, 246) !important;
+  }
 }
 
 /* 复制按钮样式 */
 .copy-button {
   @apply opacity-0 transition-opacity duration-300;
-  @apply flex items-center justify-center w-8 h-8 bg-gray-800/80 rounded hover:bg-blue-500/20 hover:text-blue-500;
+  background: var(--tcf-control-bg) !important;
+  color: var(--tcf-text-muted) !important;
+  @apply flex items-center justify-center w-8 h-8 rounded;
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.12) !important;
+    color: rgb(59, 130, 246) !important;
+  }
 
   :deep(svg) {
-    @apply w-5 h-5 text-gray-300 hover:text-white;
+    @apply w-5 h-5;
+    color: var(--tcf-text-muted) !important;
+  }
+}
+
+.response-summary {
+  border-color: var(--tcf-panel-border) !important;
+}
+
+.response-summary-text,
+.response-empty {
+  color: var(--tcf-text-subtle) !important;
+}
+
+.response-code-block {
+  background: var(--tcf-control-bg) !important;
+  border: 1px solid var(--tcf-control-border) !important;
+}
+
+.response-code-text {
+  color: var(--tcf-text-muted) !important;
+}
+
+.response-var-item {
+  background: var(--tcf-section-bg) !important;
+
+  &:hover {
+    background: var(--tcf-section-hover) !important;
   }
 }
 

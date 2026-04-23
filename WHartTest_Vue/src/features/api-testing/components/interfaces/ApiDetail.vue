@@ -560,9 +560,9 @@ watch(() => props.autoDebug, async (newValue) => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col pt-0 pb-2 overflow-hidden">
+  <div class="api-detail h-full flex flex-col pt-0 pb-0 overflow-hidden">
     <!-- 顶部接口信息卡片 -->
-    <div class="mx-0.5 mb-2 flex-shrink-0 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+    <div class="detail-shell detail-shell--header mb-2 flex-shrink-0 rounded-lg shadow-lg overflow-hidden">
       <div class="px-4 py-3">
         <ApiRequestHeader
           ref="requestHeaderRef"
@@ -578,7 +578,7 @@ watch(() => props.autoDebug, async (newValue) => {
     </div>
 
     <!-- 中间请求配置卡片 -->
-    <div class="mx-0.5 flex-1 min-h-0 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+    <div class="detail-shell detail-shell--config flex-1 min-h-0 rounded-lg shadow-lg overflow-hidden">
       <a-tabs v-model:active-key="activeTab" class="h-full" :lazy-load="false">
         <!-- Headers配置 -->
         <a-tab-pane key="headers" title="Headers">
@@ -627,16 +627,16 @@ watch(() => props.autoDebug, async (newValue) => {
     <!-- 拖动条 -->
     <div
       ref="resizeDragHandle"
-      class="resize-handle mx-0.5 h-3 bg-gray-700/50 hover:bg-blue-500/50 cursor-row-resize transition-colors flex items-center justify-center gap-1"
+      class="resize-handle h-3 cursor-row-resize transition-colors flex items-center justify-center gap-1"
     >
-      <div class="w-6 h-[2px] bg-gray-400 rounded-full"></div>
-      <div class="w-6 h-[2px] bg-gray-400 rounded-full"></div>
-      <div class="w-6 h-[2px] bg-gray-400 rounded-full"></div>
+      <div class="resize-line w-6 h-[2px] rounded-full"></div>
+      <div class="resize-line w-6 h-[2px] rounded-full"></div>
+      <div class="resize-line w-6 h-[2px] rounded-full"></div>
     </div>
 
     <!-- 底部响应卡片 -->
     <div
-      class="mx-0.5 bg-gray-800 rounded-lg shadow-lg overflow-hidden"
+      class="detail-shell detail-shell--response rounded-lg shadow-lg overflow-hidden"
       :style="{ height: `${responseCardHeight}%` }"
     >
       <ApiResponse :response="response" />
@@ -646,6 +646,36 @@ watch(() => props.autoDebug, async (newValue) => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+.api-detail {
+  --detail-shell-bg: rgba(255, 255, 255, 0.96);
+  --detail-shell-border: rgba(148, 163, 184, 0.16);
+  --detail-shell-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+  --detail-tab-border: rgba(148, 163, 184, 0.16);
+  --detail-tab-text: var(--color-text-3);
+  --detail-tab-active: rgb(var(--primary-6));
+  --detail-resize-bg: rgba(148, 163, 184, 0.22);
+  --detail-resize-bg-hover: rgba(59, 130, 246, 0.25);
+  --detail-resize-line: rgba(100, 116, 139, 0.8);
+}
+
+.detail-shell {
+  background: var(--detail-shell-bg);
+  border: 1px solid var(--detail-shell-border);
+  box-shadow: var(--detail-shell-shadow);
+}
+
+:global(body.api-testing-theme) .api-detail {
+  --detail-shell-bg: rgb(31, 41, 55);
+  --detail-shell-border: rgba(55, 65, 81, 0.92);
+  --detail-shell-shadow: 0 16px 30px rgba(2, 6, 23, 0.28);
+  --detail-tab-border: rgb(55, 65, 81);
+  --detail-tab-text: rgb(156, 163, 175);
+  --detail-tab-active: rgb(var(--primary-6));
+  --detail-resize-bg: rgba(55, 65, 81, 0.52);
+  --detail-resize-bg-hover: rgba(59, 130, 246, 0.35);
+  --detail-resize-line: rgb(156, 163, 175);
+}
+
 :deep(.arco-tabs) {
   @apply h-full flex flex-col;
 
@@ -658,7 +688,7 @@ watch(() => props.autoDebug, async (newValue) => {
   }
 
   .arco-tabs-header {
-    @apply border-b border-gray-700;
+    border-bottom: 1px solid var(--detail-tab-border);
   }
 
   .arco-tabs-nav-tab {
@@ -666,10 +696,10 @@ watch(() => props.autoDebug, async (newValue) => {
   }
 
   .arco-tabs-tab {
-    @apply text-gray-400;
+    color: var(--detail-tab-text);
 
     &.arco-tabs-tab-active {
-      @apply text-blue-500;
+      color: var(--detail-tab-active);
     }
   }
 }
@@ -677,12 +707,19 @@ watch(() => props.autoDebug, async (newValue) => {
 /* 拖动条样式 */
 .resize-handle {
   @apply relative;
+  background: var(--detail-resize-bg);
 
   &:hover {
-    div {
-      @apply bg-blue-400;
-    }
+    background: var(--detail-resize-bg-hover);
   }
+
+  &:hover .resize-line {
+    background: rgb(96, 165, 250);
+  }
+}
+
+.resize-line {
+  background: var(--detail-resize-line);
 }
 
 .cursor-row-resize {

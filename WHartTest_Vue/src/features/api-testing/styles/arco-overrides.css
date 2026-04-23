@@ -23,7 +23,7 @@
 }
 
 /* ===== API Testing 容器：局部暗色主题（不依赖 arco-theme="dark"） ===== */
-.api-testing-container {
+body.api-testing-theme .api-testing-container {
   --color-bg-1: rgb(17, 24, 39);
   --color-bg-2: rgb(31, 41, 55);
   --color-bg-3: rgb(55, 65, 81);
@@ -456,176 +456,176 @@ body.api-testing-theme .arco-dropdown-list .arco-scrollbar::-webkit-scrollbar-th
 }
 
 /* ===== 输入框暗色主题 ===== */
-.api-testing-container .arco-input-wrapper {
+body.api-testing-theme .api-testing-container .arco-input-wrapper {
   background-color: rgba(17, 24, 39, 0.6) !important;
   border-color: rgb(55, 65, 81) !important;
 }
 
-.api-testing-container .arco-input-wrapper:hover {
+body.api-testing-theme .api-testing-container .arco-input-wrapper:hover {
   border-color: rgb(75, 85, 99) !important;
 }
 
-.api-testing-container .arco-input-wrapper:focus-within,
-.api-testing-container .arco-input-wrapper.arco-input-focus {
+body.api-testing-theme .api-testing-container .arco-input-wrapper:focus-within,
+body.api-testing-theme .api-testing-container .arco-input-wrapper.arco-input-focus {
   border-color: rgb(59, 130, 246) !important;
 }
 
-.api-testing-container .arco-input-wrapper input,
-.api-testing-container .arco-input-wrapper .arco-input {
+body.api-testing-theme .api-testing-container .arco-input-wrapper input,
+body.api-testing-theme .api-testing-container .arco-input-wrapper .arco-input {
   color: rgb(229, 231, 235) !important;
 }
 
-.api-testing-container .arco-input-wrapper input::placeholder,
-.api-testing-container .arco-input-wrapper .arco-input::placeholder {
+body.api-testing-theme .api-testing-container .arco-input-wrapper input::placeholder,
+body.api-testing-theme .api-testing-container .arco-input-wrapper .arco-input::placeholder {
   color: rgb(107, 114, 128) !important;
 }
 
 /* ===== 搜索框暗色主题 ===== */
-.api-testing-container .arco-input-search .arco-input-suffix .arco-btn {
+body.api-testing-theme .api-testing-container .arco-input-search .arco-input-suffix .arco-btn {
   color: rgb(156, 163, 175) !important;
 }
 
-.api-testing-container .arco-input-search .arco-input-suffix .arco-btn:hover {
+body.api-testing-theme .api-testing-container .arco-input-search .arco-input-suffix .arco-btn:hover {
   color: rgb(59, 130, 246) !important;
 }
 
 /* ===== Tag 暗色主题 ===== */
-.api-testing-container .arco-tag {
+body.api-testing-theme .api-testing-container .arco-tag {
   background-color: rgba(55, 65, 81, 0.5) !important;
   color: rgb(209, 213, 219) !important;
   border-color: rgba(75, 85, 99, 0.3) !important;
 }
 
-.api-testing-container .arco-tag-green {
+body.api-testing-theme .api-testing-container .arco-tag-green {
   background-color: rgba(34, 197, 94, 0.2) !important;
   color: rgb(34, 197, 94) !important;
   border-color: rgba(34, 197, 94, 0.3) !important;
 }
 
-.api-testing-container .arco-tag-blue {
+body.api-testing-theme .api-testing-container .arco-tag-blue {
   background-color: rgba(59, 130, 246, 0.2) !important;
   color: rgb(96, 165, 250) !important;
   border-color: rgba(59, 130, 246, 0.3) !important;
 }
 
-.api-testing-container .arco-tag-red {
+body.api-testing-theme .api-testing-container .arco-tag-red {
   background-color: rgba(239, 68, 68, 0.2) !important;
   color: rgb(239, 68, 68) !important;
   border-color: rgba(239, 68, 68, 0.3) !important;
 }
 
-.api-testing-container .arco-tag-orange {
+body.api-testing-theme .api-testing-container .arco-tag-orange {
   background-color: rgba(249, 115, 22, 0.2) !important;
   color: rgb(249, 115, 22) !important;
   border-color: rgba(249, 115, 22, 0.3) !important;
 }
 
-.api-testing-container .arco-tag-arcoblue {
+body.api-testing-theme .api-testing-container .arco-tag-arcoblue {
   background-color: rgba(59, 130, 246, 0.2) !important;
   color: rgb(96, 165, 250) !important;
   border-color: rgba(59, 130, 246, 0.3) !important;
 }
 
-.api-testing-container .arco-tag-purple {
+body.api-testing-theme .api-testing-container .arco-tag-purple {
   background-color: rgba(168, 85, 247, 0.2) !important;
   color: rgb(168, 85, 247) !important;
   border-color: rgba(168, 85, 247, 0.3) !important;
 }
 
-.api-testing-container .arco-tag-cyan {
+body.api-testing-theme .api-testing-container .arco-tag-cyan {
   background-color: rgba(6, 182, 212, 0.2) !important;
   color: rgb(6, 182, 212) !important;
   border-color: rgba(6, 182, 212, 0.3) !important;
 }
 
 /* ===== 空状态暗色主题 ===== */
-.api-testing-container .arco-empty-description {
+body.api-testing-theme .api-testing-container .arco-empty-description {
   color: rgb(107, 114, 128) !important;
 }
 
-.api-testing-container .arco-empty-image svg {
+body.api-testing-theme .api-testing-container .arco-empty-image svg {
   fill: rgb(75, 85, 99) !important;
 }
 
 /* ===== 按钮暗色主题 ===== */
-.api-testing-container .arco-btn-text {
+body.api-testing-theme .api-testing-container .arco-btn-text {
   color: rgb(156, 163, 175) !important;
 }
 
-.api-testing-container .arco-btn-text:hover {
+body.api-testing-theme .api-testing-container .arco-btn-text:hover {
   color: rgb(59, 130, 246) !important;
   background-color: rgba(59, 130, 246, 0.1) !important;
 }
 
-.api-testing-container .arco-btn-text.arco-btn-status-danger {
+body.api-testing-theme .api-testing-container .arco-btn-text.arco-btn-status-danger {
   color: rgb(156, 163, 175) !important;
 }
 
-.api-testing-container .arco-btn-text.arco-btn-status-danger:hover {
+body.api-testing-theme .api-testing-container .arco-btn-text.arco-btn-status-danger:hover {
   color: rgb(239, 68, 68) !important;
   background-color: rgba(239, 68, 68, 0.1) !important;
 }
 
 /* ===== Spin 暗色主题 ===== */
-.api-testing-container .arco-spin-dot .arco-spin-dot-item {
+body.api-testing-theme .api-testing-container .arco-spin-dot .arco-spin-dot-item {
   background-color: rgb(59, 130, 246) !important;
 }
 
 /* ===== Pagination 暗色主题 ===== */
-.api-testing-container .arco-pagination-item {
+body.api-testing-theme .api-testing-container .arco-pagination-item {
   background-color: transparent !important;
   color: rgb(156, 163, 175) !important;
 }
 
-.api-testing-container .arco-pagination-item:hover {
+body.api-testing-theme .api-testing-container .arco-pagination-item:hover {
   background-color: rgba(59, 130, 246, 0.1) !important;
   color: rgb(96, 165, 250) !important;
 }
 
-.api-testing-container .arco-pagination-item-active {
+body.api-testing-theme .api-testing-container .arco-pagination-item-active {
   background-color: rgba(59, 130, 246, 0.2) !important;
   color: rgb(96, 165, 250) !important;
 }
 
 /* ===== Textarea 暗色主题 ===== */
-.api-testing-container .arco-textarea-wrapper {
+body.api-testing-theme .api-testing-container .arco-textarea-wrapper {
   background-color: rgba(17, 24, 39, 0.6) !important;
   border-color: rgb(55, 65, 81) !important;
 }
 
-.api-testing-container .arco-textarea {
+body.api-testing-theme .api-testing-container .arco-textarea {
   color: rgb(229, 231, 235) !important;
 }
 
-.api-testing-container .arco-textarea::placeholder {
+body.api-testing-theme .api-testing-container .arco-textarea::placeholder {
   color: rgb(107, 114, 128) !important;
 }
 
 /* ===== Select 暗色主题 ===== */
-.api-testing-container .arco-select-view {
+body.api-testing-theme .api-testing-container .arco-select-view {
   background-color: rgba(17, 24, 39, 0.6) !important;
   border-color: rgb(55, 65, 81) !important;
 }
 
-.api-testing-container .arco-select-view:hover {
+body.api-testing-theme .api-testing-container .arco-select-view:hover {
   border-color: rgb(75, 85, 99) !important;
 }
 
-.api-testing-container .arco-select-view-value,
-.api-testing-container .arco-select-view-single .arco-select-view-value {
+body.api-testing-theme .api-testing-container .arco-select-view-value,
+body.api-testing-theme .api-testing-container .arco-select-view-single .arco-select-view-value {
   color: rgb(229, 231, 235) !important;
 }
 
-.api-testing-container .arco-select-view-placeholder {
+body.api-testing-theme .api-testing-container .arco-select-view-placeholder {
   color: rgb(107, 114, 128) !important;
 }
 
 /* ===== Switch 暗色主题 ===== */
-.api-testing-container .arco-switch {
+body.api-testing-theme .api-testing-container .arco-switch {
   background-color: rgb(75, 85, 99) !important;
 }
 
-.api-testing-container .arco-switch-checked {
+body.api-testing-theme .api-testing-container .arco-switch-checked {
   background-color: rgb(59, 130, 246) !important;
 }
 

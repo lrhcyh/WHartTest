@@ -710,9 +710,11 @@ onMounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background-color: #fff;
+  background-color: var(--theme-card-bg);
+  color: var(--theme-page-text);
+  border: 1px solid var(--theme-card-border);
   border-radius: 8px;
-  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.2), 0 0 10px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--theme-card-shadow);
   padding: 20px; /* 添加内边距，与其他卡片保持一致 */
 }
 

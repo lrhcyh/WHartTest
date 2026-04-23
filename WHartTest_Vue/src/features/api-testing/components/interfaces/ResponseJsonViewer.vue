@@ -399,7 +399,7 @@ watch(() => props.visible, (visible) => {
       </div>
     </template>
     
-    <div class="p-4 h-full overflow-auto">
+    <div class="viewer-shell p-4 h-full overflow-auto">
       <!-- 测试区域 (用于提取和断言) -->
       <div class="mb-4">
         <div v-if="isTestAreaExpanded" class="mt-3 space-y-3">
@@ -419,7 +419,7 @@ watch(() => props.visible, (visible) => {
           
           <!-- 测试结果展示 -->
           <div v-if="testResult">
-            <div v-if="testResult.success" class="bg-green-500/10 border border-green-500/30 rounded-md p-3">
+            <div v-if="testResult.success" class="viewer-test-result viewer-test-result--success rounded-md p-3">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-green-400 text-sm">✓ {{ fieldType === 'extract' ? '提取成功' : '表达式有效' }}</span>
                 <a-button
@@ -431,11 +431,11 @@ watch(() => props.visible, (visible) => {
                   {{ fieldType === 'extract' ? '应用此表达式' : '应用到断言' }}
                 </a-button>
               </div>
-              <div class="bg-gray-900/50 rounded p-2 max-h-32 overflow-auto">
-                <pre class="text-gray-300 text-xs font-mono whitespace-pre-wrap">{{ formatTestResult(testResult.value) }}</pre>
+              <div class="viewer-test-code rounded p-2 max-h-32 overflow-auto">
+                <pre class="viewer-test-code-text text-xs font-mono whitespace-pre-wrap">{{ formatTestResult(testResult.value) }}</pre>
               </div>
             </div>
-            <div v-else class="bg-red-500/10 border border-red-500/30 rounded-md p-3">
+            <div v-else class="viewer-test-result viewer-test-result--error rounded-md p-3">
               <div class="text-red-400 text-sm mb-1">✗ {{ fieldType === 'extract' ? '提取失败' : '表达式无效' }}</div>
               <div class="text-red-300 text-xs">{{ testResult.error }}</div>
             </div>
@@ -444,9 +444,9 @@ watch(() => props.visible, (visible) => {
       </div>
       
       <!-- 响应数据展示 -->
-      <div v-if="formattedData" class="bg-gray-900/50 rounded-lg shadow-inner p-4 relative overflow-auto">
+      <div v-if="formattedData" class="viewer-json-shell rounded-lg shadow-inner p-4 relative overflow-auto">
         <div
-          class="absolute right-2 top-2 cursor-pointer copy-button text-gray-400 hover:text-blue-400"
+          class="absolute right-2 top-2 cursor-pointer viewer-copy-button"
           @click="copyContent(JSON.stringify(formattedData, null, 2))"
           title="复制"
         >
@@ -466,14 +466,14 @@ watch(() => props.visible, (visible) => {
       </div>
       <a-empty v-else description="暂无响应数据" />
       
-      <div class="mt-4 bg-gray-900/30 rounded-lg p-4">
-        <h3 class="font-medium text-gray-300 mb-2">使用说明</h3>
-        <ul class="text-sm text-gray-400 list-disc pl-4">
+      <div class="viewer-guide mt-4 rounded-lg p-4">
+        <h3 class="viewer-guide-title font-medium mb-2">使用说明</h3>
+        <ul class="viewer-guide-list text-sm list-disc pl-4">
           <li class="mb-1">点击对象或数组前的箭头可以展开/折叠节点</li>
           <li class="mb-1">点击值后面的"{{ fieldType === 'extract' ? '选择' : '断言' }}"按钮可以选择该路径进行测试</li>
           <li class="mb-1">使用测试区域可以调试{{ fieldType === 'extract' ? '提取' : '断言' }}表达式，测试成功后可应用到{{ fieldType === 'extract' ? '提取规则' : '断言配置' }}中</li>
           <li class="mb-1">选择的路径会自动转换为JMESPath表达式</li>
-          <li>路径格式示例: <code class="bg-gray-800 px-1 py-0.5 rounded">body.data.users[0].name</code></li>
+          <li>路径格式示例: <code class="viewer-guide-code px-1 py-0.5 rounded">body.data.users[0].name</code></li>
         </ul>
       </div>
     </div>
@@ -482,25 +482,123 @@ watch(() => props.visible, (visible) => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+:root {
+  --viewer-shell-text: var(--color-text-2);
+}
+
+.viewer-shell {
+  --viewer-panel-bg: rgba(248, 250, 252, 0.98);
+  --viewer-guide-bg: rgba(248, 250, 252, 0.92);
+  --viewer-guide-title: var(--color-text-2);
+  --viewer-guide-text: var(--color-text-3);
+  --viewer-guide-code-bg: rgba(226, 232, 240, 0.96);
+  --viewer-copy-text: var(--color-text-3);
+  --viewer-test-code-bg: rgba(241, 245, 249, 0.96);
+  color: var(--viewer-shell-text);
+}
+
+.viewer-test-result--success {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+
+.viewer-test-result--error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+}
+
+.viewer-test-code,
+.viewer-json-shell {
+  background: var(--viewer-panel-bg);
+}
+
+.viewer-test-code-text {
+  color: var(--color-text-2);
+}
+
+.viewer-copy-button {
+  color: var(--viewer-copy-text);
+}
+
+.viewer-copy-button:hover {
+  color: rgb(96, 165, 250);
+}
+
+.viewer-guide {
+  background: var(--viewer-guide-bg);
+}
+
+.viewer-guide-title {
+  color: var(--viewer-guide-title);
+}
+
+.viewer-guide-list {
+  color: var(--viewer-guide-text);
+}
+
+.viewer-guide-code {
+  background: var(--viewer-guide-code-bg);
+}
+
+:global(body.api-testing-theme) .viewer-shell {
+  --viewer-panel-bg: rgba(17, 24, 39, 0.5);
+  --viewer-guide-bg: rgba(17, 24, 39, 0.3);
+  --viewer-guide-title: rgb(209, 213, 219);
+  --viewer-guide-text: rgb(156, 163, 175);
+  --viewer-guide-code-bg: rgb(31, 41, 55);
+  --viewer-copy-text: rgb(156, 163, 175);
+  --viewer-test-code-bg: rgba(17, 24, 39, 0.5);
+}
+
 :deep(.arco-drawer) {
-  @apply bg-gray-800;
+  background: rgba(255, 255, 255, 0.98);
 }
 
 :deep(.arco-drawer-header) {
-  @apply border-gray-700 bg-gray-800 text-gray-300;
+  border-color: rgba(148, 163, 184, 0.16);
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--color-text-2);
 }
 
 :deep(.arco-drawer-body) {
-  @apply bg-gray-800 text-gray-300;
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--color-text-2);
 }
 
 :deep(.arco-empty-description) {
-  @apply text-gray-500;
+  color: var(--color-text-3);
 }
 
 :deep(.arco-input-wrapper) {
-  @apply bg-gray-900/60 border-gray-700;
+  @apply bg-white border-[color:var(--color-border-2)];
   
+  input {
+    @apply text-[color:var(--color-text-1)] bg-transparent;
+    &::placeholder {
+      @apply text-[color:var(--color-text-3)];
+    }
+  }
+}
+
+:global(body.api-testing-theme) :deep(.arco-drawer) {
+  @apply bg-gray-800;
+}
+
+:global(body.api-testing-theme) :deep(.arco-drawer-header) {
+  @apply border-gray-700 bg-gray-800 text-gray-300;
+}
+
+:global(body.api-testing-theme) :deep(.arco-drawer-body) {
+  @apply bg-gray-800 text-gray-300;
+}
+
+:global(body.api-testing-theme) :deep(.arco-empty-description) {
+  @apply text-gray-500;
+}
+
+:global(body.api-testing-theme) :deep(.arco-input-wrapper) {
+  @apply bg-gray-900/60 border-gray-700;
+
   input {
     @apply text-gray-200 bg-transparent;
     &::placeholder {

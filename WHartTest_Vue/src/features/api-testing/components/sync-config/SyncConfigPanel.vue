@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { IconPlus, IconEmpty, IconStar, IconDelete } from '@arco-design/web-vue/es/icon'
 import { syncApi, type SyncConfig } from '../../services/syncService'
 import type { TableColumnData } from '@arco-design/web-vue'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import SyncHistory from './SyncHistory.vue'
 import ApiConfig from './ApiConfig.vue'
 
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
 const loading = ref(false)
 const configs = ref<SyncConfig[]>([])
 const activeConfigId = ref<number | null>(null)
@@ -16,6 +18,7 @@ const showCreateModal = ref(false)
 const isEditing = ref(false)
 const editingConfigId = ref<number | null>(null)
 const activeTab = ref('config')
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 const formModel = ref({
   name: '',
@@ -213,11 +216,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-6 main-container">
+  <div class="sync-config-panel p-6 main-container" :class="isDarkTheme ? 'sync-config--dark' : 'sync-config--light'">
     <div class="custom-card p-6">
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center">
-          <h1 class="text-2xl font-semibold text-gray-100">同步配置</h1>
+          <h1 class="text-2xl font-semibold panel-title">同步配置</h1>
           <a-tabs type="text" v-model:activeKey="activeTab" class="ml-8">
             <a-tab-pane key="config" title="配置管理" />
             <a-tab-pane key="api-config" title="接口同步配置" />
@@ -251,8 +254,8 @@ onMounted(() => {
           >
             <template #empty>
               <div class="flex flex-col items-center justify-center py-8">
-                <IconEmpty class="text-gray-600 w-12 h-12 mb-4" />
-                <div class="text-gray-400 mb-6">暂无同步配置</div>
+                <IconEmpty class="empty-icon w-12 h-12 mb-4" />
+                <div class="empty-text mb-6">暂无同步配置</div>
                 <a-button type="outline" @click="showCreateModal = true">
                   <template #icon>
                     <icon-plus />
@@ -264,11 +267,11 @@ onMounted(() => {
 
             <template #name="{ record }">
               <div 
-                class="flex flex-col cursor-pointer p-1 rounded hover:bg-gray-700 transition-all duration-200" 
+                class="config-name-card flex flex-col cursor-pointer p-1 rounded transition-all duration-200" 
                 @click="handleEdit(record)"
               >
-                <span class="font-medium text-blue-400 hover:text-blue-300">{{ record.name }}</span>
-                <span v-if="record.description" class="text-gray-400 text-sm">{{ record.description }}</span>
+                <span class="font-medium config-name-link">{{ record.name }}</span>
+                <span v-if="record.description" class="config-subtle-text text-sm">{{ record.description }}</span>
               </div>
             </template>
 
@@ -293,7 +296,7 @@ onMounted(() => {
             </template>
 
             <template #created_info="{ record }">
-              <div class="flex flex-col gap-1 text-sm">
+              <div class="created-info flex flex-col gap-1 text-sm">
                 <span>创建者：{{ record.created_by_info?.username || '-' }}</span>
                 <span>创建时间：{{ record.created_at ? new Date(record.created_at).toLocaleString() : '-' }}</span>
               </div>
@@ -400,12 +403,12 @@ onMounted(() => {
           <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-700">
             <a-checkbox v-model="formModel.sync_enabled">
               <template #default>
-                <span class="text-gray-300">启用同步</span>
+                <span class="modal-text">启用同步</span>
               </template>
             </a-checkbox>
             <a-checkbox v-model="formModel.is_active">
               <template #default>
-                <span class="text-gray-300">设为当前配置</span>
+                <span class="modal-text">设为当前配置</span>
               </template>
             </a-checkbox>
           </div>
@@ -417,6 +420,33 @@ onMounted(() => {
 
 <style scoped>
 @reference "tailwindcss";
+.sync-config-panel {
+  --sync-shell-bg: color-mix(in srgb, var(--theme-card-bg) 92%, var(--theme-page-bg) 8%);
+  --sync-shell-border: rgba(148, 163, 184, 0.16);
+  --sync-shell-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --sync-table-header-bg: color-mix(in srgb, var(--theme-card-bg) 76%, var(--theme-page-bg) 24%);
+  --sync-table-row-bg: color-mix(in srgb, var(--theme-card-bg) 90%, var(--theme-page-bg) 10%);
+  --sync-table-row-hover: rgba(15, 23, 42, 0.05);
+  --sync-input-bg: #ffffff;
+  --sync-input-border: rgba(148, 163, 184, 0.18);
+  --sync-input-hover-bg: color-mix(in srgb, var(--theme-card-bg) 88%, var(--theme-page-bg) 12%);
+  --sync-text: var(--theme-text);
+  --sync-text-muted: var(--theme-text-secondary);
+  --sync-text-subtle: var(--theme-text-tertiary);
+}
+
+.sync-config--dark {
+  --sync-shell-bg: rgba(31, 41, 55, 0.92);
+  --sync-shell-border: rgba(55, 65, 81, 0.72);
+  --sync-shell-shadow: 0 18px 34px rgba(2, 6, 23, 0.28);
+  --sync-table-header-bg: rgba(3, 7, 18, 0.8);
+  --sync-table-row-bg: rgba(31, 41, 55, 1);
+  --sync-table-row-hover: rgba(55, 65, 81, 0.72);
+  --sync-input-bg: rgba(55, 65, 81, 1);
+  --sync-input-border: rgba(75, 85, 99, 1);
+  --sync-input-hover-bg: rgba(55, 65, 81, 0.92);
+}
+
 .main-container {
   height: 100%;
   overflow-y: auto;
@@ -428,72 +458,93 @@ onMounted(() => {
   display: none; /* Chrome, Safari, Opera */
 }
 
+:deep(.arco-form-item-label-col),
+:deep(.arco-form-item-label-col > label),
+:deep(.arco-form-item-label) {
+  color: var(--sync-text) !important;
+}
+
 :deep(.arco-form-item-label-col) {
-  @apply text-gray-300;
+  color: var(--sync-text) !important;
 }
 
 :deep(.arco-radio) {
-  @apply text-gray-300;
+  color: var(--sync-text) !important;
 }
 
 :deep(.arco-checkbox) {
-  @apply text-gray-300;
+  color: var(--sync-text) !important;
 }
 
-:deep(.arco-input-wrapper) {
-  @apply bg-gray-700 border-gray-600;
+:deep(.arco-input-wrapper),
+:deep(.arco-textarea-wrapper),
+:deep(.arco-select-view) {
+  background: var(--sync-input-bg) !important;
+  border-color: var(--sync-input-border) !important;
 }
 
-:deep(.arco-input-wrapper:hover) {
-  @apply border-blue-500;
+:deep(.arco-input-wrapper:hover),
+:deep(.arco-textarea-wrapper:hover),
+:deep(.arco-select-view:hover),
+:deep(.arco-input-wrapper:focus-within),
+:deep(.arco-textarea-wrapper:focus-within),
+:deep(.arco-select-view:focus-within) {
+  border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+  background: var(--sync-input-hover-bg) !important;
 }
 
 :deep(.arco-input) {
-  @apply text-gray-300;
+  color: var(--sync-text) !important;
 }
 
-:deep(.arco-textarea) {
-  @apply bg-gray-700 border-gray-600 text-gray-300;
+:deep(.arco-textarea),
+:deep(.arco-select-view-value),
+:deep(.arco-input::placeholder),
+:deep(.arco-textarea::placeholder),
+:deep(.arco-select-view-placeholder) {
+  color: var(--sync-text-subtle) !important;
 }
 
-:deep(.arco-textarea:hover) {
-  @apply border-blue-500;
-}
-
-:deep(.arco-select-view) {
-  @apply bg-gray-700 border-gray-600 text-gray-300;
-}
-
-:deep(.arco-select-view:hover) {
-  @apply border-blue-500;
+:deep(.arco-textarea),
+:deep(.arco-select-view-value) {
+  color: var(--sync-text) !important;
 }
 
 :deep(.arco-modal) {
-  @apply bg-gray-800;
+  background: var(--sync-shell-bg);
 }
 
 :deep(.arco-modal-header) {
-  @apply bg-gray-800 border-gray-700;
+  background: var(--sync-shell-bg);
+  border-color: var(--sync-shell-border);
 }
 
 :deep(.arco-modal-title) {
-  @apply text-gray-200;
+  color: var(--sync-text);
 }
 
 :deep(.arco-modal-footer) {
-  @apply bg-gray-800 border-gray-700;
+  background: var(--sync-shell-bg);
+  border-color: var(--sync-shell-border);
 }
 
 :deep(.custom-table) {
-  @apply bg-transparent rounded-lg overflow-hidden border border-gray-700;
+  background: transparent;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--sync-shell-border);
 }
 
 :deep(.custom-table .arco-table-container) {
-  @apply border-gray-700;
+  border-color: var(--sync-shell-border);
 }
 
 :deep(.custom-table .arco-table-th) {
-  @apply bg-gray-950 text-gray-200 border-gray-700 font-medium text-sm;
+  background: var(--sync-table-header-bg);
+  color: var(--sync-text);
+  border-color: var(--sync-shell-border);
+  font-weight: 500;
+  font-size: 0.875rem;
 }
 
 :deep(.custom-table .arco-table-th .arco-table-th-cell) {
@@ -517,15 +568,17 @@ onMounted(() => {
 }
 
 :deep(.custom-table .arco-table-td) {
-  @apply bg-gray-800 text-gray-300 border-gray-700;
+  background: var(--sync-table-row-bg);
+  color: var(--sync-text-muted);
+  border-color: var(--sync-shell-border);
 }
 
 :deep(.custom-table .arco-table-tr:hover .arco-table-td) {
-  @apply bg-gray-700;
+  background: var(--sync-table-row-hover);
 }
 
 :deep(.custom-table .arco-table-border-cell .arco-table-td) {
-  @apply border-gray-700;
+  border-color: var(--sync-shell-border);
 }
 
 /* 隐藏默认滚动条 */
@@ -554,7 +607,34 @@ onMounted(() => {
 }
 
 .custom-card {
-  @apply bg-gray-800 rounded-lg shadow-lg border border-gray-700/50;
+  background: var(--sync-shell-bg);
+  border-radius: 0.5rem;
+  box-shadow: var(--sync-shell-shadow);
+  border: 1px solid var(--sync-shell-border);
+}
+
+.panel-title,
+.modal-text {
+  color: var(--sync-text);
+}
+
+.empty-icon,
+.empty-text,
+.config-subtle-text,
+.created-info {
+  color: var(--sync-text-subtle);
+}
+
+.config-name-card:hover {
+  background: rgba(var(--theme-accent-rgb), 0.08);
+}
+
+.config-name-link {
+  color: var(--theme-accent);
+}
+
+.config-name-link:hover {
+  color: var(--theme-accent-hover);
 }
 
 :deep(.arco-tabs) {
@@ -574,11 +654,14 @@ onMounted(() => {
 }
 
 :deep(.arco-tabs-tab) {
-  @apply text-gray-400 px-3 py-0 h-auto leading-none;
+  color: var(--sync-text-subtle);
+  padding: 0 0.75rem;
+  height: auto;
+  line-height: 1;
 }
 
 :deep(.arco-tabs-tab-active) {
-  @apply text-blue-400;
+  color: var(--theme-accent);
 }
 
 :deep(.arco-tabs-content) {

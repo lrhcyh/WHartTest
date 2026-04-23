@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive, h } from 'vue'
+import { ref, onMounted, reactive, h, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Message, Modal, Select } from '@arco-design/web-vue'
 import { Option } from '@arco-design/web-vue/es/select'
@@ -16,14 +16,15 @@ import {
 } from '../../services/testTaskService'
 import AddTestCaseModal from './AddTestCaseModal.vue'
 import { useEnvironmentStore } from '../../stores/environmentStore'
-import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 
 const router = useRouter()
 const route = useRoute()
 const loading = ref(false)
 const testTaskSuite = ref<TestTaskSuite | null>(null)
 const environmentStore = useEnvironmentStore()
-const projectStore = useProjectStore()
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 // 环境选择状态
 const state = reactive({
@@ -65,16 +66,11 @@ const fetchTestTaskSuite = async () => {
 
   loading.value = true
   try {
-    console.log('开始获取测试任务集详情，ID:', id)
     const response = await getTestTaskSuite(id)
-    console.log('获取到的响应:', response)
-    
+
     if (response && response.status === 'success' && response.data) {
-      console.log('设置测试任务集数据:', response.data)
       testTaskSuite.value = response.data
-      console.log('数据设置完成，当前值:', testTaskSuite.value)
     } else {
-      console.error('响应异常:', response)
       throw new Error(response?.message || '获取测试任务集详情失败')
     }
   } catch (error) {
@@ -144,6 +140,7 @@ const handleRun = async () => {
       titleAlign: 'start',
       width: 600,
       maskClosable: false,
+      modalClass: isDarkTheme.value ? 'testtask-run-modal testtask-run-modal--dark' : 'testtask-run-modal testtask-run-modal--light',
       content: () => modalContent(testTaskSuite.value!),
       okText: '开始执行',
       cancelText: '取消',
@@ -201,26 +198,24 @@ const handleRun = async () => {
 // 环境选择弹窗内容
 const modalContent = (taskSuite: TestTaskSuite) => {
   return h('div', {
-    class: 'space-y-4'
+    class: 'task-run-modal-content space-y-4'
   }, [
-    // 任务信息
-    h('div', { class: 'space-y-2' }, [
-      h('div', { class: 'text-gray-400' }, '任务信息'),
-      h('div', { class: 'bg-gray-700/30 p-4 rounded-lg space-y-2' }, [
+    h('div', { class: 'task-run-section space-y-2' }, [
+      h('div', { class: 'task-run-section-title' }, '任务信息'),
+      h('div', { class: 'task-run-section-card p-4 rounded-lg space-y-2' }, [
         h('div', { class: 'flex items-center gap-2' }, [
-          h('span', { class: 'text-gray-400' }, '任务名称：'),
-          h('span', { class: 'text-gray-200' }, taskSuite.name)
+          h('span', { class: 'task-run-inline-label' }, '任务名称：'),
+          h('span', { class: 'task-run-inline-value' }, taskSuite.name)
         ]),
         h('div', { class: 'flex items-center gap-2' }, [
-          h('span', { class: 'text-gray-400' }, '用例数量：'),
-          h('span', { class: 'text-gray-200' }, `${taskSuite.task_cases.length} 个`)
+          h('span', { class: 'task-run-inline-label' }, '用例数量：'),
+          h('span', { class: 'task-run-inline-value' }, `${taskSuite.task_cases.length} 个`)
         ])
       ])
     ]),
-    
-    // 环境选择
-    h('div', { class: 'space-y-2' }, [
-      h('div', { class: 'text-gray-400' }, '执行环境'),
+
+    h('div', { class: 'task-run-section space-y-2' }, [
+      h('div', { class: 'task-run-section-title' }, '执行环境'),
       h(Select, {
         modelValue: state.selectedEnvironmentId,
         'onUpdate:modelValue': (value: number) => {
@@ -229,7 +224,7 @@ const modalContent = (taskSuite: TestTaskSuite) => {
         },
         placeholder: '请选择执行环境',
         allowClear: false,
-        class: 'w-full'
+        class: 'w-full task-run-select'
       }, {
         default: () => environmentStore.environments.map(env => 
           h(Option, {
@@ -347,13 +342,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col gap-4 p-4">
+  <div
+    class="test-task-detail h-full flex flex-col gap-4 p-4"
+    :class="isDarkTheme ? 'test-task-detail--dark' : 'test-task-detail--light'"
+  >
     <a-spin :loading="loading" class="flex-1">
-      <!-- 头部操作区 -->
-      <div class="bg-gray-800/50 rounded-lg shadow-dark px-6 py-4 mb-4">
+      <div class="surface-panel surface-panel--hero rounded-lg px-6 py-4 mb-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <h2 class="text-xl font-medium text-gray-100">
+            <h2 class="panel-title text-xl font-medium">
               {{ testTaskSuite?.name }}
             </h2>
             <a-tag :color="priorityColorMap[testTaskSuite?.priority || 'P2']">
@@ -383,45 +380,43 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- 基本信息 -->
-      <div class="bg-gray-800/50 rounded-lg shadow-dark px-6 py-5 mb-4">
-        <h3 class="text-lg font-medium text-gray-100 mb-4">基本信息</h3>
+      <div class="surface-panel surface-panel--section rounded-lg px-6 py-5 mb-4">
+        <h3 class="section-title text-lg font-medium mb-4">基本信息</h3>
         <div class="grid grid-cols-2 gap-6">
           <div class="flex flex-col gap-2">
-            <div class="text-gray-400">描述</div>
-            <div class="text-gray-100">{{ testTaskSuite?.description || '-' }}</div>
+            <div class="panel-label">描述</div>
+            <div class="panel-value">{{ testTaskSuite?.description || '-' }}</div>
           </div>
           <div class="flex flex-col gap-2">
-            <div class="text-gray-400">快速失败</div>
-            <div class="text-gray-100">
+            <div class="panel-label">快速失败</div>
+            <div class="panel-value">
               {{ testTaskSuite?.fail_fast ? '是' : '否' }}
             </div>
           </div>
           <div class="flex flex-col gap-2">
-            <div class="text-gray-400">所属项目</div>
-            <div class="text-gray-100">{{ testTaskSuite?.project_name }}</div>
+            <div class="panel-label">所属项目</div>
+            <div class="panel-value">{{ testTaskSuite?.project_name }}</div>
           </div>
           <div class="flex flex-col gap-2">
-            <div class="text-gray-400">创建人</div>
-            <div class="text-gray-100">{{ testTaskSuite?.created_by_name }}</div>
+            <div class="panel-label">创建人</div>
+            <div class="panel-value">{{ testTaskSuite?.created_by_name }}</div>
           </div>
           <div class="flex flex-col gap-2">
-            <div class="text-gray-400">创建时间</div>
-            <div class="text-gray-100">{{ formatDate(testTaskSuite?.created_at || '') }}</div>
+            <div class="panel-label">创建时间</div>
+            <div class="panel-value">{{ formatDate(testTaskSuite?.created_at || '') }}</div>
           </div>
           <div class="flex flex-col gap-2">
-            <div class="text-gray-400">更新时间</div>
-            <div class="text-gray-100">{{ formatDate(testTaskSuite?.updated_at || '') }}</div>
+            <div class="panel-label">更新时间</div>
+            <div class="panel-value">{{ formatDate(testTaskSuite?.updated_at || '') }}</div>
           </div>
         </div>
       </div>
 
-      <!-- 测试用例列表 -->
-      <div class="bg-gray-800/50 rounded-lg shadow-dark px-6 py-5">
+      <div class="surface-panel surface-panel--section rounded-lg px-6 py-5">
         <div class="flex justify-between items-center mb-4">
           <div class="flex items-center gap-4">
-            <h3 class="text-lg font-medium text-gray-100">测试用例列表</h3>
-            <div class="text-gray-400">
+            <h3 class="section-title text-lg font-medium">测试用例列表</h3>
+            <div class="panel-label">
               共 {{ testTaskSuite?.task_cases?.length || 0 }} 个用例
             </div>
           </div>
@@ -450,14 +445,14 @@ onMounted(() => {
             <a-table-column title="序号" data-index="order" :width="80" align="center" />
             <a-table-column title="用例名称" data-index="testcase_name" :width="200" align="center">
               <template #cell="{ record }">
-                <span class="text-blue-400 hover:text-blue-500 cursor-pointer">
+                <span class="table-link cursor-pointer">
                   {{ record.testcase_name }}
                 </span>
               </template>
             </a-table-column>
             <a-table-column title="描述" data-index="description" align="center">
               <template #cell="{ record }">
-                <div class="text-gray-300">{{ record.description || '-' }}</div>
+                <div class="table-muted-text">{{ record.description || '-' }}</div>
               </template>
             </a-table-column>
             <a-table-column title="优先级" data-index="priority" :width="100" align="center">
@@ -511,7 +506,69 @@ onMounted(() => {
 
 <style scoped>
 @reference "tailwindcss";
-/* 表格样式 */
+.test-task-detail {
+  --tt-panel-bg: rgba(255, 255, 255, 0.94);
+  --tt-panel-hero-bg: linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96));
+  --tt-border: rgba(148, 163, 184, 0.18);
+  --tt-text: var(--color-text-1);
+  --tt-text-muted: var(--color-text-2);
+  --tt-text-subtle: var(--color-text-3);
+  --tt-table-header: rgba(248, 250, 252, 0.98);
+  --tt-table-row: rgba(255, 255, 255, 0.02);
+  --tt-table-row-hover: rgba(59, 130, 246, 0.06);
+  --tt-btn-border: rgba(148, 163, 184, 0.24);
+  --tt-btn-text: rgb(71, 85, 105);
+  --tt-btn-hover-bg: rgba(59, 130, 246, 0.08);
+  --tt-btn-hover-border: rgba(59, 130, 246, 0.35);
+  --tt-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.test-task-detail--dark {
+  --tt-panel-bg: rgba(30, 41, 59, 0.58);
+  --tt-panel-hero-bg: rgba(31, 41, 55, 0.74);
+  --tt-border: rgba(71, 85, 105, 0.32);
+  --tt-text: rgb(241, 245, 249);
+  --tt-text-muted: rgb(203, 213, 225);
+  --tt-text-subtle: rgb(148, 163, 184);
+  --tt-table-header: rgba(30, 41, 59, 0.5);
+  --tt-table-row: rgba(255, 255, 255, 0.01);
+  --tt-table-row-hover: rgba(30, 41, 59, 0.5);
+  --tt-btn-border: rgba(148, 163, 184, 0.2);
+  --tt-btn-text: rgb(148, 163, 184);
+  --tt-btn-hover-bg: rgba(59, 130, 246, 0.1);
+  --tt-btn-hover-border: rgba(96, 165, 250, 0.45);
+  --tt-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+}
+
+.surface-panel {
+  background: var(--tt-panel-bg);
+  border: 1px solid var(--tt-border);
+  box-shadow: var(--tt-shadow);
+}
+
+.surface-panel--hero {
+  background: var(--tt-panel-hero-bg);
+}
+
+.panel-title,
+.section-title,
+.panel-value {
+  color: var(--tt-text);
+}
+
+.panel-label,
+.table-muted-text {
+  color: var(--tt-text-subtle);
+}
+
+.table-link {
+  color: #2563eb;
+}
+
+.table-link:hover {
+  color: #1d4ed8;
+}
+
 .custom-table :deep(.arco-table) {
   background-color: transparent !important;
 }
@@ -530,17 +587,17 @@ onMounted(() => {
 }
 
 .custom-table :deep(.arco-table-th) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
-  color: #e2e8f0 !important;
+  background-color: var(--tt-table-header) !important;
+  border-bottom: 1px solid var(--tt-border) !important;
+  color: var(--tt-text) !important;
   font-weight: 500 !important;
   text-align: center !important;
 }
 
 .custom-table :deep(.arco-table-td) {
-  background-color: transparent !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
-  color: #cbd5e1 !important;
+  background-color: var(--tt-table-row) !important;
+  border-bottom: 1px solid var(--tt-border) !important;
+  color: var(--tt-text-muted) !important;
 }
 
 .custom-table :deep(.arco-table-tr) {
@@ -548,22 +605,20 @@ onMounted(() => {
 }
 
 .custom-table :deep(.arco-table-tr:hover) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
+  background-color: var(--tt-table-row-hover) !important;
 }
 
-/* 按钮样式 */
 :deep(.arco-btn-outline) {
-  border: 1px solid rgba(148, 163, 184, 0.2) !important;
-  color: #94a3b8 !important;
+  border: 1px solid var(--tt-btn-border) !important;
+  color: var(--tt-btn-text) !important;
   
   &:hover {
-    border-color: rgba(59, 130, 246, 0.5) !important;
-    color: #60a5fa !important;
-    background-color: rgba(59, 130, 246, 0.1) !important;
+    border-color: var(--tt-btn-hover-border) !important;
+    color: #2563eb !important;
+    background-color: var(--tt-btn-hover-bg) !important;
   }
 }
 
-/* 透明按钮样式 */
 :deep(.transparent-btn) {
   opacity: 0.85 !important;
   backdrop-filter: blur(2px) !important;
@@ -573,7 +628,20 @@ onMounted(() => {
   opacity: 1 !important;
 }
 
-/* 弹窗样式 */
+.task-run-section-title,
+.task-run-inline-value {
+  color: var(--tt-text);
+}
+
+.task-run-inline-label {
+  color: var(--tt-text-subtle);
+}
+
+.task-run-section-card {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid var(--tt-border);
+}
+
 :deep(.custom-popconfirm .arco-trigger-popup) {
   @apply text-sm;
   max-width: 200px;
@@ -585,5 +653,66 @@ onMounted(() => {
 
 :deep(.custom-popconfirm .arco-btn) {
   @apply text-sm h-7 px-3;
+}
+
+:deep(.testtask-run-modal--light) {
+  --tt-run-bg: rgba(255, 255, 255, 0.99);
+  --tt-run-border: rgba(148, 163, 184, 0.2);
+  --tt-run-section-bg: rgba(248, 250, 252, 0.96);
+  --tt-run-text: var(--color-text-1);
+  --tt-run-subtle: var(--color-text-3);
+}
+
+:deep(.testtask-run-modal--dark) {
+  --tt-run-bg: rgba(31, 41, 55, 0.98);
+  --tt-run-border: rgba(71, 85, 105, 0.32);
+  --tt-run-section-bg: rgba(17, 24, 39, 0.42);
+  --tt-run-text: rgb(241, 245, 249);
+  --tt-run-subtle: rgb(148, 163, 184);
+}
+
+:deep(.testtask-run-modal .arco-modal) {
+  background: var(--tt-run-bg) !important;
+  border: 1px solid var(--tt-run-border) !important;
+}
+
+:deep(.testtask-run-modal .arco-modal-header),
+:deep(.testtask-run-modal .arco-modal-content),
+:deep(.testtask-run-modal .arco-modal-footer) {
+  background: var(--tt-run-bg) !important;
+  border-color: var(--tt-run-border) !important;
+}
+
+:deep(.testtask-run-modal .arco-modal-title) {
+  color: var(--tt-run-text) !important;
+}
+
+:deep(.testtask-run-modal .arco-select-view) {
+  background: var(--tt-run-section-bg) !important;
+  border-color: var(--tt-run-border) !important;
+  color: var(--tt-run-text) !important;
+}
+
+:deep(.testtask-run-modal .arco-select-view-placeholder),
+:deep(.testtask-run-modal .arco-select-view-suffix) {
+  color: var(--tt-run-subtle) !important;
+}
+
+:global(body.api-testing-theme .arco-select-dropdown) {
+  @apply !bg-gray-600/90;
+  @apply !border-gray-500/50;
+  backdrop-filter: blur(8px) !important;
+}
+
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option) {
+  @apply !text-gray-100;
+}
+
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option:hover) {
+  @apply !bg-gray-500/80;
+}
+
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option.arco-select-option-selected) {
+  @apply !bg-blue-500/30 !text-blue-300;
 }
 </style>

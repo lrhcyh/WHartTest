@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import type { ApiInterface, TestCase, TestStep } from '../../services/syncService'
 import { syncApi } from '../../services/syncService'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 const props = defineProps<{
   visible: boolean
@@ -289,7 +292,7 @@ defineExpose({
     :visible="visible"
     :title="isEditing ? '编辑同步配置' : '新建同步配置'"
     :width="780"
-    class="custom-card"
+    :modal-class="isDarkTheme ? 'api-config-form-modal api-config-form-modal--dark' : 'api-config-form-modal api-config-form-modal--light'"
     @ok="handleSubmit"
     @cancel="handleClose"
     @close="handleClose"
@@ -397,10 +400,10 @@ defineExpose({
         </a-select>
       </a-form-item>
 
-      <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-700">
+      <div class="modal-divider flex justify-between items-center mt-4 pt-4 border-t">
         <a-checkbox v-model="formModel.sync_enabled">
           <template #default>
-            <span class="text-gray-300">启用同步</span>
+            <span class="sync-enabled-text">启用同步</span>
           </template>
         </a-checkbox>
       </div>
@@ -410,63 +413,92 @@ defineExpose({
 
 <style scoped>
 @reference "tailwindcss";
-:deep(.arco-form-item-label-col) {
-  @apply text-gray-300;
+:deep(.api-config-form-modal--light) {
+  --api-form-bg: rgba(255, 255, 255, 0.98);
+  --api-form-border: rgba(148, 163, 184, 0.18);
+  --api-form-text: var(--color-text-1);
+  --api-form-subtle: var(--color-text-3);
+  --api-form-input-bg: #ffffff;
+  --api-form-input-border: rgba(148, 163, 184, 0.22);
 }
 
-:deep(.arco-radio) {
-  @apply text-gray-300;
+:deep(.api-config-form-modal--dark) {
+  --api-form-bg: rgba(31, 41, 55, 1);
+  --api-form-border: rgba(55, 65, 81, 1);
+  --api-form-text: rgb(229, 231, 235);
+  --api-form-subtle: rgb(156, 163, 175);
+  --api-form-input-bg: rgba(55, 65, 81, 1);
+  --api-form-input-border: rgba(75, 85, 99, 1);
 }
 
-:deep(.arco-checkbox) {
-  @apply text-gray-300;
+:deep(.api-config-form-modal .arco-modal) {
+  background: var(--api-form-bg);
+  border: 1px solid var(--api-form-border);
 }
 
-:deep(.arco-input-wrapper) {
-  @apply bg-gray-700 border-gray-600;
+:deep(.api-config-form-modal .arco-modal-header) {
+  background: var(--api-form-bg);
+  border-color: var(--api-form-border);
+  padding-bottom: 1rem;
 }
 
-:deep(.arco-input-wrapper:hover) {
-  @apply border-blue-500;
+:deep(.api-config-form-modal .arco-modal-title) {
+  color: var(--api-form-text);
+  font-size: 1.125rem;
+  font-weight: 500;
 }
 
-:deep(.arco-input) {
-  @apply text-gray-300;
+:deep(.api-config-form-modal .arco-modal-footer) {
+  background: var(--api-form-bg);
+  border-color: var(--api-form-border);
+  margin-top: 1.5rem;
 }
 
-:deep(.arco-textarea) {
-  @apply bg-gray-700 border-gray-600 text-gray-300;
+:deep(.api-config-form-modal .arco-modal-body) {
+  padding: 1rem;
 }
 
-:deep(.arco-textarea:hover) {
-  @apply border-blue-500;
+:deep(.api-config-form-modal .arco-form-item-label-col),
+:deep(.api-config-form-modal .arco-form-item-label-col > label),
+:deep(.api-config-form-modal .arco-radio),
+:deep(.api-config-form-modal .arco-checkbox) {
+  color: var(--api-form-text);
 }
 
-:deep(.arco-select-view) {
-  @apply bg-gray-700 border-gray-600 text-gray-300;
+:deep(.api-config-form-modal .arco-input-wrapper),
+:deep(.api-config-form-modal .arco-textarea-wrapper),
+:deep(.api-config-form-modal .arco-select-view) {
+  background: var(--api-form-input-bg);
+  border-color: var(--api-form-input-border);
 }
 
-:deep(.arco-select-view:hover) {
-  @apply border-blue-500;
+:deep(.api-config-form-modal .arco-input-wrapper:hover),
+:deep(.api-config-form-modal .arco-textarea-wrapper:hover),
+:deep(.api-config-form-modal .arco-select-view:hover),
+:deep(.api-config-form-modal .arco-input-wrapper:focus-within),
+:deep(.api-config-form-modal .arco-textarea-wrapper:focus-within),
+:deep(.api-config-form-modal .arco-select-view:focus-within) {
+  border-color: rgb(var(--primary-6));
 }
 
-:deep(.arco-modal) {
-  @apply bg-gray-800;
+:deep(.api-config-form-modal .arco-input),
+:deep(.api-config-form-modal .arco-textarea),
+:deep(.api-config-form-modal .arco-select-view-value) {
+  color: var(--api-form-text);
+  background: transparent;
 }
 
-:deep(.arco-modal-header) {
-  @apply bg-gray-800 border-gray-700 pb-4;
+:deep(.api-config-form-modal .arco-input::placeholder),
+:deep(.api-config-form-modal .arco-textarea::placeholder),
+:deep(.api-config-form-modal .arco-select-view-placeholder) {
+  color: var(--api-form-subtle);
 }
 
-:deep(.arco-modal-title) {
-  @apply text-gray-200 text-lg font-medium;
+.modal-divider {
+  border-color: var(--api-form-border);
 }
 
-:deep(.arco-modal-footer) {
-  @apply bg-gray-800 border-gray-700 mt-6;
-}
-
-:deep(.arco-modal-body) {
-  @apply p-4;
+.sync-enabled-text {
+  color: var(--api-form-text);
 }
 </style> 

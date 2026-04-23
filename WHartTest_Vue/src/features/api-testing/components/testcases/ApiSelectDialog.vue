@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import { Message } from '@arco-design/web-vue'
 import { moduleService } from '../../services/moduleService'
 import { interfaceService } from '../../services/interfaceService'
@@ -49,6 +50,8 @@ const pagination = ref({
 })
 
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 const loadModules = async () => {
   if (!projectStore.currentProjectId) {
@@ -211,7 +214,7 @@ const handleVisibleChange = (value: boolean) => {
     @update:visible="handleVisibleChange"
     @cancel="handleClose"
   >
-    <div class="api-select-dialog">
+    <div class="api-select-dialog" :class="isDarkTheme ? 'api-select-dialog--dark' : 'api-select-dialog--light'">
       <div class="flex flex-col gap-4">
         <ApiSelectDialogHeader @close="handleClose" />
 
@@ -253,6 +256,45 @@ const handleVisibleChange = (value: boolean) => {
 <style scoped>
 @reference "tailwindcss";
 .api-select-dialog {
-  @apply bg-transparent text-gray-300 p-6;
+  @apply bg-transparent p-6;
+  color: var(--asd-text-muted);
+  --asd-panel-bg: rgba(255, 255, 255, 0.88);
+  --asd-panel-border: rgba(148, 163, 184, 0.16);
+  --asd-panel-hover: rgba(148, 163, 184, 0.08);
+  --asd-control-bg: #ffffff;
+  --asd-control-border: rgba(148, 163, 184, 0.18);
+  --asd-control-hover: #f8fafc;
+  --asd-text: var(--theme-text);
+  --asd-text-muted: var(--theme-text-secondary);
+  --asd-text-subtle: var(--theme-text-tertiary);
+}
+
+.api-select-dialog--dark {
+  --asd-panel-bg: rgba(31, 41, 55, 0.88);
+  --asd-panel-border: rgba(75, 85, 99, 0.4);
+  --asd-panel-hover: rgba(51, 65, 85, 0.5);
+  --asd-control-bg: rgba(15, 23, 42, 0.7);
+  --asd-control-border: rgba(75, 85, 99, 0.45);
+  --asd-control-hover: rgba(31, 41, 55, 0.92);
+  --asd-text: rgb(241, 245, 249);
+  --asd-text-muted: rgb(203, 213, 225);
+  --asd-text-subtle: rgb(148, 163, 184);
+}
+
+:global(.arco-modal) {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16) !important;
+}
+
+:global(.arco-modal-body) {
+  background: transparent !important;
+}
+
+:global(body.api-testing-theme .arco-modal) {
+  background: rgb(17, 24, 39) !important;
+  border-color: rgba(75, 85, 99, 0.4) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 40px rgba(0, 0, 0, 0.55) !important;
 }
 </style>

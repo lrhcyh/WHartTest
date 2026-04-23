@@ -784,13 +784,13 @@ const updateModelValue = () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col p-4 gap-4">
+  <div class="hooks-enhanced h-full flex flex-col p-4 gap-4">
     <!-- 添加按钮和下拉菜单 -->
     <div class="relative" ref="dropdownRef">
       <!-- 添加按钮 -->
       <div
         @click="toggleDropdown"
-        class="w-full h-12 flex items-center justify-center border border-dashed border-blue-500/50 rounded-md cursor-pointer hover:bg-blue-500/10 transition-colors text-blue-400"
+        class="hooks-add-trigger w-full h-12 flex items-center justify-center border border-dashed rounded-md cursor-pointer transition-colors"
       >
         <IconPlus class="mr-2" />
         添加{{ hookTypeText }}函数
@@ -799,35 +799,35 @@ const updateModelValue = () => {
       <!-- 下拉菜单 -->
       <div
         v-if="state.dropdownVisible"
-        class="absolute left-1/2 transform -translate-x-1/2 top-full mt-1 bg-[#1D2639] rounded-md shadow-lg z-10 overflow-hidden w-38"
+        class="hooks-dropdown absolute left-1/2 transform -translate-x-1/2 top-full mt-1 rounded-md shadow-lg z-10 overflow-hidden w-38"
       >
         <!-- 自定义函数选项 -->
         <div
-          class="py-3 px-2 cursor-pointer hover:bg-gray-700 transition-colors flex items-center gap-2 border-b border-[#313E59] bg-[#192133]"
+          class="hooks-dropdown-item hooks-dropdown-item--bordered py-3 px-2 cursor-pointer transition-colors flex items-center gap-2 border-b"
           @click="handleSelectFunction"
         >
-          <div class="flex items-center justify-center w-5 h-5 rounded-md bg-[#313E59]">
+          <div class="hooks-dropdown-icon-shell flex items-center justify-center w-5 h-5 rounded-md">
             <IconCode class="text-blue-500 text-sm" />
           </div>
-          <div class="text-gray-200 text-sm">自定义函数</div>
+          <div class="hooks-dropdown-label text-sm">自定义函数</div>
         </div>
 
         <!-- SQL控制器选项 -->
         <div
-          class="py-3 px-2 cursor-pointer hover:bg-gray-700 transition-colors flex items-center gap-2 bg-[#192133]"
+          class="hooks-dropdown-item py-3 px-2 cursor-pointer transition-colors flex items-center gap-2"
           @click="handleSelectSql"
         >
-          <div class="flex items-center justify-center w-5 h-5 rounded-md bg-[#313E59]">
+          <div class="hooks-dropdown-icon-shell flex items-center justify-center w-5 h-5 rounded-md">
             <IconStorage class="text-green-500 text-sm" />
           </div>
-          <div class="text-gray-200 text-sm">SQL控制器</div>
+          <div class="hooks-dropdown-label text-sm">SQL控制器</div>
         </div>
       </div>
     </div>
 
     <!-- 已选择钩子列表 -->
     <div v-if="state.hooks.length > 0" class="flex flex-col gap-2 mt-2">
-      <div class="text-gray-400 text-sm">已选择的{{ hookTypeText }}钩子：</div>
+      <div class="hooks-helper-text text-sm">已选择的{{ hookTypeText }}钩子：</div>
       <div class="flex flex-col gap-2">
         <a-tag
           v-for="(hook, index) in state.hooks"
@@ -847,7 +847,7 @@ const updateModelValue = () => {
       </div>
     </div>
 
-    <div v-else class="flex items-center justify-center h-32 text-gray-500">
+    <div v-else class="hooks-empty flex items-center justify-center h-32">
       <div class="text-center">
         <div class="text-4xl mb-2"><IconInfoCircle /></div>
         <div>暂无{{ hookTypeText }}钩子</div>
@@ -858,6 +858,7 @@ const updateModelValue = () => {
     <a-modal
       v-model:visible="functionSelectorVisible"
       title="选择自定义函数"
+      modal-class="hooks-function-modal"
       @cancel="functionSelectorVisible = false"
       :footer="false"
       :unmount-on-close="false"
@@ -877,24 +878,24 @@ const updateModelValue = () => {
         </div>
 
         <!-- 函数列表 -->
-        <div class="max-h-96 overflow-y-auto border border-gray-700 rounded-md">
+        <div class="hooks-function-list max-h-96 overflow-y-auto border rounded-md">
           <div
             v-for="func in state.functions"
             :key="func.id"
-            class="p-3 cursor-pointer hover:bg-gray-700 transition-colors flex items-center gap-3 border-b border-gray-700"
+            class="hooks-function-item p-3 cursor-pointer transition-colors flex items-center gap-3 border-b"
             @click="() => selectFunctionItem(func)"
           >
-            <div class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md bg-[#313E59]">
+            <div class="hooks-function-icon-shell flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md">
               <IconCode class="text-blue-500" />
             </div>
             <div class="flex-1 min-w-0">
-              <div class="text-gray-200 font-medium truncate">{{ func.name }}</div>
-              <div class="text-gray-400 text-xs truncate">{{ func.description || '无描述' }}</div>
+              <div class="hooks-function-name font-medium truncate">{{ func.name }}</div>
+              <div class="hooks-function-desc text-xs truncate">{{ func.description || '无描述' }}</div>
             </div>
           </div>
 
           <!-- 空状态 -->
-          <div v-if="state.functions.length === 0" class="p-6 text-center text-gray-400">
+          <div v-if="state.functions.length === 0" class="hooks-empty-text p-6 text-center">
             <div v-if="state.loading">
               <a-spin />
               <div class="mt-2">加载中...</div>
@@ -920,7 +921,97 @@ const updateModelValue = () => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+.hooks-enhanced {
+  --hooks-muted: var(--color-text-3);
+  --hooks-empty: rgba(100, 116, 139, 0.9);
+  --hooks-add-border: rgba(59, 130, 246, 0.4);
+  --hooks-add-text: rgb(59, 130, 246);
+  --hooks-add-bg-hover: rgba(59, 130, 246, 0.08);
+  --hooks-dropdown-bg: rgba(255, 255, 255, 0.98);
+  --hooks-dropdown-item-bg: rgba(248, 250, 252, 0.98);
+  --hooks-dropdown-item-border: rgba(148, 163, 184, 0.18);
+  --hooks-dropdown-item-hover: rgba(241, 245, 249, 1);
+  --hooks-dropdown-icon-bg: rgba(226, 232, 240, 0.92);
+  --hooks-dropdown-text: var(--color-text-2);
+  --hooks-list-border: rgba(148, 163, 184, 0.18);
+  --hooks-list-item-hover: rgba(241, 245, 249, 1);
+  --hooks-function-name: var(--color-text-2);
+  --hooks-function-desc: var(--color-text-3);
+}
+
+.hooks-add-trigger {
+  border-color: var(--hooks-add-border);
+  color: var(--hooks-add-text);
+}
+
+.hooks-add-trigger:hover {
+  background: var(--hooks-add-bg-hover);
+}
+
+.hooks-dropdown {
+  background: var(--hooks-dropdown-bg);
+}
+
+.hooks-dropdown-item {
+  background: var(--hooks-dropdown-item-bg);
+}
+
+.hooks-dropdown-item:hover,
+.hooks-function-item:hover {
+  background: var(--hooks-dropdown-item-hover);
+}
+
+.hooks-dropdown-item--bordered,
+.hooks-function-item,
+.hooks-function-list {
+  border-color: var(--hooks-list-border);
+}
+
+.hooks-dropdown-icon-shell,
+.hooks-function-icon-shell {
+  background: var(--hooks-dropdown-icon-bg);
+}
+
+.hooks-dropdown-label,
+.hooks-function-name {
+  color: var(--hooks-dropdown-text);
+}
+
+.hooks-helper-text,
+.hooks-function-desc,
+.hooks-empty,
+.hooks-empty-text {
+  color: var(--hooks-muted);
+}
+
+:global(body.api-testing-theme) .hooks-enhanced {
+  --hooks-muted: rgb(156, 163, 175);
+  --hooks-empty: rgb(107, 114, 128);
+  --hooks-add-border: rgba(59, 130, 246, 0.5);
+  --hooks-add-text: rgb(147, 197, 253);
+  --hooks-add-bg-hover: rgba(59, 130, 246, 0.1);
+  --hooks-dropdown-bg: #1d2639;
+  --hooks-dropdown-item-bg: #192133;
+  --hooks-dropdown-item-border: #313e59;
+  --hooks-dropdown-item-hover: rgb(55, 65, 81);
+  --hooks-dropdown-icon-bg: #313e59;
+  --hooks-dropdown-text: rgb(229, 231, 235);
+  --hooks-list-border: rgb(55, 65, 81);
+  --hooks-list-item-hover: rgb(55, 65, 81);
+}
+
 :deep(.arco-select-view) {
+  @apply bg-white border-[color:var(--color-border-2)];
+
+  input {
+    @apply text-[color:var(--color-text-1)] bg-transparent;
+    &::placeholder {
+      @apply text-[color:var(--color-text-3)];
+    }
+  }
+}
+
+:global(body.api-testing-theme) :deep(.arco-select-view) {
   @apply bg-gray-900/60 border-gray-700;
 
   input {
@@ -931,7 +1022,7 @@ const updateModelValue = () => {
   }
 }
 
-:deep(.arco-select-dropdown) {
+:global(body.api-testing-theme .arco-select-dropdown) {
   @apply bg-gray-800 border-gray-700;
 
   .arco-select-option {
@@ -948,6 +1039,26 @@ const updateModelValue = () => {
 }
 
 :deep(.arco-tag) {
+  border-color: rgba(59, 130, 246, 0.22);
+
+  &[color="blue"] {
+    @apply bg-blue-500/10 border-blue-500/30 text-blue-600;
+  }
+
+  &[color="green"] {
+    @apply bg-green-500/10 border-green-500/30 text-green-600;
+  }
+}
+
+.hook-sql-tag {
+  @apply cursor-pointer;
+
+  &:hover {
+    @apply bg-green-500/20;
+  }
+}
+
+:global(body.api-testing-theme) .hooks-enhanced :deep(.arco-tag) {
   border-color: rgb(75 85 99 / 0.5);
 
   &[color="blue"] {
@@ -959,15 +1070,17 @@ const updateModelValue = () => {
   }
 }
 
-.hook-sql-tag {
-  @apply cursor-pointer;
+:deep(.arco-btn) {
+  &[status="primary"] {
+    @apply border-blue-500/40 text-blue-600 border-dashed bg-transparent;
 
-  &:hover {
-    @apply bg-green-500/30;
+    &:hover {
+      @apply bg-blue-500/10 border-blue-500/60;
+    }
   }
 }
 
-:deep(.arco-button) {
+:global(body.api-testing-theme) .hooks-enhanced :deep(.arco-btn) {
   &[status="primary"] {
     @apply bg-[#1d2331] border-blue-500/50 text-blue-300 border-dashed;
 
@@ -977,7 +1090,24 @@ const updateModelValue = () => {
   }
 }
 
-:deep(.arco-modal) {
+:global(.hooks-function-modal .arco-modal) {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+:global(.hooks-function-modal .arco-modal-header) {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+:global(.hooks-function-modal .arco-modal-title) {
+  color: var(--color-text-1);
+}
+
+:global(.hooks-function-modal .arco-modal-close-btn) {
+  color: var(--color-text-3);
+}
+
+:global(body.api-testing-theme .hooks-function-modal .arco-modal) {
   @apply bg-gray-800 border border-gray-700;
 
   .arco-modal-header {
@@ -1018,6 +1148,17 @@ const updateModelValue = () => {
 }
 
 :deep(.arco-input-wrapper) {
+  @apply bg-white border-[color:var(--color-border-2)];
+
+  input {
+    @apply text-[color:var(--color-text-1)] bg-transparent;
+    &::placeholder {
+      @apply text-[color:var(--color-text-3)];
+    }
+  }
+}
+
+:global(body.api-testing-theme) :deep(.arco-input-wrapper) {
   @apply bg-gray-900/60 border-gray-700;
 
   input {

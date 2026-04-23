@@ -206,11 +206,11 @@ const handleDelete = (record: ApiTestCase) => {
               <icon-more />
             </a-button>
             <template #content>
-              <a-doption class="flex items-center gap-2" @click="handleEdit(record)">
+              <a-doption class="testcase-action-option flex items-center gap-2" @click="handleEdit(record)">
                 <icon-edit />
                 编辑
               </a-doption>
-              <a-doption class="flex items-center gap-2 text-red-500" @click="handleDelete(record)">
+              <a-doption class="testcase-action-option testcase-action-option--danger flex items-center gap-2" @click="handleDelete(record)">
                 <icon-delete />
                 删除
               </a-doption>
@@ -220,7 +220,7 @@ const handleDelete = (record: ApiTestCase) => {
       </template>
 
       <template #empty>
-        <div class="text-gray-400 py-8 flex justify-center items-center">
+        <div class="table-empty py-8 flex justify-center items-center">
           暂无数据
         </div>
       </template>
@@ -248,17 +248,17 @@ const handleDelete = (record: ApiTestCase) => {
 }
 
 .custom-table :deep(.arco-table-th) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
-  color: #e2e8f0 !important;
+  background-color: var(--tc-table-header-bg) !important;
+  border-bottom: 1px solid var(--tc-panel-border) !important;
+  color: var(--tc-text) !important;
   font-weight: 500 !important;
   text-align: center !important;
 }
 
 .custom-table :deep(.arco-table-td) {
   background-color: transparent !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
-  color: #cbd5e1 !important;
+  border-bottom: 1px solid var(--tc-panel-border) !important;
+  color: var(--tc-text-muted) !important;
 }
 
 .custom-table :deep(.arco-table-tr) {
@@ -266,7 +266,7 @@ const handleDelete = (record: ApiTestCase) => {
 }
 
 .custom-table :deep(.arco-table-tr:hover) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
+  background-color: var(--tc-row-hover) !important;
 }
 
 .custom-scrollbar {
@@ -377,16 +377,16 @@ const handleDelete = (record: ApiTestCase) => {
   min-width: 32px !important;
   @apply flex-shrink-0;
   height: 28px !important;
-  background: linear-gradient(to right, rgb(71, 85, 105), rgb(51, 65, 85)) !important;
+  background: var(--tc-more-bg) !important;
   border: none !important;
-  color: rgb(226, 232, 240) !important;
+  color: var(--tc-more-text) !important;
   border-radius: 4px !important;
   margin-left: 4px !important;
   box-shadow: 0 2px 4px rgba(51, 65, 85, 0.2) !important;
 
   &:hover {
-    background: linear-gradient(to right, rgb(100, 116, 139), rgb(71, 85, 105)) !important;
-    color: rgb(241, 245, 249) !important;
+    background: var(--tc-more-bg-hover) !important;
+    color: var(--tc-more-text) !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 8px rgba(51, 65, 85, 0.3) !important;
   }
@@ -396,7 +396,7 @@ const handleDelete = (record: ApiTestCase) => {
   }
 }
 
-:deep(.arco-dropdown-option) {
+:global(body.api-testing-theme .arco-dropdown-option) {
   @apply py-2 px-4;
   background-color: rgb(30, 41, 59) !important;
   color: rgb(226, 232, 240) !important;
@@ -411,7 +411,7 @@ const handleDelete = (record: ApiTestCase) => {
   }
 }
 
-:deep(.arco-dropdown) {
+:global(body.api-testing-theme .arco-dropdown) {
   background-color: rgb(30, 41, 59) !important;
   border: 1px solid rgba(148, 163, 184, 0.1) !important;
   border-radius: 6px !important;
@@ -422,14 +422,73 @@ const handleDelete = (record: ApiTestCase) => {
   }
 }
 
+:global(body.api-testing-theme .arco-dropdown .arco-dropdown-list),
+:global(body.api-testing-theme .arco-dropdown .arco-dropdown-list-wrapper),
+:global(body.api-testing-theme .arco-dropdown .arco-dropdown-menu) {
+  background-color: rgb(30, 41, 59) !important;
+  border-radius: 8px !important;
+}
+
+:global(.arco-dropdown) {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12) !important;
+  overflow: hidden !important;
+}
+
+:global(.arco-dropdown .arco-dropdown-list),
+:global(.arco-dropdown .arco-dropdown-list-wrapper),
+:global(.arco-dropdown .arco-dropdown-menu) {
+  background-color: #ffffff !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+:global(.testcase-action-option) {
+  @apply py-2 px-4;
+  background-color: #ffffff !important;
+  color: #334155 !important;
+
+  &:hover {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+  }
+
+  .arco-icon {
+    color: #64748b !important;
+  }
+
+  .arco-dropdown-option-content {
+    color: inherit !important;
+  }
+}
+
+:global(.testcase-action-option--danger) {
+  color: #ef4444 !important;
+
+  .arco-icon {
+    color: #ef4444 !important;
+  }
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #dc2626 !important;
+  }
+}
+
 .name-link {
-  color: #60a5fa !important;
+  color: var(--tc-link) !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
 
   &:hover {
-    color: #3b82f6 !important;
+    color: var(--tc-link-hover) !important;
     text-decoration: underline !important;
   }
+}
+
+.table-empty {
+  color: var(--tc-text-subtle);
 }
 </style>

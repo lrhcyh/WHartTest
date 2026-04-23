@@ -1,7 +1,7 @@
 <template>
-  <div class="h-full flex flex-col gap-4 p-4">
+  <div class="api-testreports-panel h-full flex flex-col gap-4 p-4" :class="isDarkTheme ? 'api-testreports--dark' : 'api-testreports--light'">
     <!-- 搜索区域 -->
-    <div class="bg-gray-800/50 rounded-lg shadow-dark px-6 py-5 flex justify-between items-center">
+    <div class="panel-shell rounded-lg px-6 py-5 flex justify-between items-center">
       <div class="flex items-center gap-4">
         <a-input-search
           v-model="searchQuery"
@@ -27,15 +27,15 @@
     </div>
 
     <!-- 表格区域 -->
-    <div class="flex-1 bg-gray-800/50 rounded-lg shadow-dark overflow-hidden flex items-center justify-center">
+    <div class="panel-shell flex-1 overflow-hidden flex items-center justify-center">
       <a-spin :loading="loading" dot class="h-full w-full">
         <!-- 未选择项目的空状态 -->
         <div v-if="!currentProjectId" class="h-full w-full flex flex-col items-center justify-center p-8 text-center">
-          <div class="text-6xl mb-6 text-gray-600">
+          <div class="empty-icon text-6xl mb-6">
             <icon-apps class="opacity-50" />
           </div>
-          <h2 class="text-2xl font-medium mb-2 text-gray-300">请先选择项目</h2>
-          <p class="text-gray-500 mb-8 text-center max-w-md">
+          <h2 class="empty-title text-2xl font-medium mb-2">请先选择项目</h2>
+          <p class="empty-description mb-8 text-center max-w-md">
             测试报告需要基于项目查看，请先从项目管理中选择一个项目
           </p>
           <a-button type="primary" size="large" @click="router.push({ name: 'ProjectManagement' })">
@@ -45,11 +45,11 @@
         
         <!-- 数据为空的提示 -->
         <div v-else-if="reports.length === 0 && !loading" class="h-full w-full flex flex-col items-center justify-center p-8 text-center">
-          <div class="text-6xl mb-6 text-gray-600">
+          <div class="empty-icon text-6xl mb-6">
             <icon-file class="opacity-50" />
           </div>
-          <h2 class="text-2xl font-medium mb-2 text-gray-300">暂无测试报告</h2>
-          <p class="text-gray-500 mb-8 text-center max-w-md">
+          <h2 class="empty-title text-2xl font-medium mb-2">暂无测试报告</h2>
+          <p class="empty-description mb-8 text-center max-w-md">
             当前项目尚未生成任何测试报告，请先执行测试用例
           </p>
         </div>
@@ -68,15 +68,15 @@
                 <template #cell="{ record }">
                   <div class="flex items-center justify-center gap-2">
                     <icon-file class="text-blue-500 flex-shrink-0" />
-                    <a-link @click="viewReport(record.id)" class="truncate">{{ record.name }}</a-link>
+                    <a-link @click="viewReport(record.id)" class="report-link truncate">{{ record.name }}</a-link>
                   </div>
                 </template>
               </a-table-column>
               <a-table-column title="用例名称" data-index="testcase_name" :width="250" align="center">
                 <template #cell="{ record }">
                   <div class="flex items-center justify-center gap-2">
-                    <icon-code class="text-gray-400" />
-                    <span class="text-gray-300">{{ record.testcase_name }}</span>
+                    <icon-code class="report-row-icon" />
+                    <span class="report-muted-text">{{ record.testcase_name }}</span>
                   </div>
                 </template>
               </a-table-column>
@@ -92,15 +92,15 @@
                   <div class="flex items-center gap-4 justify-center">
                     <div class="text-center">
                       <div class="text-sm font-medium text-green-500">{{ record.success_count }}</div>
-                      <div class="text-xs text-gray-400">成功</div>
+                      <div class="text-xs report-subtle-text">成功</div>
                     </div>
                     <div class="text-center">
                       <div class="text-sm font-medium text-red-500">{{ record.fail_count }}</div>
-                      <div class="text-xs text-gray-400">失败</div>
+                      <div class="text-xs report-subtle-text">失败</div>
                     </div>
                     <div class="text-center">
                       <div class="text-sm font-medium text-orange-500">{{ record.error_count }}</div>
-                      <div class="text-xs text-gray-400">错误</div>
+                      <div class="text-xs report-subtle-text">错误</div>
                     </div>
                   </div>
                 </template>
@@ -117,25 +117,25 @@
               </a-table-column>
               <a-table-column title="执行时间" data-index="start_time" :width="180" align="center">
                 <template #cell="{ record }">
-                  <span class="text-gray-300">{{ formatDateTime(record.start_time) }}</span>
+                  <span class="report-muted-text">{{ formatDateTime(record.start_time) }}</span>
                 </template>
               </a-table-column>
               <a-table-column title="执行时长" data-index="duration" align="center">
                 <template #cell="{ record }">
-                  <span class="text-gray-300">{{ formatDuration(record.duration) }}</span>
+                  <span class="report-muted-text">{{ formatDuration(record.duration) }}</span>
                 </template>
               </a-table-column>
               <a-table-column title="执行环境" data-index="environment_name" align="center">
                 <template #cell="{ record }">
                   <a-tag v-if="record.environment_name" color="arcoblue" size="small">{{ record.environment_name }}</a-tag>
-                  <span v-else class="text-gray-500">-</span>
+                  <span v-else class="report-subtle-text">-</span>
                 </template>
               </a-table-column>
               <a-table-column title="执行人" data-index="executed_by_name" align="center">
                 <template #cell="{ record }">
                   <div class="flex items-center justify-center gap-1">
-                    <icon-user class="text-gray-400" />
-                    <span class="text-gray-300">{{ record.executed_by_name }}</span>
+                    <icon-user class="report-row-icon" />
+                    <span class="report-muted-text">{{ record.executed_by_name }}</span>
                   </div>
                 </template>
               </a-table-column>
@@ -147,7 +147,7 @@
     </div>
 
     <!-- 分页区域 -->
-    <div class="bg-gray-800/50 rounded-lg shadow-dark px-6 py-5">
+    <div class="panel-shell px-6 py-5">
       <a-pagination
         v-model:current="pagination.current"
         v-model:page_size="pagination.page_size"
@@ -170,6 +170,7 @@ import { Message } from '@arco-design/web-vue'
 import { getTestReports } from '../../services/testReportService'
 import { formatDateTime, formatDuration } from '@/utils/formatters'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import { 
   IconFile, 
   IconCode,
@@ -179,10 +180,12 @@ import {
 
 const router = useRouter()
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
 const reports = ref([])
 const loading = ref(false)
 const searchQuery = ref('')
 const filterStatus = ref('')
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 // 获取当前项目ID
 const currentProjectId = computed(() => {
@@ -301,6 +304,40 @@ onUnmounted(() => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+.api-testreports-panel {
+  min-height: 0;
+  --tr-panel-bg: color-mix(in srgb, var(--theme-card-bg) 92%, var(--theme-page-bg) 8%);
+  --tr-panel-border: rgba(148, 163, 184, 0.16);
+  --tr-panel-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --tr-input-bg: #ffffff;
+  --tr-input-border: rgba(148, 163, 184, 0.18);
+  --tr-input-bg-hover: color-mix(in srgb, var(--theme-card-bg) 88%, var(--theme-page-bg) 12%);
+  --tr-table-header-bg: color-mix(in srgb, var(--theme-card-bg) 76%, var(--theme-page-bg) 24%);
+  --tr-row-hover-bg: rgba(15, 23, 42, 0.05);
+  --tr-text: var(--theme-text);
+  --tr-text-muted: var(--theme-text-secondary);
+  --tr-text-subtle: var(--theme-text-tertiary);
+  --tr-link: var(--theme-accent);
+  --tr-link-hover: var(--theme-accent-hover);
+}
+
+.api-testreports--dark {
+  --tr-panel-bg: rgba(31, 41, 55, 0.58);
+  --tr-panel-border: rgba(148, 163, 184, 0.12);
+  --tr-panel-shadow: 0 18px 32px rgba(2, 6, 23, 0.28);
+  --tr-input-bg: rgba(30, 41, 59, 0.5);
+  --tr-input-border: rgba(148, 163, 184, 0.1);
+  --tr-input-bg-hover: rgba(30, 41, 59, 0.72);
+  --tr-table-header-bg: rgba(30, 41, 59, 0.5);
+  --tr-row-hover-bg: rgba(30, 41, 59, 0.5);
+}
+
+.panel-shell {
+  background: var(--tr-panel-bg);
+  border: 1px solid var(--tr-panel-border);
+  box-shadow: var(--tr-panel-shadow);
+}
+
 .table-container {
   @apply h-full w-full flex flex-col min-h-0;
 }
@@ -337,8 +374,8 @@ onUnmounted(() => {
 
 .custom-table :deep(.arco-table-td) {
   background-color: transparent !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
-  color: #cbd5e1 !important;
+  border-bottom: 1px solid var(--tr-panel-border) !important;
+  color: var(--tr-text-muted) !important;
   text-align: center !important;
 }
 
@@ -347,69 +384,103 @@ onUnmounted(() => {
 }
 
 .custom-table :deep(.arco-table-tr:hover) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
+  background-color: var(--tr-row-hover-bg) !important;
 }
 
 /* 分页样式 */
 :deep(.arco-pagination) {
   .arco-pagination-item {
     border-radius: 6px !important;
-    color: #94a3b8 !important;
+    color: var(--tr-text-subtle) !important;
     background-color: transparent !important;
     
     &:hover {
-      color: #60a5fa !important;
-      background-color: rgba(59, 130, 246, 0.1) !important;
+      color: var(--tr-link-hover) !important;
+      background-color: rgba(var(--theme-accent-rgb), 0.1) !important;
     }
     
     &.arco-pagination-item-active {
-      background-color: rgba(59, 130, 246, 0.2) !important;
-      color: #60a5fa !important;
+      background-color: rgba(var(--theme-accent-rgb), 0.14) !important;
+      color: var(--tr-link-hover) !important;
     }
   }
 
   .arco-pagination-jumper {
     .arco-input {
       border-radius: 6px !important;
-      background-color: rgba(30, 41, 59, 0.5) !important;
-      border-color: rgba(148, 163, 184, 0.1) !important;
-      color: #e2e8f0 !important;
+      background-color: var(--tr-input-bg) !important;
+      border-color: var(--tr-input-border) !important;
+      color: var(--tr-text) !important;
 
       &:hover, &:focus {
-        border-color: #60a5fa !important;
+        border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+        background-color: var(--tr-input-bg-hover) !important;
       }
     }
   }
 
   .arco-pagination-total {
-    color: #94a3b8 !important;
+    color: var(--tr-text-subtle) !important;
   }
 }
 
 /* 搜索框样式 */
-:deep(.arco-input-wrapper) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
-  border-color: rgba(148, 163, 184, 0.1) !important;
+:deep(.arco-input-wrapper),
+:deep(.arco-select-view) {
+  background-color: var(--tr-input-bg) !important;
+  border-color: var(--tr-input-border) !important;
+  color: var(--tr-text) !important;
 
   &:hover, &:focus-within {
-    border-color: #60a5fa !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+    background-color: var(--tr-input-bg-hover) !important;
   }
 
   .arco-input {
-    color: #e2e8f0 !important;
+    color: var(--tr-text) !important;
   }
 
-  .arco-input-prefix, .arco-input-suffix {
-    color: #94a3b8 !important;
+  .arco-input::placeholder {
+    color: var(--tr-text-subtle) !important;
+  }
+
+  .arco-input-prefix,
+  .arco-input-suffix,
+  .arco-select-view-placeholder,
+  .arco-select-view-suffix {
+    color: var(--tr-text-subtle) !important;
   }
 }
 
 /* 表格样式 */
 .custom-table :deep(.arco-table-th) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
-  color: #e2e8f0 !important;
+  background-color: var(--tr-table-header-bg) !important;
+  border-bottom: 1px solid var(--tr-panel-border) !important;
+  color: var(--tr-text) !important;
   font-weight: 500 !important;
   text-align: center !important;
+}
+
+.report-link {
+  color: var(--tr-link) !important;
+}
+
+.report-link:hover {
+  color: var(--tr-link-hover) !important;
+}
+
+.report-row-icon,
+.report-subtle-text,
+.empty-icon,
+.empty-description {
+  color: var(--tr-text-subtle);
+}
+
+.report-muted-text {
+  color: var(--tr-text-muted);
+}
+
+.empty-title {
+  color: var(--tr-text);
 }
 </style> 

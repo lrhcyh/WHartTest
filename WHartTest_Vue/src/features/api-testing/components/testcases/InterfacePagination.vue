@@ -9,7 +9,7 @@ defineEmits(['change', 'page-size-change'])
 </script>
 
 <template>
-  <div class="bg-gray-800 rounded-lg border border-gray-700 px-4 py-3">
+  <div class="interface-pagination rounded-lg border px-4 py-3">
     <a-pagination
       :current="current"
       :page-size="pageSize"
@@ -25,10 +25,15 @@ defineEmits(['change', 'page-size-change'])
 </template>
 
 <style scoped>
+.interface-pagination {
+  background: var(--asd-panel-bg);
+  border-color: var(--asd-panel-border);
+}
+
 :deep(.arco-pagination) {
   .arco-pagination-item {
     border-radius: 4px !important;
-    color: #94a3b8 !important;
+    color: var(--asd-text-subtle) !important;
     background-color: transparent !important;
     border: 1px solid transparent !important;
 
@@ -48,29 +53,30 @@ defineEmits(['change', 'page-size-change'])
   .arco-pagination-jumper {
     .arco-input {
       border-radius: 4px !important;
-      background-color: rgba(30, 41, 59, 0.5) !important;
-      border: 1px solid rgba(148, 163, 184, 0.1) !important;
-      color: #e2e8f0 !important;
+      background-color: var(--asd-control-bg) !important;
+      border: 1px solid var(--asd-control-border) !important;
+      color: var(--asd-text) !important;
 
       &:hover, &:focus {
         border-color: rgba(59, 130, 246, 0.5) !important;
-        background-color: rgba(30, 41, 59, 0.7) !important;
+        background-color: var(--asd-control-hover) !important;
       }
     }
   }
 
   .arco-pagination-total {
-    color: #94a3b8 !important;
+    color: var(--asd-text-subtle) !important;
   }
 
   .arco-select-view {
-    background-color: rgba(30, 41, 59, 0.5) !important;
-    border: 1px solid rgba(148, 163, 184, 0.1) !important;
+    background-color: var(--asd-control-bg) !important;
+    border: 1px solid var(--asd-control-border) !important;
     border-radius: 4px !important;
+    color: var(--asd-text) !important;
 
     &:hover {
       border-color: rgba(59, 130, 246, 0.5) !important;
-      background-color: rgba(30, 41, 59, 0.7) !important;
+      background-color: var(--asd-control-hover) !important;
     }
   }
 }

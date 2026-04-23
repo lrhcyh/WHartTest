@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, h, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import { useEnvironmentStore } from '../../stores/environmentStore'
 import { Message, Tag as ATag, Modal, Select, Option } from '@arco-design/web-vue'
 import { 
@@ -28,6 +29,7 @@ const props = defineProps({
 
 const router = useRouter()
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
 const environmentStore = useEnvironmentStore()
 const loading = ref(false)
 const submitting = ref(false)
@@ -80,6 +82,7 @@ const testCasePriorityColorMap = {
 
 // 是否为只读模式
 const isReadOnly = computed(() => props.mode === 'view')
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 // 获取测试任务详情
 const fetchTestTaskSuite = async () => {
@@ -375,12 +378,18 @@ const handleCreateAndExecute = async () => {
 
 // 环境选择弹窗内容
 const modalContent = () => {
+  const modalLabelClass = isDarkTheme.value ? 'text-gray-400' : 'text-[var(--color-text-2)]'
+  const modalValueClass = isDarkTheme.value ? 'text-gray-200' : 'text-[var(--color-text-1)]'
+  const modalDetailCardClass = isDarkTheme.value
+    ? 'bg-gray-700/30 p-4 rounded-lg space-y-2'
+    : 'bg-[var(--color-fill-2)] border border-[var(--color-border-2)] p-4 rounded-lg space-y-2'
+
   return h('div', {
     class: 'space-y-4'
   }, [
     // 环境选择
     h('div', { class: 'space-y-2' }, [
-      h('div', { class: 'text-gray-400' }, '执行环境'),
+      h('div', { class: modalLabelClass }, '执行环境'),
       h(Select, {
         modelValue: state.selectedEnvironmentId,
         'onUpdate:modelValue': (value: number) => {
@@ -403,19 +412,19 @@ const modalContent = () => {
 
     // 环境详情
     state.selectedEnvironmentId && h('div', { class: 'space-y-2' }, [
-      h('div', { class: 'text-gray-400' }, '环境详情'),
-      h('div', { class: 'bg-gray-700/30 p-4 rounded-lg space-y-2' }, [
+      h('div', { class: modalLabelClass }, '环境详情'),
+      h('div', { class: modalDetailCardClass }, [
         h('div', { class: 'flex items-center gap-2' }, [
-          h('span', { class: 'text-gray-400' }, 'Base URL：'),
-          h('span', { class: 'text-gray-200' }, state.selectedEnvironment.base_url)
+          h('span', { class: modalLabelClass }, 'Base URL：'),
+          h('span', { class: modalValueClass }, state.selectedEnvironment.base_url)
         ]),
         h('div', { class: 'flex items-center gap-2' }, [
-          h('span', { class: 'text-gray-400' }, '变量数量：'),
-          h('span', { class: 'text-gray-200' }, `${state.selectedEnvironment.variables?.length || 0} 个`)
+          h('span', { class: modalLabelClass }, '变量数量：'),
+          h('span', { class: modalValueClass }, `${state.selectedEnvironment.variables?.length || 0} 个`)
         ]),
         state.selectedEnvironment.description && h('div', { class: 'flex items-start gap-2' }, [
-          h('span', { class: 'text-gray-400' }, '环境描述：'),
-          h('span', { class: 'text-gray-200' }, state.selectedEnvironment.description)
+          h('span', { class: modalLabelClass }, '环境描述：'),
+          h('span', { class: modalValueClass }, state.selectedEnvironment.description)
         ])
       ])
     ])
@@ -438,9 +447,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col gap-4 p-4">
+  <div class="test-task-form-page h-full flex flex-col gap-4 p-4" :class="isDarkTheme ? 'test-task-form-page--dark' : 'test-task-form-page--light'">
     <!-- 表单区域 -->
-    <div class="flex-1 bg-gray-800/50 rounded-lg shadow-dark overflow-auto">
+    <div class="form-shell flex-1 rounded-lg overflow-auto">
       <div class="p-6">
         <div class="flex justify-end gap-3 mb-6">
           <a-button type="outline" @click="goBack">返回</a-button>
@@ -471,8 +480,8 @@ onMounted(async () => {
           :disabled="loading || isReadOnly"
         >
           <!-- 基本信息 -->
-          <div class="bg-gray-900/30 rounded-lg p-6 mb-6">
-            <h3 class="text-lg font-medium mb-4 text-gray-200">基本信息</h3>
+          <div class="form-section rounded-lg p-6 mb-6">
+            <h3 class="section-title text-lg font-medium mb-4">基本信息</h3>
             <a-form-item field="name" label="任务名称">
               <a-input 
                 v-model="formData.name" 
@@ -587,6 +596,76 @@ onMounted(async () => {
 
 <style scoped>
 @reference "tailwindcss";
+.test-task-form-page {
+  --ttf-shell-bg: rgba(255, 255, 255, 0.9);
+  --ttf-shell-border: rgba(148, 163, 184, 0.18);
+  --ttf-shell-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+  --ttf-section-bg: rgba(248, 250, 252, 0.96);
+  --ttf-section-border: rgba(148, 163, 184, 0.16);
+  --ttf-text: var(--color-text-1);
+  --ttf-text-muted: var(--color-text-2);
+  --ttf-text-subtle: var(--color-text-3);
+  --ttf-input-bg: #ffffff;
+  --ttf-input-border: rgba(148, 163, 184, 0.2);
+}
+
+.test-task-form-page--dark {
+  --ttf-shell-bg: rgba(31, 41, 55, 0.62);
+  --ttf-shell-border: rgba(55, 65, 81, 0.72);
+  --ttf-shell-shadow: 0 12px 26px rgba(2, 6, 23, 0.28);
+  --ttf-section-bg: rgba(17, 24, 39, 0.4);
+  --ttf-section-border: rgba(55, 65, 81, 0.58);
+  --ttf-text: rgba(229, 231, 235, 0.94);
+  --ttf-text-muted: rgba(209, 213, 219, 0.92);
+  --ttf-text-subtle: rgba(156, 163, 175, 0.96);
+  --ttf-input-bg: rgba(17, 24, 39, 0.92);
+  --ttf-input-border: rgba(55, 65, 81, 0.7);
+}
+
+.form-shell {
+  background: var(--ttf-shell-bg);
+  border: 1px solid var(--ttf-shell-border);
+  box-shadow: var(--ttf-shell-shadow);
+}
+
+.form-section {
+  background: var(--ttf-section-bg);
+  border: 1px solid var(--ttf-section-border);
+}
+
+.section-title {
+  color: var(--ttf-text);
+}
+
+:deep(.arco-form-item-label),
+:deep(.arco-divider-text),
+:deep(.arco-checkbox-label) {
+  color: var(--ttf-text);
+}
+
+:deep(.arco-input-wrapper),
+:deep(.arco-textarea-wrapper),
+:deep(.arco-select-view) {
+  background-color: var(--ttf-input-bg);
+  border: 1px solid var(--ttf-input-border);
+}
+
+:deep(.arco-input),
+:deep(.arco-textarea) {
+  color: var(--ttf-text);
+  background: transparent;
+}
+
+:deep(.arco-input::placeholder),
+:deep(.arco-textarea::placeholder),
+:deep(.arco-select-view-placeholder),
+:deep(.arco-input-prefix),
+:deep(.arco-input-suffix),
+:deep(.arco-select-view-suffix),
+:deep(.arco-checkbox-icon-hover)::before {
+  color: var(--ttf-text-subtle);
+}
+
 /* 表格样式 */
 .custom-table :deep(.arco-table) {
   background-color: transparent !important;

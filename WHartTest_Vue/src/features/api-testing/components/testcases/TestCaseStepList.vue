@@ -320,7 +320,7 @@ const formatUrl = (url?: string): string => {
 </script>
 
 <template>
-  <div class="h-full">
+  <div class="testcase-step-list h-full">
     <div class="flex justify-between items-center mb-4">
       <div class="flex items-center">
         <a-tag>{{ steps.length }}个步骤</a-tag>
@@ -341,17 +341,17 @@ const formatUrl = (url?: string): string => {
         >
           <template #item="{ element: step, index }">
             <div
-              class="rounded-lg cursor-pointer transition-all border group"
+              class="step-card rounded-lg cursor-pointer transition-all border group"
               :class="[
                 activeStep?.id === step.id || (activeStep?.order === step.order && !step.id)
-                  ? 'bg-blue-500/20 border-blue-500/50'
-                  : 'bg-gray-800/50 hover:bg-gray-800 border-gray-700'
+                  ? 'step-card--active'
+                  : 'step-card--idle'
               ]"
               @click="handleSelectStep(step)"
             >
               <div class="p-4 flex items-center gap-3">
                 <icon-drag-dot-vertical
-                  class="drag-handle text-gray-500 flex-shrink-0"
+                  class="drag-handle step-drag-handle flex-shrink-0"
                   :class="readonly ? 'cursor-not-allowed opacity-50' : 'cursor-move'"
                 />
                 <span class="w-7 h-7 flex items-center justify-center bg-blue-500 rounded-lg text-white flex-shrink-0">
@@ -359,14 +359,14 @@ const formatUrl = (url?: string): string => {
                 </span>
                 <div class="flex-1 min-w-0 overflow-hidden">
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-gray-300 font-medium">{{ step.name }}</span>
+                    <span class="step-title font-medium">{{ step.name }}</span>
                   </div>
                   <div class="flex items-center gap-2 text-sm">
                     <span :class="[getMethodColor(step.interface_info?.method), 'flex-shrink-0']">
                       {{ step.interface_info?.method || 'METHOD' }}
                     </span>
                     <span
-                      class="text-gray-400 truncate max-w-[calc(100%-4rem)]"
+                      class="step-url truncate max-w-[calc(100%-4rem)]"
                       :title="step.interface_info?.url || '未设置URL'"
                     >
                       {{ formatUrl(step.interface_info?.url) }}
@@ -385,7 +385,7 @@ const formatUrl = (url?: string): string => {
                   </div>
                 </div>
                 <icon-close
-                  class="text-gray-400 hover:text-red-500 transition-all cursor-pointer text-lg flex-shrink-0"
+                  class="step-delete-icon transition-all cursor-pointer text-lg flex-shrink-0"
                   :style="{ fontSize: '18px' }"
                   @click="handleDeleteStep(step, $event)"
                 />
@@ -403,22 +403,22 @@ const formatUrl = (url?: string): string => {
         :popup-translate="[0, 8]"
       >
         <div
-          class="rounded-lg cursor-pointer transition-all border border-dashed border-gray-700 hover:border-blue-500 bg-gray-800/50 hover:bg-gray-800"
+          class="add-step-card rounded-lg cursor-pointer transition-all border border-dashed"
         >
-          <div class="p-4 flex items-center justify-center gap-2 text-gray-400 hover:text-blue-500">
+          <div class="add-step-text p-4 flex items-center justify-center gap-2">
             <icon-plus />
             <span>添加步骤</span>
           </div>
         </div>
         <template #content>
-          <a-menu class="!bg-[rgb(55,65,81)] !border-gray-700 min-w-[180px]">
+          <a-menu class="step-add-menu min-w-[180px]">
             <a-menu-item
               v-for="type in stepTypes"
               :key="type.value"
               @click="handleAddStep(type.value)"
             >
               <div class="flex items-center h-full w-full">
-                <span class="w-5 h-5 flex items-center justify-center bg-[rgb(45,55,71)] rounded-lg text-sm ml-2">{{ type.icon }}</span>
+                <span class="step-type-icon w-5 h-5 flex items-center justify-center rounded-lg text-sm ml-2">{{ type.icon }}</span>
                 <span class="text-sm flex-1 text-center">{{ type.label }}</span>
                 <span class="w-5"></span>
               </div>
@@ -439,6 +439,10 @@ const formatUrl = (url?: string): string => {
 
 <style scoped>
 @reference "tailwindcss";
+.testcase-step-list {
+  color: var(--tcf-text-muted);
+}
+
 .hide-scrollbar {
   scrollbar-width: none;  /* Firefox */
   -ms-overflow-style: none;  /* IE and Edge */
@@ -449,12 +453,69 @@ const formatUrl = (url?: string): string => {
   display: none;  /* Chrome, Safari and Opera */
 }
 
+.step-card--idle {
+  background: var(--tcf-section-bg);
+  border-color: var(--tcf-panel-border);
+
+  &:hover {
+    background: var(--tcf-section-hover);
+    border-color: rgba(59, 130, 246, 0.24);
+  }
+}
+
+.step-card--active {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.32);
+}
+
+.step-drag-handle,
+.step-url,
+.add-step-text,
+.step-delete-icon {
+  color: var(--tcf-text-subtle);
+}
+
+.step-title {
+  color: var(--tcf-text);
+}
+
+.step-delete-icon:hover,
+.add-step-text:hover {
+  color: rgb(59, 130, 246);
+}
+
+.add-step-card {
+  border-color: var(--tcf-panel-border);
+  background: var(--tcf-section-bg);
+
+  &:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    background: var(--tcf-section-hover);
+  }
+}
+
+.step-add-menu {
+  background: var(--tcf-card-bg) !important;
+  border: 1px solid var(--tcf-panel-border) !important;
+  border-radius: 12px !important;
+}
+
+.step-type-icon {
+  background: var(--tcf-control-bg);
+  color: var(--tcf-text-muted);
+}
+
 :deep(.arco-menu-item) {
-  @apply text-gray-300 hover:text-blue-500 hover:bg-[rgb(45,55,71)];
+  color: var(--tcf-text-muted) !important;
   height: 32px !important;
   line-height: 32px !important;
   padding: 0 !important;
   margin: 2px 0 !important;
+
+  &:hover {
+    color: rgb(59, 130, 246) !important;
+    background: var(--tcf-section-hover) !important;
+  }
 }
 
 :deep(.arco-menu) {
@@ -470,7 +531,8 @@ const formatUrl = (url?: string): string => {
 }
 
 :deep(.arco-menu-selected) {
-  @apply !bg-[rgb(45,55,71)] !text-blue-500;
+  background: var(--tcf-section-hover) !important;
+  color: rgb(59, 130, 246) !important;
 }
 
 .add-step-trigger {

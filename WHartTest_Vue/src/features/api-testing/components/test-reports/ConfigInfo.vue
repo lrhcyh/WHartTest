@@ -1,26 +1,26 @@
 <template>
-  <div class="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-700/30">
-    <div class="px-4 pt-2 border-b border-gray-700/30">
-      <h3 class="text-lg font-medium text-gray-200 -mb-1">配置信息</h3>
+  <div class="config-info-shell rounded-lg border">
+    <div class="config-info-header px-4 pt-2 border-b">
+      <h3 class="config-info-title text-lg font-medium -mb-1">配置信息</h3>
     </div>
     <div class="px-4">
       <div class="space-y-3">
         <div class="config-item">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <p class="text-sm text-gray-400">配置变量</p>
-              <span v-if="Object.keys(report?.summary?.in_out?.config_vars || {}).length" class="text-xs text-gray-500">
-                ({{ Object.keys(report?.summary?.in_out?.config_vars || {}).length }}个)
+              <p class="config-meta-label text-sm">配置变量</p>
+              <span v-if="configVarEntries.length" class="config-meta-count text-xs">
+                ({{ configVarEntries.length }}个)
               </span>
             </div>
             <div class="flex items-center gap-2">
               <a-button 
-                v-if="Object.keys(report?.summary?.in_out?.config_vars || {}).length" 
+                v-if="configVarEntries.length" 
                 type="text" 
                 size="mini" 
                 @click="toggleDrawer('config_vars')"
               >
-                <template #icon><icon-expand class="text-gray-400" /></template>
+                <template #icon><icon-expand class="config-action-icon" /></template>
                 查看全部
               </a-button>
               <a-tooltip position="left">
@@ -29,48 +29,47 @@
                     <p>测试执行时的环境配置变量</p>
                   </div>
                 </template>
-                <icon-info-circle class="text-gray-400 cursor-help" />
+                <icon-info-circle class="config-action-icon cursor-help" />
               </a-tooltip>
             </div>
           </div>
-          <div v-if="Object.keys(report?.summary?.in_out?.config_vars || {}).length" class="bg-gray-800/30 rounded-lg p-3 border border-gray-700/30">
+          <div v-if="configVarEntries.length" class="config-card rounded-lg p-3 border">
             <div class="space-y-2 max-h-[200px] overflow-y-auto">
-              <div v-for="(value, key, index) in report?.summary?.in_out?.config_vars" :key="key"
-                   v-show="index < 3"
-                   class="flex items-center justify-between px-2 py-1 rounded bg-gray-800/30">
-                <span class="text-sm text-gray-400">{{ key }}</span>
+              <div v-for="([key, value], index) in visibleConfigVarEntries" :key="key"
+                   class="config-row flex items-center justify-between px-2 py-1 rounded">
+                <span class="config-key text-sm">{{ key }}</span>
                 <div class="flex items-center gap-2">
-                  <span class="text-sm text-blue-400 font-mono" :title="value">{{ value && typeof value === 'string' ? (value.length > 20 ? value.substring(0, 20) + '...' : value) : value }}</span>
+                  <span class="text-sm text-blue-400 font-mono" :title="toCopyText(value)">{{ formatPreviewValue(value) }}</span>
                   <a-button type="text" size="mini" @click="copyToClipboard(value)">
-                    <template #icon><icon-copy class="text-gray-400 hover:text-blue-400" /></template>
+                    <template #icon><icon-copy class="config-action-icon hover:text-blue-400" /></template>
                   </a-button>
                 </div>
               </div>
-              <div v-if="Object.keys(report?.summary?.in_out?.config_vars || {}).length > 3" class="text-center text-xs text-gray-500 mt-2">
-                显示前3项，共{{ Object.keys(report?.summary?.in_out?.config_vars || {}).length }}项
+              <div v-if="configVarEntries.length > 3" class="config-meta-count text-center text-xs mt-2">
+                显示前3项，共{{ configVarEntries.length }}项
               </div>
             </div>
           </div>
-          <div v-else class="bg-gray-800/30 rounded-lg p-3 border border-gray-700/30">
-            <p class="text-sm text-gray-500 text-center">无配置变量</p>
+          <div v-else class="config-card rounded-lg p-3 border">
+            <p class="config-empty text-sm text-center">无配置变量</p>
           </div>
         </div>
         <div class="config-item">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <p class="text-sm text-gray-400">提取变量</p>
-              <span v-if="Object.keys(report?.summary?.in_out?.export_vars || {}).length" class="text-xs text-gray-500">
-                ({{ Object.keys(report?.summary?.in_out?.export_vars || {}).length }}个)
+              <p class="config-meta-label text-sm">提取变量</p>
+              <span v-if="exportVarEntries.length" class="config-meta-count text-xs">
+                ({{ exportVarEntries.length }}个)
               </span>
             </div>
             <div class="flex items-center gap-2">
               <a-button 
-                v-if="Object.keys(report?.summary?.in_out?.export_vars || {}).length" 
+                v-if="exportVarEntries.length" 
                 type="text" 
                 size="mini" 
                 @click="toggleDrawer('export_vars')"
               >
-                <template #icon><icon-expand class="text-gray-400" /></template>
+                <template #icon><icon-expand class="config-action-icon" /></template>
                 查看全部
               </a-button>
               <a-tooltip position="left">
@@ -79,30 +78,29 @@
                     <p>测试执行过程中从响应中提取的变量</p>
                   </div>
                 </template>
-                <icon-info-circle class="text-gray-400 cursor-help" />
+                <icon-info-circle class="config-action-icon cursor-help" />
               </a-tooltip>
             </div>
           </div>
-          <div v-if="Object.keys(report?.summary?.in_out?.export_vars || {}).length" class="bg-gray-800/30 rounded-lg p-3 border border-gray-700/30">
+          <div v-if="exportVarEntries.length" class="config-card rounded-lg p-3 border">
             <div class="space-y-2 max-h-[200px] overflow-y-auto">
-              <div v-for="(value, key, index) in report?.summary?.in_out?.export_vars" :key="key"
-                   v-show="index < 3"
-                   class="flex items-center justify-between px-2 py-1 rounded bg-gray-800/30">
-                <span class="text-sm text-gray-400">{{ key }}</span>
+              <div v-for="([key, value], index) in visibleExportVarEntries" :key="key"
+                   class="config-row flex items-center justify-between px-2 py-1 rounded">
+                <span class="config-key text-sm">{{ key }}</span>
                 <div class="flex items-center gap-2">
-                  <span class="text-sm text-green-400 font-mono" :title="value">{{ value && typeof value === 'string' ? (value.length > 20 ? value.substring(0, 20) + '...' : value) : value }}</span>
+                  <span class="text-sm text-green-400 font-mono" :title="toCopyText(value)">{{ formatPreviewValue(value) }}</span>
                   <a-button type="text" size="mini" @click="copyToClipboard(value)">
-                    <template #icon><icon-copy class="text-gray-400 hover:text-green-400" /></template>
+                    <template #icon><icon-copy class="config-action-icon hover:text-green-400" /></template>
                   </a-button>
                 </div>
               </div>
-              <div v-if="Object.keys(report?.summary?.in_out?.export_vars || {}).length > 3" class="text-center text-xs text-gray-500 mt-2">
-                显示前3项，共{{ Object.keys(report?.summary?.in_out?.export_vars || {}).length }}项
+              <div v-if="exportVarEntries.length > 3" class="config-meta-count text-center text-xs mt-2">
+                显示前3项，共{{ exportVarEntries.length }}项
               </div>
             </div>
           </div>
-          <div v-else class="bg-gray-800/30 rounded-lg p-3 border border-gray-700/30">
-            <p class="text-sm text-gray-500 text-center">无提取变量</p>
+          <div v-else class="config-card rounded-lg p-3 border">
+            <p class="config-empty text-sm text-center">无提取变量</p>
           </div>
         </div>
       </div>
@@ -116,44 +114,44 @@
     @cancel="drawerVisible = false"
     :title="currentDrawerType === 'config_vars' ? '配置变量详情' : '提取变量详情'"
     :footer="false"
-    class="custom-drawer"
+    class="config-info-drawer"
     :mask="true"
     :mask-style="{ backgroundColor: 'transparent' }"
     :mask-closable="true"
     @close="drawerVisible = false"
   >
     <div class="p-6">
-      <div v-if="currentDrawerType === 'config_vars' && Object.keys(report?.summary?.in_out?.config_vars || {}).length" class="space-y-3">
-        <div v-for="(value, key) in report?.summary?.in_out?.config_vars" :key="key" class="bg-gray-800/30 rounded-lg p-3 border border-gray-700/30">
+      <div v-if="currentDrawerType === 'config_vars' && configVarEntries.length" class="space-y-3">
+        <div v-for="([key, value]) in configVarEntries" :key="key" class="config-card rounded-lg p-3 border">
           <div class="flex items-start gap-3">
             <div class="flex-1">
-              <div class="text-sm text-gray-400">{{ key }}</div>
-              <div class="mt-2 bg-gray-900/50 p-2 rounded border border-gray-700/30">
+              <div class="config-key text-sm">{{ key }}</div>
+              <div class="config-inline-value mt-2 p-2 rounded border">
                 <div class="text-sm text-blue-400 font-mono break-all">{{ value }}</div>
               </div>
             </div>
             <a-button type="text" size="mini" @click="copyToClipboard(value)">
-              <template #icon><icon-copy class="text-gray-400 hover:text-blue-400" /></template>
+              <template #icon><icon-copy class="config-action-icon hover:text-blue-400" /></template>
             </a-button>
           </div>
         </div>
       </div>
-      <div v-else-if="currentDrawerType === 'export_vars' && Object.keys(report?.summary?.in_out?.export_vars || {}).length" class="space-y-3">
-        <div v-for="(value, key) in report?.summary?.in_out?.export_vars" :key="key" class="bg-gray-800/30 rounded-lg p-3 border border-gray-700/30">
+      <div v-else-if="currentDrawerType === 'export_vars' && exportVarEntries.length" class="space-y-3">
+        <div v-for="([key, value]) in exportVarEntries" :key="key" class="config-card rounded-lg p-3 border">
           <div class="flex items-start gap-3">
             <div class="flex-1">
-              <div class="text-sm text-gray-400">{{ key }}</div>
-              <div class="mt-2 bg-gray-900/50 p-2 rounded border border-gray-700/30">
+              <div class="config-key text-sm">{{ key }}</div>
+              <div class="config-inline-value mt-2 p-2 rounded border">
                 <div class="text-sm text-green-400 font-mono break-all">{{ value }}</div>
               </div>
             </div>
             <a-button type="text" size="mini" @click="copyToClipboard(value)">
-              <template #icon><icon-copy class="text-gray-400 hover:text-green-400" /></template>
+              <template #icon><icon-copy class="config-action-icon hover:text-green-400" /></template>
             </a-button>
           </div>
         </div>
       </div>
-      <div v-else class="text-center text-gray-400">
+      <div v-else class="config-empty text-center">
         无数据
       </div>
     </div>
@@ -161,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { 
   IconInfoCircle, 
   IconCopy, 
@@ -170,9 +168,14 @@ import {
 import { Message } from '@arco-design/web-vue'
 import type { TestReportResponse } from './TestReportDetail.vue'
 
-defineProps<{
+const props = defineProps<{
   report: TestReportResponse | null
 }>()
+
+const configVarEntries = computed(() => Object.entries(props.report?.summary?.in_out?.config_vars || {}))
+const exportVarEntries = computed(() => Object.entries(props.report?.summary?.in_out?.export_vars || {}))
+const visibleConfigVarEntries = computed(() => configVarEntries.value.slice(0, 3))
+const visibleExportVarEntries = computed(() => exportVarEntries.value.slice(0, 3))
 
 // 抽屉组件状态控制
 const drawerVisible = ref(false)
@@ -187,17 +190,30 @@ const toggleDrawer = (type: 'config_vars' | 'export_vars') => {
   drawerVisible.value = true
 }
 
+const toCopyText = (value: unknown) => {
+  if (value === null || value === undefined) {
+    return ''
+  }
+
+  return typeof value === 'string' ? value : JSON.stringify(value)
+}
+
+const formatPreviewValue = (value: unknown) => {
+  const text = toCopyText(value)
+  return text.length > 20 ? `${text.substring(0, 20)}...` : text
+}
+
 /**
  * 将文本复制到剪贴板
  * @param text 要复制的文本
  */
-const copyToClipboard = async (text: string) => {
+const copyToClipboard = async (text: unknown) => {
   try {
     if (text === null || text === undefined) {
       Message.warning('复制内容为空')
       return
     }
-    await navigator.clipboard.writeText(String(text))
+    await navigator.clipboard.writeText(toCopyText(text))
     Message.success('复制成功')
   } catch (err) {
     Message.error('复制失败')
@@ -207,6 +223,39 @@ const copyToClipboard = async (text: string) => {
 
 <style scoped>
 @reference "tailwindcss";
+.config-info-shell {
+  background: color-mix(in srgb, var(--api-report-card-bg) 88%, var(--theme-page-bg) 12%);
+  border-color: var(--api-report-shell-border);
+  backdrop-filter: blur(10px);
+}
+
+.config-info-header {
+  border-color: var(--api-report-shell-border);
+}
+
+.config-info-title {
+  color: var(--api-report-text);
+}
+
+.config-meta-label,
+.config-key,
+.config-action-icon,
+.config-empty,
+.config-meta-count {
+  color: var(--api-report-text-subtle);
+}
+
+.config-card,
+.config-row,
+.config-inline-value {
+  background: var(--api-report-inline-bg);
+  border-color: var(--api-report-inline-border);
+}
+
+.config-card:hover .config-row {
+  background: var(--api-report-card-hover);
+}
+
 pre {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -219,8 +268,9 @@ pre {
   @apply transition-all duration-200;
 
   &:hover {
-    .bg-gray-800\/30 {
-      @apply bg-gray-800/50 border-gray-600/50;
+    .config-card {
+      background: var(--api-report-card-hover);
+      border-color: rgba(var(--theme-accent-rgb), 0.12);
     }
   }
 }
@@ -245,29 +295,26 @@ pre {
 }
 
 /* 自定义抽屉组件样式 */
-:deep(.custom-drawer) {
+:deep(.config-info-drawer) {
   .arco-drawer-container {
     @apply !bg-transparent;
   }
 
   .arco-drawer-header {
-    @apply !bg-gray-900 !border-b !border-gray-700/30;
-    background-color: rgb(31, 41, 55) !important;
+    background: #f8fafc !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
   }
 
   .arco-drawer-body {
-    @apply !bg-gray-900;
-    background-color: rgb(31, 41, 55) !important;
+    background: #f8fafc !important;
   }
 
   .arco-drawer-content {
-    @apply !bg-gray-900;
-    background-color: rgb(31, 41, 55) !important;
+    background: #f8fafc !important;
   }
 
   .arco-drawer-wrapper {
-    @apply !bg-gray-900;
-    background-color: rgb(31, 41, 55) !important;
+    background: #f8fafc !important;
   }
 }
 
@@ -276,10 +323,21 @@ pre {
   background-color: transparent !important;
 }
 
-:global(.arco-drawer-header),
-:global(.arco-drawer-body),
-:global(.arco-drawer-content),
-:global(.arco-drawer-wrapper) {
+:global(.config-info-drawer .arco-drawer-header),
+:global(.config-info-drawer .arco-drawer-body),
+:global(.config-info-drawer .arco-drawer-content),
+:global(.config-info-drawer .arco-drawer-wrapper) {
+  background-color: #f8fafc !important;
+}
+
+:global(body.api-testing-theme .config-info-drawer .arco-drawer-header) {
+  background-color: rgb(31, 41, 55) !important;
+  border-bottom: 1px solid rgba(75, 85, 99, 0.4) !important;
+}
+
+:global(body.api-testing-theme .config-info-drawer .arco-drawer-body),
+:global(body.api-testing-theme .config-info-drawer .arco-drawer-content),
+:global(body.api-testing-theme .config-info-drawer .arco-drawer-wrapper) {
   background-color: rgb(31, 41, 55) !important;
 }
 </style> 

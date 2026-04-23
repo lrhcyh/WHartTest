@@ -36,11 +36,11 @@ const getTypeLabel = (type: string) => {
 </script>
 
 <template>
-  <div class="overflow-y-auto max-h-[calc(100vh-24rem)]">
+  <div class="env-variable-list overflow-y-auto max-h-[calc(100vh-24rem)]">
     <div
       v-for="(variable, index) in variables"
       :key="index"
-      class="flex items-start gap-3 p-3 bg-gray-900/60 rounded-lg border border-gray-800/60 hover:border-gray-700/60 transition-colors mb-2 group"
+      class="variable-list-item flex items-start gap-3 p-3 rounded-lg transition-colors mb-2 group"
     >
       <!-- 左侧图标 -->
       <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
@@ -52,9 +52,9 @@ const getTypeLabel = (type: string) => {
         <!-- 标题和描述 -->
         <div class="mb-2">
           <div class="flex items-center gap-2">
-            <span class="text-sm font-medium text-gray-300">变量 #{{ index + 1 }}</span>
-            <span class="text-xs text-gray-500">·</span>
-            <span class="text-xs text-gray-400 truncate">{{ variable.description || '暂无描述' }}</span>
+            <span class="text-sm font-medium variable-list-title">变量 #{{ index + 1 }}</span>
+            <span class="text-xs variable-list-subtle">·</span>
+            <span class="text-xs variable-list-subtle truncate">{{ variable.description || '暂无描述' }}</span>
             <a-tag v-if="variable.is_sensitive" size="small" status="danger">
               <template #icon><icon-lock /></template>
               敏感
@@ -65,19 +65,19 @@ const getTypeLabel = (type: string) => {
         <!-- 变量信息 -->
         <div class="grid grid-cols-3 gap-4">
           <div class="space-y-1">
-            <div class="text-xs text-gray-400">变量名</div>
-            <div class="text-sm text-gray-300 truncate">{{ variable.name }}</div>
+            <div class="text-xs variable-list-subtle">变量名</div>
+            <div class="text-sm variable-list-title truncate">{{ variable.name }}</div>
           </div>
           <div class="space-y-1">
-            <div class="text-xs text-gray-400">变量值</div>
-            <div class="text-sm text-gray-300 truncate">
+            <div class="text-xs variable-list-subtle">变量值</div>
+            <div class="text-sm variable-list-title truncate">
               <span v-if="variable.is_sensitive">******</span>
               <span v-else>{{ variable.value }}</span>
             </div>
           </div>
           <div class="space-y-1">
-            <div class="text-xs text-gray-400">类型</div>
-            <div class="text-sm text-gray-300">{{ getTypeLabel(variable.type) }}</div>
+            <div class="text-xs variable-list-subtle">类型</div>
+            <div class="text-sm variable-list-title">{{ getTypeLabel(variable.type) }}</div>
           </div>
         </div>
       </div>
@@ -89,7 +89,7 @@ const getTypeLabel = (type: string) => {
           size="mini"
           @click="emit('edit', index)"
         >
-          <template #icon><icon-edit class="text-gray-400" /></template>
+          <template #icon><icon-edit class="variable-list-subtle" /></template>
         </a-button>
         <a-button
           type="text"
@@ -103,3 +103,31 @@ const getTypeLabel = (type: string) => {
     </div>
   </div>
 </template> 
+
+<style lang="postcss" scoped>
+.env-variable-list {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.variable-list-item {
+  background: color-mix(in srgb, var(--env-block-bg) 88%, var(--theme-page-bg) 12%);
+  border: 1px solid var(--env-block-border);
+}
+
+.variable-list-item:hover {
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.variable-list-title {
+  color: var(--env-text);
+}
+
+.variable-list-subtle {
+  color: var(--env-text-subtle);
+}
+</style>

@@ -41,15 +41,15 @@ const filteredEnvironments = computed(() => {
 </script>
 
 <template>
-  <div class="h-full overflow-hidden env-list-container">
+  <div class="h-full overflow-hidden env-list-container env-list-panel">
     <!-- 环境列表卡片 -->
-    <a-card class="h-full !bg-[#1D2433] !border-gray-800 !rounded-lg !w-full env-card">
+    <a-card class="h-full !rounded-lg !w-full env-card">
       <!-- 卡片标题区域 -->
       <template #title>
         <div class="flex justify-between items-center py-2">
           <div class="flex items-center gap-2">
             <icon-storage class="text-blue-500" />
-            <span class="text-gray-100 font-medium">环境列表</span>
+            <span class="list-heading font-medium">环境列表</span>
           </div>
           <a-button type="outline" size="small" @click="emit('create')">
             <template #icon><icon-plus /></template>
@@ -83,16 +83,16 @@ const filteredEnvironments = computed(() => {
               @click="emit('selectGlobalHeaders')"
             >
               <div
-                class="bg-gray-800 rounded-lg overflow-hidden shadow-sm transition-all border border-gray-700 hover:border-teal-500 w-full"
-                :class="{ 'border-teal-500 shadow-md': showGlobalHeaders }"
+                class="env-entry-card env-entry-card--teal w-full"
+                :class="{ 'is-active is-teal': showGlobalHeaders }"
               >
                 <div class="p-4 flex items-center gap-4">
                   <div class="w-10 h-10 rounded-lg bg-teal-500/10 flex items-center justify-center flex-shrink-0">
                     <icon-settings class="text-teal-500 text-xl" />
                   </div>
                   <div class="flex-1 min-w-0 overflow-hidden">
-                    <div class="font-medium text-gray-100 truncate max-w-full">全局请求头</div>
-                    <div class="mt-1 text-xs text-gray-400 truncate max-w-full">
+                    <div class="font-medium entry-title truncate max-w-full">全局请求头</div>
+                    <div class="mt-1 text-xs entry-subtitle truncate max-w-full">
                       项目级别的全局请求头设置
                     </div>
                   </div>
@@ -106,16 +106,16 @@ const filteredEnvironments = computed(() => {
               @click="emit('selectDatabaseConfig')"
             >
               <div
-                class="bg-gray-800 rounded-lg overflow-hidden shadow-sm transition-all border border-gray-700 hover:border-purple-500 w-full"
-                :class="{ 'border-purple-500 shadow-md': showDatabaseConfig }"
+                class="env-entry-card env-entry-card--purple w-full"
+                :class="{ 'is-active is-purple': showDatabaseConfig }"
               >
                 <div class="p-4 flex items-center gap-4">
                   <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
                     <icon-storage class="text-purple-500 text-xl" />
                   </div>
                   <div class="flex-1 min-w-0 overflow-hidden">
-                    <div class="font-medium text-gray-100 truncate max-w-full">数据库配置</div>
-                    <div class="mt-1 text-xs text-gray-400 truncate max-w-full">
+                    <div class="font-medium entry-title truncate max-w-full">数据库配置</div>
+                    <div class="mt-1 text-xs entry-subtitle truncate max-w-full">
                       项目级别的数据库连接配置
                     </div>
                   </div>
@@ -131,8 +131,8 @@ const filteredEnvironments = computed(() => {
               @click="emit('select', env)"
             >
               <div 
-                class="bg-gray-800 rounded-lg overflow-hidden shadow-sm transition-all border border-gray-700 hover:border-blue-500 w-full"
-                :class="{ 'border-blue-500 shadow-md': selectedEnvironment?.id === env.id }"
+                class="env-entry-card env-entry-card--blue w-full"
+                :class="{ 'is-active is-blue': selectedEnvironment?.id === env.id }"
               >
                 <div class="p-4 flex items-center gap-4">
                   <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
@@ -140,20 +140,20 @@ const filteredEnvironments = computed(() => {
                   </div>
                   <div class="flex-1 min-w-0 overflow-hidden">
                     <div class="flex items-center justify-between gap-2 w-full">
-                      <div class="font-medium text-gray-100 truncate max-w-[80%]" :title="env.name">{{ env.name }}</div>
+                      <div class="font-medium entry-title truncate max-w-[80%]" :title="env.name">{{ env.name }}</div>
                       <a-tag
                         :color="env.is_active ? 'green' : 'red'"
                         size="small"
                         class="flex-shrink-0"
                       >{{ env.is_active ? '启用' : '禁用' }}</a-tag>
                     </div>
-                    <div class="mt-1 flex items-center gap-2 text-xs text-gray-400 w-full">
-                      <icon-link class="text-gray-500 flex-shrink-0" />
+                    <div class="mt-1 flex items-center gap-2 text-xs entry-subtitle w-full">
+                      <icon-link class="entry-url-icon flex-shrink-0" />
                       <span class="truncate max-w-[280px] inline-block" :title="env.base_url">{{ env.base_url }}</span>
                     </div>
                   </div>
                 </div>
-                <div v-if="env.description" class="px-4 pb-3 text-xs text-gray-500 truncate max-w-full" :title="env.description">
+                <div v-if="env.description" class="px-4 pb-3 text-xs entry-note truncate max-w-full" :title="env.description">
                   {{ env.description }}
                 </div>
               </div>
@@ -162,7 +162,7 @@ const filteredEnvironments = computed(() => {
             <!-- 无环境时的空状态 -->
             <div
               v-if="filteredEnvironments.length === 0 && !loading"
-              class="text-center py-6 text-gray-500"
+              class="text-center py-6 entry-note"
             >
               {{ searchKeyword ? '没有找到匹配的环境' : '暂无环境，请点击"新建"按钮创建' }}
             </div>
@@ -190,9 +190,15 @@ const filteredEnvironments = computed(() => {
   flex-direction: column;
 }
 
+.env-card :deep(.arco-card) {
+  background: var(--env-shell-bg) !important;
+  border: 1px solid var(--env-shell-border) !important;
+  box-shadow: var(--env-shell-shadow);
+}
+
 .env-card :deep(.arco-card-header) {
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+  border-bottom: 1px solid var(--env-header-border);
 }
 
 .env-card :deep(.arco-card-body) {
@@ -216,6 +222,27 @@ const filteredEnvironments = computed(() => {
 .search-container {
   margin-bottom: 16px;
   flex-shrink: 0;
+}
+
+.search-container :deep(.arco-input-wrapper) {
+  background: var(--env-input-bg) !important;
+  border-color: var(--env-input-border) !important;
+
+  &:hover,
+  &:focus-within {
+    border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+    background: var(--env-input-hover-bg) !important;
+  }
+}
+
+.search-container :deep(.arco-input),
+.search-container :deep(.arco-input::placeholder),
+.search-container :deep(.arco-input-prefix) {
+  color: var(--env-text-subtle) !important;
+}
+
+.search-container :deep(.arco-input) {
+  color: var(--env-text) !important;
 }
 
 .list-spin {
@@ -247,6 +274,50 @@ const filteredEnvironments = computed(() => {
 
 .card-item > div {
   width: 100%;
+}
+
+.list-heading,
+.entry-title {
+  color: var(--env-text);
+}
+
+.entry-subtitle,
+.entry-note,
+.entry-url-icon {
+  color: var(--env-text-subtle);
+}
+
+.env-entry-card {
+  background: color-mix(in srgb, var(--env-shell-bg) 88%, var(--theme-page-bg) 12%);
+  border: 1px solid var(--env-block-border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.env-entry-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+}
+
+.env-entry-card--teal:hover,
+.env-entry-card.is-teal {
+  border-color: rgb(20 184 166 / 0.65);
+}
+
+.env-entry-card--purple:hover,
+.env-entry-card.is-purple {
+  border-color: rgb(168 85 247 / 0.65);
+}
+
+.env-entry-card--blue:hover,
+.env-entry-card.is-blue {
+  border-color: rgb(59 130 246 / 0.65);
+}
+
+.env-entry-card.is-active {
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.1);
 }
 
 /* 确保所有内容容器内部元素都有一致的填充 */

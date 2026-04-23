@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import {
   IconClose,
   IconEdit,
@@ -10,6 +10,7 @@ import {
 } from '@arco-design/web-vue/es/icon'
 import MonacoEditor from '@guolao/vue-monaco-editor'
 import type { Function } from '../../services/functionService'
+import { useThemeStore } from '@/store/themeStore'
 
 interface Props {
   loading?: boolean
@@ -27,9 +28,11 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<Emits>()
+const themeStore = useThemeStore()
 
 // 只读代码内容（用于 v-model:value 绑定）
 const codeContent = ref(props.functionData.code)
+const editorTheme = computed(() => (themeStore.isBlack ? 'vs-dark' : 'vs'))
 
 const editorOptions = {
   minimap: { enabled: true },
@@ -69,17 +72,17 @@ const handleCopyName = () => {
 </script>
 
 <template>
-  <div class="h-full overflow-hidden">
+  <div class="function-detail-panel h-full overflow-hidden">
     <a-spin :loading="loading" dot class="!block h-full">
       <div class="h-full overflow-y-auto overflow-x-hidden custom-scrollbar p-6 space-y-4">
         <!-- 顶部信息栏 -->
-        <a-card class="!bg-[#1D2433] !border-gray-800 !rounded-lg">
+        <a-card class="detail-top-card !rounded-lg">
           <div class="flex items-center justify-between flex-wrap gap-y-2">
             <div class="flex items-center gap-3 mr-2">
               <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
                 <icon-code class="text-blue-500" />
               </div>
-              <h2 class="text-lg font-medium text-gray-100">
+              <h2 class="text-lg font-medium detail-title">
                 {{ functionData.name }}
               </h2>
               <a-tag
@@ -115,42 +118,42 @@ const handleCopyName = () => {
         </a-card>
 
         <!-- 基本信息卡片 -->
-        <a-card class="!bg-gray-900/30 !border-gray-700 !rounded-lg">
+        <a-card class="detail-info-card !rounded-lg">
           <template #title>
             <div class="flex items-center gap-2">
-              <icon-settings class="text-gray-400" />
-              <span class="text-gray-300">基本信息</span>
+              <icon-settings class="detail-subtle" />
+              <span class="detail-text">基本信息</span>
             </div>
           </template>
           <div class="space-y-6 overflow-hidden">
             <!-- 函数名称 -->
             <div class="space-y-2">
-              <div class="text-sm text-gray-400">函数名称</div>
-              <div class="p-3 bg-gray-800/50 rounded-lg text-gray-300 break-all">
+              <div class="text-sm detail-subtle">函数名称</div>
+              <div class="detail-block p-3 rounded-lg break-all">
                 {{ functionData.name }}
               </div>
             </div>
             <!-- 函数描述 -->
             <div class="space-y-2">
-              <div class="text-sm text-gray-400">函数描述</div>
-              <div class="p-3 bg-gray-800/50 rounded-lg text-gray-300 whitespace-pre-wrap">
+              <div class="text-sm detail-subtle">函数描述</div>
+              <div class="detail-block p-3 rounded-lg whitespace-pre-wrap">
                 {{ functionData.description || '暂无描述' }}
               </div>
             </div>
             <!-- 创建信息 -->
             <div class="space-y-2">
-              <div class="text-sm text-gray-400">创建信息</div>
-              <div class="p-3 bg-gray-800/50 rounded-lg text-gray-300 space-y-2">
+              <div class="text-sm detail-subtle">创建信息</div>
+              <div class="detail-block p-3 rounded-lg space-y-2">
                 <div class="flex items-center gap-2 flex-wrap" v-if="functionData.created_by">
-                  <span class="text-gray-400">创建人：</span>
+                  <span class="detail-subtle">创建人：</span>
                   <span class="break-all">{{ functionData.created_by_name || '-' }}</span>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-gray-400">创建时间：</span>
+                  <span class="detail-subtle">创建时间：</span>
                   <span>{{ functionData.created_at ? new Date(functionData.created_at).toLocaleString('zh-CN') : '-' }}</span>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-gray-400">更新时间：</span>
+                  <span class="detail-subtle">更新时间：</span>
                   <span>{{ functionData.updated_at ? new Date(functionData.updated_at).toLocaleString('zh-CN') : '-' }}</span>
                 </div>
               </div>
@@ -159,20 +162,22 @@ const handleCopyName = () => {
         </a-card>
 
         <!-- 函数代码卡片 -->
-        <a-card class="!bg-[#1D2433] !border-gray-800 !rounded-lg">
+        <a-card class="detail-top-card !rounded-lg">
           <template #title>
             <div class="flex items-center gap-2">
-              <icon-code class="text-gray-400" />
-              <span class="text-gray-300">函数代码</span>
+              <icon-code class="detail-subtle" />
+              <span class="detail-text">函数代码</span>
             </div>
           </template>
-          <MonacoEditor
-            v-model:value="codeContent"
-            language="python"
-            theme="vs-dark"
-            :options="editorOptions"
-            style="height: 500px; width: 100%; border: 1px solid rgb(55, 65, 81); border-radius: 0.25rem;"
-          />
+          <div class="editor-shell">
+            <MonacoEditor
+              v-model:value="codeContent"
+              language="python"
+              :theme="editorTheme"
+              :options="editorOptions"
+              style="height: 500px; width: 100%;"
+            />
+          </div>
         </a-card>
       </div>
     </a-spin>
@@ -181,6 +186,35 @@ const handleCopyName = () => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+
+.detail-top-card,
+.detail-info-card {
+  background: var(--func-shell-bg) !important;
+  border: 1px solid var(--func-shell-border) !important;
+  box-shadow: var(--func-shell-shadow);
+}
+
+.detail-title,
+.detail-text {
+  color: var(--func-text);
+}
+
+.detail-subtle {
+  color: var(--func-text-subtle);
+}
+
+.detail-block {
+  background: color-mix(in srgb, var(--func-card-bg) 86%, var(--theme-page-bg) 14%);
+  border: 1px solid var(--func-card-border);
+  color: var(--func-text-muted);
+}
+
+.editor-shell {
+  border: 1px solid var(--func-editor-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--func-editor-bg);
+}
 
 .custom-scrollbar {
   scrollbar-width: none;
@@ -192,19 +226,20 @@ const handleCopyName = () => {
 }
 
 :deep(.arco-btn-text) {
-  @apply text-gray-400;
+  color: var(--func-text-subtle);
 
   &:hover {
-    @apply text-gray-200 bg-gray-700/50;
+    color: var(--func-text) !important;
+    background: rgba(var(--theme-accent-rgb), 0.08) !important;
   }
 }
 
 :deep(.arco-card-header) {
-  @apply border-b border-gray-700/50;
+  border-bottom: 1px solid var(--func-shell-border);
 }
 
 :deep(.arco-card-header-title) {
-  @apply text-gray-300;
+  color: var(--func-text);
 }
 
 :deep(.arco-card-body) {

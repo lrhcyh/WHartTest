@@ -101,17 +101,17 @@ const responseMessage = computed(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div class="api-response h-full flex flex-col">
     <!-- 顶部响应概要 -->
-    <div class="flex items-center gap-4 px-4 pt-4 pb-2 border-t border-b border-gray-700">
-      <div class="text-gray-400">响应内容</div>
+    <div class="response-summary flex items-center gap-4 px-4 pt-4 pb-2 border-t border-b">
+      <div class="response-summary-label">响应内容</div>
       <div class="flex-1"></div>
       <div class="flex items-center gap-4 flex-shrink-0">
         <a-tag v-if="statusCode" :color="statusCode === 200 ? 'green' : 'red'" class="w-10 flex justify-center items-center">
           {{ statusCode }}
         </a-tag>
-        <span v-if="response.time" class="text-gray-400">{{ response.time.toFixed(3) }} ms</span>
-        <span v-if="response.size" class="text-gray-400">{{ response.size }} bytes</span>
+        <span v-if="response.time" class="response-summary-meta">{{ response.time.toFixed(3) }} ms</span>
+        <span v-if="response.size" class="response-summary-meta">{{ response.size }} bytes</span>
       </div>
     </div>
 
@@ -122,7 +122,7 @@ const responseMessage = computed(() => {
         <a-tab-pane key="response" title="响应体">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="responseContent" class="bg-gray-900/50 rounded-lg shadow-inner relative group">
+              <div v-if="responseContent" class="response-code-shell rounded-lg shadow-inner relative group">
                 <div
                   class="absolute right-2 top-2 cursor-pointer copy-button"
                   @click="copyContent(responseContent)"
@@ -130,7 +130,7 @@ const responseMessage = computed(() => {
                 >
                   <icon-copy />
                 </div>
-                <pre class="p-4 text-gray-300 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ responseContent }}</pre>
+                <pre class="response-pre p-4 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ responseContent }}</pre>
               </div>
               <a-empty v-else description="暂无响应数据" />
             </div>
@@ -141,7 +141,7 @@ const responseMessage = computed(() => {
         <a-tab-pane key="headers" title="响应头">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="responseHeadersContent" class="bg-gray-900/50 rounded-lg shadow-inner relative group">
+              <div v-if="responseHeadersContent" class="response-code-shell rounded-lg shadow-inner relative group">
                 <div
                   class="absolute right-2 top-2 cursor-pointer copy-button"
                   @click="copyContent(responseHeadersContent)"
@@ -149,7 +149,7 @@ const responseMessage = computed(() => {
                 >
                   <icon-copy />
                 </div>
-                <pre class="p-4 text-gray-300 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ responseHeadersContent }}</pre>
+                <pre class="response-pre p-4 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ responseHeadersContent }}</pre>
               </div>
               <a-empty v-else description="暂无响应头数据" />
             </div>
@@ -160,7 +160,7 @@ const responseMessage = computed(() => {
         <a-tab-pane key="request" title="请求信息">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="requestContent" class="bg-gray-900/50 rounded-lg shadow-inner relative group">
+              <div v-if="requestContent" class="response-code-shell rounded-lg shadow-inner relative group">
                 <div
                   class="absolute right-2 top-2 cursor-pointer copy-button"
                   @click="copyContent(requestContent)"
@@ -168,7 +168,7 @@ const responseMessage = computed(() => {
                 >
                   <icon-copy />
                 </div>
-                <pre class="p-4 text-gray-300 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ requestContent }}</pre>
+                <pre class="response-pre p-4 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ requestContent }}</pre>
               </div>
               <a-empty v-else description="暂无请求数据" />
             </div>
@@ -179,9 +179,9 @@ const responseMessage = computed(() => {
         <a-tab-pane key="validation" title="验证结果">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="response.data?.validation_results?.length" class="bg-gray-900/50 rounded-lg shadow-inner p-4">
+              <div v-if="response.data?.validation_results?.length" class="response-code-shell rounded-lg shadow-inner p-4">
                 <div v-for="(result, index) in response.data.validation_results" :key="index"
-                  class="flex flex-col p-3 rounded-md mb-3"
+                  class="validation-item flex flex-col p-3 rounded-md mb-3"
                   :class="{'bg-green-900/10': result.check_result === 'pass', 'bg-red-900/10': result.check_result !== 'pass'}"
                 >
                   <!-- 验证结果标题栏 -->
@@ -190,7 +190,7 @@ const responseMessage = computed(() => {
                       <a-tag :color="result.check_result === 'pass' ? 'green' : 'red'" class="!font-medium !flex-shrink-0">
                         {{ result.check_result === 'pass' ? '通过' : '失败' }}
                       </a-tag>
-                      <span class="text-gray-300 font-medium">{{ result.comparator }}</span>
+                      <span class="response-pre font-medium">{{ result.comparator }}</span>
                     </div>
                   </div>
 
@@ -198,15 +198,15 @@ const responseMessage = computed(() => {
                   <div class="ml-1 flex flex-col gap-2">
                     <!-- 实际值 -->
                     <div class="flex flex-col gap-1">
-                      <div class="text-gray-400 text-sm">实际值:
-                        <span class="text-gray-300 font-mono">{{ result.check_value }}</span>
+                      <div class="response-summary-meta text-sm">实际值:
+                        <span class="response-pre font-mono">{{ result.check_value }}</span>
                       </div>
                     </div>
 
                     <!-- 期望值 -->
                     <div class="flex flex-col gap-1">
-                      <div class="text-gray-400 text-sm">期望值:
-                        <span class="text-gray-300 font-mono">{{ result.expect_value }}</span>
+                      <div class="response-summary-meta text-sm">期望值:
+                        <span class="response-pre font-mono">{{ result.expect_value }}</span>
                       </div>
                     </div>
 
@@ -226,14 +226,14 @@ const responseMessage = computed(() => {
         <a-tab-pane key="variables" title="提取变量">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="response.data?.extracted_variables && Object.keys(response.data.extracted_variables).length" class="bg-gray-900/50 rounded-lg shadow-inner p-4">
+              <div v-if="response.data?.extracted_variables && Object.keys(response.data.extracted_variables).length" class="response-code-shell rounded-lg shadow-inner p-4">
                 <div v-for="(value, key) in response.data.extracted_variables" :key="key"
-                  class="flex flex-col p-3 rounded-md mb-3 bg-gray-800/30 hover:bg-gray-800/50"
+                  class="extracted-item flex flex-col p-3 rounded-md mb-3"
                 >
                   <div class="flex items-center">
                     <span class="text-blue-400 font-medium font-mono">${{ key }}</span>
                   </div>
-                  <div class="mt-2 text-gray-300 font-mono text-sm break-all">{{ value }}</div>
+                  <div class="response-pre mt-2 font-mono text-sm break-all">{{ value }}</div>
                 </div>
               </div>
               <a-empty v-else description="暂无提取变量" />
@@ -245,7 +245,7 @@ const responseMessage = computed(() => {
         <a-tab-pane key="complete" title="完整数据">
           <div class="h-full overflow-auto text-left">
             <div class="p-4">
-              <div v-if="response.data" class="bg-gray-900/50 rounded-lg shadow-inner relative group">
+              <div v-if="response.data" class="response-code-shell rounded-lg shadow-inner relative group">
                 <div
                   class="absolute right-2 top-2 cursor-pointer copy-button"
                   @click="copyContent(completeContent)"
@@ -253,7 +253,7 @@ const responseMessage = computed(() => {
                 >
                   <icon-copy />
                 </div>
-                <pre class="p-4 text-gray-300 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ completeContent }}</pre>
+                <pre class="response-pre p-4 font-mono text-sm leading-6 whitespace-pre-wrap break-all text-left">{{ completeContent }}</pre>
               </div>
               <a-empty v-else description="暂无响应数据" />
             </div>
@@ -266,6 +266,61 @@ const responseMessage = computed(() => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+.api-response {
+  --response-summary-border: rgba(148, 163, 184, 0.16);
+  --response-summary-text: var(--color-text-3);
+  --response-shell-bg: rgba(248, 250, 252, 0.98);
+  --response-shell-text: var(--color-text-2);
+  --response-tab-border: rgba(148, 163, 184, 0.16);
+  --response-tab-text: var(--color-text-3);
+  --response-tab-active: rgb(var(--primary-6));
+  --response-copy-bg: rgba(241, 245, 249, 0.98);
+  --response-copy-hover-bg: rgba(226, 232, 240, 1);
+  --response-copy-icon: var(--color-text-2);
+  --response-extracted-bg: rgba(248, 250, 252, 0.92);
+  --response-extracted-hover-bg: rgba(241, 245, 249, 1);
+}
+
+.response-summary {
+  border-color: var(--response-summary-border);
+}
+
+.response-summary-label,
+.response-summary-meta {
+  color: var(--response-summary-text);
+}
+
+.response-code-shell {
+  background: var(--response-shell-bg);
+}
+
+.response-pre {
+  color: var(--response-shell-text);
+}
+
+.extracted-item {
+  background: var(--response-extracted-bg);
+}
+
+.extracted-item:hover {
+  background: var(--response-extracted-hover-bg);
+}
+
+:global(body.api-testing-theme) .api-response {
+  --response-summary-border: rgb(55, 65, 81);
+  --response-summary-text: rgb(156, 163, 175);
+  --response-shell-bg: rgba(17, 24, 39, 0.5);
+  --response-shell-text: rgb(209, 213, 219);
+  --response-tab-border: rgb(55, 65, 81);
+  --response-tab-text: rgb(156, 163, 175);
+  --response-tab-active: rgb(var(--primary-6));
+  --response-copy-bg: rgba(31, 41, 55, 0.82);
+  --response-copy-hover-bg: rgba(55, 65, 81, 1);
+  --response-copy-icon: rgb(209, 213, 219);
+  --response-extracted-bg: rgba(31, 41, 55, 0.3);
+  --response-extracted-hover-bg: rgba(31, 41, 55, 0.5);
+}
+
 :deep(.arco-tabs) {
   @apply h-full flex flex-col;
 
@@ -278,7 +333,7 @@ const responseMessage = computed(() => {
   }
 
   .arco-tabs-header {
-    @apply border-b border-gray-700;
+    border-bottom: 1px solid var(--response-tab-border);
   }
 
   .arco-tabs-nav-tab {
@@ -286,10 +341,10 @@ const responseMessage = computed(() => {
   }
 
   .arco-tabs-tab {
-    @apply text-gray-400;
+    color: var(--response-tab-text);
 
     &.arco-tabs-tab-active {
-      @apply text-blue-500;
+      color: var(--response-tab-active);
     }
   }
 }
@@ -309,15 +364,22 @@ const responseMessage = computed(() => {
 }
 
 :deep(.arco-btn-text) {
-  @apply bg-gray-800/80 p-2 rounded hover:bg-blue-500/20 hover:text-blue-500;
+  @apply p-2 rounded hover:text-blue-500;
+  background: var(--response-copy-bg);
 }
 
 /* 新的复制按钮样式 */
 .copy-button {
-  @apply flex items-center justify-center w-8 h-8 bg-gray-800 rounded hover:bg-gray-700;
+  @apply flex items-center justify-center w-8 h-8 rounded;
+  background: var(--response-copy-bg);
+
+  &:hover {
+    background: var(--response-copy-hover-bg);
+  }
 
   :deep(svg) {
-    @apply w-5 h-5 text-gray-300 hover:text-white;
+    @apply w-5 h-5 hover:text-white;
+    color: var(--response-copy-icon);
   }
 }
 </style>

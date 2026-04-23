@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, h } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { IconRefresh } from '@arco-design/web-vue/es/icon'
 import { syncApi, type SyncHistory } from '../../services/syncService'
 import type { TableColumnData } from '@arco-design/web-vue'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.isBlack)
 const loading = ref(false)
 const histories = ref<SyncHistory[]>([])
 const total = ref(0)
@@ -60,32 +63,24 @@ const fetchHistories = async () => {
       page: currentPage.value,
       page_size: pageSize.value
     })
-    
-    // 打印原始响应，帮助调试
-    console.log('同步历史API响应:', response);
-    
-    // 确保我们使用的是响应中的data字段
-    const responseData = response.data;
-    
-    // 检查API返回的数据结构
+
+    const responseData = response.data
+
     if ((responseData as any).results) {
-      // 新的API结构
-      histories.value = (responseData as any).results;
-      total.value = (responseData as any).count || 0;
+      histories.value = (responseData as any).results
+      total.value = (responseData as any).count || 0
     } else if (responseData.histories) {
-      // 旧的API结构
-      histories.value = responseData.histories;
-      total.value = responseData.total || 0;
+      histories.value = responseData.histories
+      total.value = responseData.total || 0
     } else {
-      console.error('未知的API响应结构:', responseData);
-      histories.value = [];
-      total.value = 0;
+      histories.value = []
+      total.value = 0
     }
   } catch (error) {
     Message.error('获取同步历史失败')
     console.error(error)
-    histories.value = [];
-    total.value = 0;
+    histories.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
@@ -273,7 +268,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="sync-history" :class="isDarkTheme ? 'sync-history--dark' : 'sync-history--light'">
     <div class="flex justify-end mb-6">
       <a-button type="outline" :loading="loading" @click="fetchHistories">
         <template #icon>
@@ -374,28 +369,25 @@ onMounted(() => {
       v-model:visible="showDetailModal"
       title="同步历史详情"
       :width="900"
-      class="custom-card"
+      :modal-class="isDarkTheme ? 'sync-history-modal sync-history-modal--dark' : 'sync-history-modal sync-history-modal--light'"
       @cancel="currentHistory = null"
     >
-      <!-- 自定义描述列表 -->
-      <div class="bg-gray-900/30 p-3 rounded-lg">
+      <div class="history-overview p-3 rounded-lg">
         <div class="grid grid-cols-4 gap-3">
-          <!-- 配置名称 -->
-          <div class="border border-gray-700 rounded">
-            <div class="bg-gray-800/70 py-2 px-3 font-medium text-gray-400 border-b border-gray-700">
+          <div class="detail-cell rounded">
+            <div class="detail-cell-title py-2 px-3 font-medium border-b">
               配置名称
             </div>
-            <div class="bg-gray-800/30 py-2 px-3 text-gray-300">
+            <div class="detail-cell-body py-2 px-3">
               {{ currentHistory?.sync_config_info?.name || currentHistory?.config?.name || '-' }}
             </div>
           </div>
-          
-          <!-- 同步状态 -->
-          <div class="border border-gray-700 rounded">
-            <div class="bg-gray-800/70 py-2 px-3 font-medium text-gray-400 border-b border-gray-700">
+
+          <div class="detail-cell rounded">
+            <div class="detail-cell-title py-2 px-3 font-medium border-b">
               同步状态
             </div>
-            <div class="bg-gray-800/30 py-2 px-3 text-gray-300">
+            <div class="detail-cell-body py-2 px-3">
               <span 
                 :class="[
                   'px-2 py-0.5 rounded text-white', 
@@ -408,39 +400,36 @@ onMounted(() => {
               </span>
             </div>
           </div>
-          
-          <!-- 操作人 -->
-          <div class="border border-gray-700 rounded">
-            <div class="bg-gray-800/70 py-2 px-3 font-medium text-gray-400 border-b border-gray-700">
+
+          <div class="detail-cell rounded">
+            <div class="detail-cell-title py-2 px-3 font-medium border-b">
               操作人
             </div>
-            <div class="bg-gray-800/30 py-2 px-3 text-gray-300 text-xs">
+            <div class="detail-cell-body py-2 px-3 text-xs">
               <div>{{ currentHistory?.operator_info?.username || currentHistory?.created_by_info?.username || '-' }}</div>
-              <div class="text-gray-400 mt-0.5">
+              <div class="detail-cell-meta mt-0.5">
                 {{ currentHistory?.sync_time 
                   ? new Date(currentHistory.sync_time).toLocaleString() 
                   : (currentHistory?.created_at ? new Date(currentHistory.created_at).toLocaleString() : '-') }}
               </div>
             </div>
           </div>
-          
-          <!-- 错误信息 -->
-          <div class="border border-gray-700 rounded">
-            <div class="bg-gray-800/70 py-2 px-3 font-medium text-gray-400 border-b border-gray-700">
+
+          <div class="detail-cell rounded">
+            <div class="detail-cell-title py-2 px-3 font-medium border-b">
               错误信息
             </div>
-            <div class="bg-gray-800/30 py-2 px-3 text-gray-300 text-xs overflow-auto max-h-[60px]">
+            <div class="detail-cell-body detail-cell-body--scroll py-2 px-3 text-xs overflow-auto max-h-[60px]">
               {{ currentHistory?.error_message || '-' }}
             </div>
           </div>
-          
-          <!-- 同步字段 -->
-          <div class="border border-gray-700 rounded col-span-4">
-            <div class="bg-gray-800/70 py-1.5 px-3 font-medium text-gray-400 border-b border-gray-700 flex items-center justify-between">
+
+          <div class="detail-cell detail-cell--wide rounded col-span-4">
+            <div class="detail-cell-title py-1.5 px-3 font-medium border-b flex items-center justify-between">
               <span>同步字段</span>
               <span class="text-xs font-normal">共 {{ currentHistory?.sync_fields?.length || 0 }} 个字段</span>
             </div>
-            <div class="bg-gray-800/30 p-2">
+            <div class="detail-cell-body p-2">
               <div v-if="currentHistory?.sync_fields?.length" class="flex flex-wrap gap-1.5">
                 <a-tag
                   v-for="field in currentHistory.sync_fields"
@@ -451,85 +440,78 @@ onMounted(() => {
                   {{ getFieldDescription(field) }}
                 </a-tag>
               </div>
-              <div v-else class="text-gray-400 text-sm">暂无同步字段</div>
+              <div v-else class="detail-empty text-sm">暂无同步字段</div>
             </div>
           </div>
         </div>
       </div>
-      
-      <!-- 显示新旧数据对比 -->
+
       <div v-if="currentHistory?.old_data || currentHistory?.new_data" class="mt-3">
         <div class="mb-3">
           <div class="flex items-center justify-between">
-            <h3 class="text-gray-400 text-sm font-medium flex items-center">
+            <h3 class="diff-title text-sm font-medium flex items-center">
               <span class="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full mr-1.5"></span>
               数据变更详情
             </h3>
             <a-button
               type="text"
               size="mini"
-              class="text-gray-400 hover:text-gray-300"
+              class="diff-toggle-btn"
               @click="showUnchanged = !showUnchanged"
             >
               {{ showUnchanged ? '收起未变更字段' : '显示未变更字段' }}
             </a-button>
           </div>
         </div>
-        
-        <div class="bg-gray-900/30 rounded-lg border border-gray-700/50">
-          <!-- 表头 -->
-          <div class="grid grid-cols-12 gap-3 py-1.5 px-3 bg-gray-800/50 border-b border-gray-700/50">
-            <div class="col-span-2 text-gray-400 text-xs font-medium">字段名称</div>
-            <div class="col-span-5 text-gray-400 text-xs font-medium flex items-center">
+
+        <div class="diff-shell rounded-lg border">
+          <div class="diff-header grid grid-cols-12 gap-3 py-1.5 px-3 border-b">
+            <div class="col-span-2 diff-header-text text-xs font-medium">字段名称</div>
+            <div class="col-span-5 diff-header-text text-xs font-medium flex items-center">
               <span class="inline-block w-1.5 h-1.5 bg-red-500/70 rounded-full mr-1.5"></span>
               变更前
             </div>
-            <div class="col-span-5 text-gray-400 text-xs font-medium flex items-center">
+            <div class="col-span-5 diff-header-text text-xs font-medium flex items-center">
               <span class="inline-block w-1.5 h-1.5 bg-green-500/70 rounded-full mr-1.5"></span>
               变更后
             </div>
           </div>
-          
-          <!-- 字段列表 -->
-          <div class="divide-y divide-gray-700/50">
+
+          <div class="diff-list">
             <div
               v-for="field in diffFields"
               :key="field.key"
               v-show="field.changed || showUnchanged"
               :class="[
-                'grid grid-cols-12 gap-3 py-2 px-3',
-                field.changed ? 'bg-blue-500/5' : '',
-                'hover:bg-gray-800/30'
+                'grid grid-cols-12 gap-3 py-2 px-3 diff-row',
+                field.changed ? 'diff-row--changed' : ''
               ]"
             >
-              <!-- 字段名称 -->
               <div class="col-span-2 flex flex-col justify-center">
-                <div class="text-sm text-gray-300 font-medium">
+                <div class="diff-name text-sm font-medium">
                   {{ getFieldDescription(field.key) }}
                 </div>
-                <div class="text-xs text-gray-500 mt-0.5">
+                <div class="diff-key text-xs mt-0.5">
                   {{ field.key }}
                 </div>
               </div>
-              
-              <!-- 旧值 -->
+
               <div class="col-span-5">
                 <div 
                   :class="[
-                    'rounded p-1 text-sm font-mono leading-5',
-                    field.changed ? 'bg-red-500/10 text-red-300' : 'bg-gray-800/30 text-gray-400'
+                    'rounded p-1 text-sm font-mono leading-5 diff-value-box',
+                    field.changed ? 'diff-value-box--old' : 'diff-value-box--same'
                   ]"
                 >
                   <pre class="whitespace-pre-wrap break-all text-left" v-html="formatValue(field.oldValue)"></pre>
                 </div>
               </div>
-              
-              <!-- 新值 -->
+
               <div class="col-span-5">
                 <div 
                   :class="[
-                    'rounded p-1 text-sm font-mono leading-5',
-                    field.changed ? 'bg-green-500/10 text-green-300' : 'bg-gray-800/30 text-gray-400'
+                    'rounded p-1 text-sm font-mono leading-5 diff-value-box',
+                    field.changed ? 'diff-value-box--new' : 'diff-value-box--same'
                   ]"
                 >
                   <pre class="whitespace-pre-wrap break-all text-left" v-html="formatValue(field.newValue)"></pre>
@@ -545,8 +527,24 @@ onMounted(() => {
 
 <style scoped>
 @reference "tailwindcss";
-.custom-card {
-  @apply bg-gray-800 rounded-lg shadow-lg border border-gray-700/50;
+.sync-history {
+  --sh-text: var(--color-text-1);
+  --sh-muted: var(--color-text-2);
+  --sh-subtle: var(--color-text-3);
+  --sh-border: rgba(148, 163, 184, 0.18);
+  --sh-table-header: rgba(248, 250, 252, 0.98);
+  --sh-table-cell: rgba(255, 255, 255, 0.94);
+  --sh-table-hover: rgba(59, 130, 246, 0.06);
+}
+
+.sync-history--dark {
+  --sh-text: rgb(229, 231, 235);
+  --sh-muted: rgb(203, 213, 225);
+  --sh-subtle: rgb(156, 163, 175);
+  --sh-border: rgba(71, 85, 105, 0.32);
+  --sh-table-header: rgba(15, 23, 42, 0.88);
+  --sh-table-cell: rgba(31, 41, 55, 0.9);
+  --sh-table-hover: rgba(30, 41, 59, 0.62);
 }
 
 :deep(.arco-table) {
@@ -554,63 +552,139 @@ onMounted(() => {
 }
 
 :deep(.arco-table-th) {
-  @apply bg-gray-950 text-gray-200 border-gray-700;
+  background: var(--sh-table-header) !important;
+  border-color: var(--sh-border) !important;
+  color: var(--sh-text) !important;
 }
 
 :deep(.arco-table-td) {
-  @apply bg-gray-800 text-gray-300 border-gray-700;
+  background: var(--sh-table-cell) !important;
+  color: var(--sh-muted) !important;
+  border-color: var(--sh-border) !important;
 }
 
 :deep(.arco-table-tr:hover .arco-table-td) {
-  @apply bg-gray-700;
+  background: var(--sh-table-hover) !important;
 }
 
-:deep(.arco-modal) {
-  @apply bg-gray-800;
+:deep(.sync-history-modal--light) {
+  --shm-bg: rgba(255, 255, 255, 0.99);
+  --shm-card: rgba(248, 250, 252, 0.98);
+  --shm-card-alt: rgba(255, 255, 255, 0.98);
+  --shm-border: rgba(148, 163, 184, 0.18);
+  --shm-text: var(--color-text-1);
+  --shm-subtle: var(--color-text-3);
+  --shm-key: rgba(100, 116, 139, 0.92);
+  --shm-diff-header: rgba(241, 245, 249, 0.96);
+  --shm-diff-row-hover: rgba(148, 163, 184, 0.08);
+  --shm-diff-row-changed: rgba(59, 130, 246, 0.05);
+  --shm-diff-old: rgba(239, 68, 68, 0.08);
+  --shm-diff-new: rgba(16, 185, 129, 0.08);
+  --shm-diff-same: rgba(248, 250, 252, 0.98);
 }
 
-:deep(.arco-modal-header) {
-  @apply bg-gray-800 border-gray-700;
+:deep(.sync-history-modal--dark) {
+  --shm-bg: rgba(31, 41, 55, 0.98);
+  --shm-card: rgba(17, 24, 39, 0.42);
+  --shm-card-alt: rgba(31, 41, 55, 0.72);
+  --shm-border: rgba(71, 85, 105, 0.32);
+  --shm-text: rgb(229, 231, 235);
+  --shm-subtle: rgb(156, 163, 175);
+  --shm-key: rgba(107, 114, 128, 0.92);
+  --shm-diff-header: rgba(17, 24, 39, 0.5);
+  --shm-diff-row-hover: rgba(31, 41, 55, 0.62);
+  --shm-diff-row-changed: rgba(59, 130, 246, 0.08);
+  --shm-diff-old: rgba(239, 68, 68, 0.1);
+  --shm-diff-new: rgba(16, 185, 129, 0.12);
+  --shm-diff-same: rgba(31, 41, 55, 0.45);
 }
 
-:deep(.arco-modal-title) {
-  @apply text-gray-200;
+:deep(.sync-history-modal .arco-modal) {
+  background: var(--shm-bg) !important;
+  border: 1px solid var(--shm-border) !important;
 }
 
-:deep(.arco-modal-body) {
+:deep(.sync-history-modal .arco-modal-header),
+:deep(.sync-history-modal .arco-modal-footer) {
+  background: var(--shm-bg) !important;
+  border-color: var(--shm-border) !important;
+}
+
+:deep(.sync-history-modal .arco-modal-title) {
+  color: var(--shm-text) !important;
+}
+
+:deep(.sync-history-modal .arco-modal-body) {
+  background: var(--shm-bg) !important;
   @apply p-4;
 }
 
-:deep(.arco-modal-footer) {
-  @apply border-t border-gray-700 py-2;
+.history-overview,
+.diff-shell {
+  background: var(--shm-card);
+  border: 1px solid var(--shm-border);
 }
 
-.json-key {
-  @apply text-blue-400;
+.detail-cell {
+  background: var(--shm-card-alt);
+  border: 1px solid var(--shm-border);
 }
 
-.json-string {
-  @apply text-green-400;
+.detail-cell-title,
+.detail-cell-body,
+.diff-title,
+.diff-name,
+.diff-header-text {
+  color: var(--shm-text);
 }
 
-.json-number {
-  @apply text-yellow-400;
+.detail-cell-title {
+  border-bottom-color: var(--shm-border);
 }
 
-.json-boolean {
-  @apply text-purple-400;
+.detail-cell-meta,
+.detail-empty,
+.diff-key,
+.diff-toggle-btn {
+  color: var(--shm-subtle) !important;
 }
 
-.json-null {
-  @apply text-red-400;
+.diff-header {
+  background: var(--shm-diff-header);
+  border-bottom-color: var(--shm-border);
 }
 
-.json-diff-old {
-  @apply bg-red-500/70;
+.diff-list {
+  border-top: 0;
 }
 
-.json-diff-new {
-  @apply bg-green-500/70;
+.diff-row {
+  border-top: 1px solid var(--shm-border);
+}
+
+.diff-row:hover {
+  background: var(--shm-diff-row-hover);
+}
+
+.diff-row--changed {
+  background: var(--shm-diff-row-changed);
+}
+
+.diff-value-box {
+  color: var(--shm-text);
+}
+
+.diff-value-box--old {
+  background: var(--shm-diff-old);
+}
+
+.diff-value-box--new {
+  background: var(--shm-diff-new);
+}
+
+.diff-value-box--same {
+  background: var(--shm-diff-same);
+  color: var(--shm-subtle);
 }
 
 .diff-panel {

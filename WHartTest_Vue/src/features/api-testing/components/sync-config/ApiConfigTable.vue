@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Message } from '@arco-design/web-vue'
-import { IconEmpty } from '@arco-design/web-vue/es/icon'
+import { computed } from 'vue'
+import { IconEmpty, IconPlus } from '@arco-design/web-vue/es/icon'
 import type { TableColumnData } from '@arco-design/web-vue'
 import type { ApiSyncConfig } from '../../services/syncService'
+import { useThemeStore } from '@/store/themeStore'
+
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 const props = defineProps<{
   loading: boolean
@@ -80,7 +83,7 @@ const columns: TableColumnData[] = [
 </script>
 
 <template>
-  <div class="bg-gray-800 rounded-lg shadow-xl border border-gray-700/50">
+  <div class="api-config-table-shell rounded-lg shadow-xl border" :class="isDarkTheme ? 'api-config-table-shell--dark' : 'api-config-table-shell--light'">
     <a-table
       :loading="loading"
       :data="configs"
@@ -99,8 +102,8 @@ const columns: TableColumnData[] = [
     >
       <template #empty>
         <div class="flex flex-col items-center justify-center py-16">
-          <icon-empty class="text-gray-600 w-16 h-16 mb-4" />
-          <div class="text-gray-400 mb-4">暂无同步配置</div>
+          <icon-empty class="empty-icon w-16 h-16 mb-4" />
+          <div class="empty-text mb-4">暂无同步配置</div>
           <a-button type="outline" size="large" @click="emit('create')">
             <template #icon>
               <icon-plus />
@@ -154,18 +157,18 @@ const columns: TableColumnData[] = [
       <template #created_info="{ record }">
         <div class="flex flex-col gap-1 text-sm">
           <div class="flex items-center gap-1">
-            <span class="text-gray-400">创建者：</span>
+            <span class="config-meta-label">创建者：</span>
             <span>{{ record.created_by_info?.username || '-' }}</span>
           </div>
           <div class="flex items-center gap-1">
-            <span class="text-gray-400">时间：</span>
+            <span class="config-meta-label">时间：</span>
             <span>{{ record.created_at ? new Date(record.created_at).toLocaleString() : '-' }}</span>
           </div>
         </div>
       </template>
 
       <template #index="{ rowIndex }">
-        <span class="text-gray-400">{{ rowIndex + 1 }}</span>
+        <span class="config-index-text">{{ rowIndex + 1 }}</span>
       </template>
 
       <template #operations="{ record }">
@@ -215,23 +218,70 @@ const columns: TableColumnData[] = [
 
 <style scoped>
 @reference "tailwindcss";
+.api-config-table-shell {
+  --api-table-bg: rgba(255, 255, 255, 0.96);
+  --api-table-border: rgba(148, 163, 184, 0.18);
+  --api-table-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+  --api-table-header-bg: rgba(248, 250, 252, 0.96);
+  --api-table-header-text: var(--color-text-1);
+  --api-table-cell-text: var(--color-text-2);
+  --api-table-meta-text: var(--color-text-3);
+  --api-table-row-hover: rgba(15, 23, 42, 0.04);
+  --api-table-empty-text: var(--color-text-3);
+  --api-table-empty-icon: rgba(148, 163, 184, 0.72);
+}
+
+.api-config-table-shell--dark {
+  --api-table-bg: rgba(31, 41, 55, 1);
+  --api-table-border: rgba(55, 65, 81, 0.5);
+  --api-table-shadow: 0 12px 26px rgba(2, 6, 23, 0.28);
+  --api-table-header-bg: rgba(17, 24, 39, 0.5);
+  --api-table-header-text: rgb(209, 213, 219);
+  --api-table-cell-text: rgb(209, 213, 219);
+  --api-table-meta-text: rgb(156, 163, 175);
+  --api-table-row-hover: rgba(55, 65, 81, 0.3);
+  --api-table-empty-text: rgb(156, 163, 175);
+  --api-table-empty-icon: rgb(75, 85, 99);
+}
+
+.api-config-table-shell {
+  background: var(--api-table-bg);
+  border-color: var(--api-table-border);
+  box-shadow: var(--api-table-shadow);
+}
+
+.empty-icon,
+.empty-text,
+.config-meta-label,
+.config-index-text {
+  color: var(--api-table-meta-text);
+}
+
 :deep(.custom-table) {
-  @apply bg-transparent;
+  background: transparent;
 }
 
 :deep(.custom-table .arco-table-container) {
-  @apply border-0;
+  border: 0;
 }
 
 :deep(.custom-table .arco-table-th) {
-  @apply bg-gray-900/50 text-gray-300 border-gray-700 font-medium text-sm py-4;
+  background: var(--api-table-header-bg);
+  color: var(--api-table-header-text);
+  border-color: var(--api-table-border);
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 :deep(.custom-table .arco-table-td) {
-  @apply bg-transparent text-gray-300 border-gray-700/50;
+  background: transparent;
+  color: var(--api-table-cell-text);
+  border-color: var(--api-table-border);
 }
 
 :deep(.custom-table .arco-table-tr:hover .arco-table-td) {
-  @apply bg-gray-700/30;
+  background: var(--api-table-row-hover);
 }
 </style> 

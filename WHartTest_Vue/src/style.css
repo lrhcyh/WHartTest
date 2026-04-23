@@ -1198,11 +1198,15 @@ button:focus-visible {
 :root[data-theme='black'] .testcase-management-container .testcase-form .steps-section,
 :root[data-theme='black'] .testcase-management-container .testcase-form .screenshots-section,
 :root[data-theme='black'] .testcase-management-container .testcase-form .custom-steps-table,
-:root[data-theme='black'] .testcase-management-container .testcase-detail .precondition-content,
-:root[data-theme='black'] .testcase-management-container .testcase-detail .notes-content,
-:root[data-theme='black'] .testcase-management-container .testcase-detail .screenshot-item,
+:root[data-theme='black'] .testcase-management-container .testcase-detail-content .precondition-content,
+:root[data-theme='black'] .testcase-management-container .testcase-detail-content .notes-content,
+:root[data-theme='black'] .testcase-management-container .testcase-detail-content .screenshot-item,
 :root[data-theme='black'] .testcase-management-container .enhanced-preview-container,
 :root[data-theme='black'] .testcase-management-container .preview-sidebar,
+:root[data-theme='black'] .testcase-management-container .preview-main,
+:root[data-theme='black'] .testcase-management-container .preview-image,
+:root[data-theme='black'] .testcase-management-container .nav-button,
+:root[data-theme='black'] .testcase-management-container .screenshot-checkbox,
 :root[data-theme='black'] .testcase-management-container .file-item,
 :root[data-theme='black'] .testcase-management-container .module-action-button {
   background: var(--theme-shell-soft) !important;
@@ -1212,13 +1216,15 @@ button:focus-visible {
 
 :root[data-theme='black'] .testcase-management-container .testcase-content,
 :root[data-theme='black'] .testcase-management-container .testcase-form-container,
-:root[data-theme='black'] .testcase-management-container .testcase-detail .precondition-content,
-:root[data-theme='black'] .testcase-management-container .testcase-detail .notes-content,
-:root[data-theme='black'] .testcase-management-container .testcase-detail .screenshot-item,
+:root[data-theme='black'] .testcase-management-container .testcase-detail-content .precondition-content,
+:root[data-theme='black'] .testcase-management-container .testcase-detail-content .notes-content,
+:root[data-theme='black'] .testcase-management-container .testcase-detail-content .screenshot-item,
 :root[data-theme='black'] .testcase-management-container .testcase-form .steps-section,
 :root[data-theme='black'] .testcase-management-container .testcase-form .screenshots-section,
 :root[data-theme='black'] .testcase-management-container .testcase-form .custom-steps-table,
 :root[data-theme='black'] .testcase-management-container .preview-sidebar,
+:root[data-theme='black'] .testcase-management-container .preview-image,
+:root[data-theme='black'] .testcase-management-container .nav-button,
 :root[data-theme='black'] .testcase-management-container .file-item {
   border: 1px solid var(--theme-border) !important;
   box-shadow: none !important;
@@ -1238,7 +1244,7 @@ button:focus-visible {
 
 :root[data-theme='black'] .testcase-management-container .testcase-form .custom-steps-table td,
 :root[data-theme='black'] .testcase-management-container .testcase-form .step-row,
-:root[data-theme='black'] .testcase-management-container .testcase-detail .screenshot-info-container,
+:root[data-theme='black'] .testcase-management-container .testcase-detail-content .screenshot-info-container,
 :root[data-theme='black'] .testcase-management-container .preview-info,
 :root[data-theme='black'] .testcase-management-container .thumbnail-item,
 :root[data-theme='black'] .testcase-management-container .image-error-placeholder {
@@ -1250,7 +1256,7 @@ button:focus-visible {
 :root[data-theme='black'] .testcase-management-container .testcase-form .step-row:hover,
 :root[data-theme='black'] .testcase-management-container .drag-handle:hover,
 :root[data-theme='black'] .testcase-management-container .module-action-button:hover,
-:root[data-theme='black'] .testcase-management-container .testcase-detail .screenshot-item:hover,
+:root[data-theme='black'] .testcase-management-container .testcase-detail-content .screenshot-item:hover,
 :root[data-theme='black'] .testcase-management-container .thumbnail-item:hover {
   background: rgba(var(--theme-accent-rgb), 0.08) !important;
   border-color: rgba(var(--theme-accent-rgb), 0.36) !important;
@@ -1259,7 +1265,7 @@ button:focus-visible {
 
 :root[data-theme='black'] .testcase-management-container .ghost-row,
 :root[data-theme='black'] .testcase-management-container .chosen-row,
-:root[data-theme='black'] .testcase-management-container .testcase-detail .screenshot-item.selected,
+:root[data-theme='black'] .testcase-management-container .testcase-detail-content .screenshot-item.selected,
 :root[data-theme='black'] .testcase-management-container .thumbnail-item.active,
 :root[data-theme='black'] .testcase-management-container .module-action-button:focus {
   background: rgba(var(--theme-accent-rgb), 0.14) !important;

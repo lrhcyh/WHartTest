@@ -66,7 +66,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col gap-4 p-4">
+  <div class="testcase-report-wrapper h-full flex flex-col gap-4 p-4">
     <!-- 头部 -->
     <div class="report-card px-6 py-4">
       <div class="flex items-center justify-between">
@@ -118,22 +118,62 @@ onMounted(() => {
 <style scoped>
 @reference "tailwindcss";
 .report-card {
-  @apply bg-gray-800/50 rounded-lg;
+  background: color-mix(in srgb, var(--api-report-card-bg) 88%, var(--theme-page-bg) 12%);
+  border: 1px solid var(--api-report-shell-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
 }
 
 .report-title {
-  @apply text-lg font-medium text-gray-100;
+  @apply text-lg font-medium;
+  color: var(--api-report-text);
 }
 
 .custom-back-button {
-  @apply !bg-gray-700/50 !border-gray-600 !text-gray-300;
+  background: var(--api-report-inline-bg) !important;
+  border-color: var(--api-report-inline-border) !important;
+  color: var(--api-report-text-muted) !important;
 
   &:hover {
-    @apply !bg-gray-700 !border-gray-500 !text-gray-200;
+    background: var(--api-report-card-hover) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.2) !important;
+    color: var(--api-report-text) !important;
   }
 
   &:active {
-    @apply !bg-gray-800 !border-gray-600 !text-gray-300;
+    background: var(--api-report-card-bg) !important;
+    border-color: var(--api-report-inline-border) !important;
+    color: var(--api-report-text-muted) !important;
+  }
+}
+
+:deep(.arco-pagination) {
+  .arco-pagination-item {
+    color: var(--api-report-text-subtle) !important;
+    background: transparent !important;
+    border-color: transparent !important;
+
+    &:hover {
+      color: var(--theme-accent-hover) !important;
+      background: rgba(var(--theme-accent-rgb), 0.1) !important;
+    }
+
+    &.arco-pagination-item-active {
+      color: var(--theme-accent-hover) !important;
+      background: rgba(var(--theme-accent-rgb), 0.14) !important;
+      border-color: rgba(var(--theme-accent-rgb), 0.18) !important;
+    }
+  }
+
+  .arco-pagination-total {
+    color: var(--api-report-text-subtle) !important;
+  }
+
+  .arco-input,
+  .arco-select-view {
+    background: var(--api-report-inline-bg) !important;
+    border-color: var(--api-report-inline-border) !important;
+    color: var(--api-report-text) !important;
   }
 }
 </style>

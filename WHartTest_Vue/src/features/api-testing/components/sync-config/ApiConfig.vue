@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { IconPlus } from '@arco-design/web-vue/es/icon'
 import { syncApi, type ApiSyncConfig } from '../../services/syncService'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import ApiConfigTable from './ApiConfigTable.vue'
 import ApiConfigForm from './ApiConfigForm.vue'
 import ApiConfigDetail from './ApiConfigDetail.vue'
 
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
 const loading = ref(false)
 const configs = ref<ApiSyncConfig[]>([])
 const total = ref(0)
@@ -20,6 +22,7 @@ const isEditing = ref(false)
 const editingConfigId = ref<number | null>(null)
 const selectedRowKeys = ref<number[]>([])
 const currentConfig = ref<ApiSyncConfig | null>(null)
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 const fieldOptions = [
   { label: '请求方法', value: 'method' },
@@ -239,11 +242,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col bg-gray-900">
+  <div class="api-config-page h-full flex flex-col" :class="isDarkTheme ? 'api-config-page--dark' : 'api-config-page--light'">
     <!-- 页面头部 -->
-    <div class="px-8 py-6 bg-gray-800/50 border-b border-gray-700">
+    <div class="api-config-header px-8 py-6 border-b">
       <div class="flex items-center justify-between">
-        <h1 class="text-xl font-semibold text-gray-100">接口同步配置</h1>
+        <h1 class="api-config-title text-xl font-semibold">接口同步配置</h1>
         <a-button type="primary" :loading="loading" @click="handleCreate">
           <template #icon>
             <icon-plus />
@@ -251,7 +254,7 @@ onMounted(() => {
           新建配置
         </a-button>
       </div>
-      <p class="mt-2 text-gray-400 text-sm">管理接口、用例和测试步骤之间的同步关系</p>
+      <p class="api-config-subtitle mt-2 text-sm">管理接口、用例和测试步骤之间的同步关系</p>
     </div>
 
     <!-- 主要内容区域 -->
@@ -272,7 +275,7 @@ onMounted(() => {
     </div>
 
     <!-- 分页区域 -->
-    <div class="px-8 py-4 bg-gray-800/50 border-t border-gray-700">
+    <div class="api-config-footer px-8 py-4 border-t">
       <a-pagination
         :total="total"
         v-model:current="currentPage"
@@ -309,6 +312,54 @@ onMounted(() => {
 
 <style scoped>
 @reference "tailwindcss";
+.api-config-page {
+  --api-config-bg: rgba(255, 255, 255, 0.9);
+  --api-config-header-bg: rgba(248, 250, 252, 0.94);
+  --api-config-footer-bg: rgba(248, 250, 252, 0.92);
+  --api-config-border: rgba(148, 163, 184, 0.18);
+  --api-config-title: var(--color-text-1);
+  --api-config-subtitle: var(--color-text-3);
+  --api-pagination-text: var(--color-text-2);
+  --api-pagination-bg: #ffffff;
+  --api-pagination-border: rgba(148, 163, 184, 0.22);
+  --api-pagination-hover-border: rgb(var(--primary-6));
+}
+
+.api-config-page--dark {
+  --api-config-bg: rgb(17, 24, 39);
+  --api-config-header-bg: rgba(31, 41, 55, 0.5);
+  --api-config-footer-bg: rgba(31, 41, 55, 0.5);
+  --api-config-border: rgba(55, 65, 81, 1);
+  --api-config-title: rgb(243, 244, 246);
+  --api-config-subtitle: rgb(156, 163, 175);
+  --api-pagination-text: rgb(156, 163, 175);
+  --api-pagination-bg: rgba(55, 65, 81, 1);
+  --api-pagination-border: rgba(75, 85, 99, 1);
+  --api-pagination-hover-border: rgb(var(--primary-6));
+}
+
+.api-config-page {
+  background: var(--api-config-bg);
+}
+
+.api-config-header {
+  background: var(--api-config-header-bg);
+  border-color: var(--api-config-border);
+}
+
+.api-config-footer {
+  background: var(--api-config-footer-bg);
+  border-color: var(--api-config-border);
+}
+
+.api-config-title {
+  color: var(--api-config-title);
+}
+
+.api-config-subtitle {
+  color: var(--api-config-subtitle);
+}
+
 /* 添加自定义滚动条样式 */
 .custom-scrollbar {
   scrollbar-width: thin;
@@ -338,15 +389,17 @@ onMounted(() => {
 }
 
 :deep(.arco-pagination-total) {
-  @apply text-gray-400;
+  color: var(--api-pagination-text);
 }
 
 :deep(.arco-pagination-item) {
-  @apply bg-gray-700 border-gray-600 text-gray-300;
+  background: var(--api-pagination-bg);
+  border-color: var(--api-pagination-border);
+  color: var(--api-pagination-text);
 }
 
 :deep(.arco-pagination-item:hover) {
-  @apply border-blue-500;
+  border-color: var(--api-pagination-hover-border);
 }
 
 :deep(.arco-pagination-item-active) {
@@ -354,18 +407,21 @@ onMounted(() => {
 }
 
 :deep(.arco-pagination-jumper) {
-  @apply text-gray-400;
+  color: var(--api-pagination-text);
 }
 
 :deep(.arco-pagination-jumper .arco-input-wrapper) {
-  @apply bg-gray-700 border-gray-600;
+  background: var(--api-pagination-bg);
+  border-color: var(--api-pagination-border);
 }
 
 :deep(.arco-pagination-jumper .arco-input) {
-  @apply text-gray-300;
+  color: var(--api-pagination-text);
 }
 
 :deep(.arco-select-view.arco-pagination-page-size-view) {
-  @apply bg-gray-700 border-gray-600 text-gray-300;
+  background: var(--api-pagination-bg);
+  border-color: var(--api-pagination-border);
+  color: var(--api-pagination-text);
 }
 </style> 

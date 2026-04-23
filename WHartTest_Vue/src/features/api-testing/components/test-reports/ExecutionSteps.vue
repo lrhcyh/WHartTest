@@ -1,9 +1,9 @@
 <template>
   <!-- 执行步骤主容器 - 包含所有测试步骤的垂直列表 -->
-  <div class="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-700/30">
+  <div class="execution-steps-shell rounded-lg border">
     <!-- 标题栏 -->
-    <div class="px-4 py-3 border-b border-gray-700/30">
-      <span class="text-gray-300 text-base font-medium">执行步骤</span>
+    <div class="steps-header px-4 py-3 border-b">
+      <span class="steps-title text-base font-medium">执行步骤</span>
     </div>
     <!-- 步骤列表容器 -->
     <div class="p-4">
@@ -75,7 +75,7 @@
                 </div>
                 <div class="p-2">
                   <!-- 请求信息容器 - 用于显示请求的JSON数据 -->
-                  <pre class="bg-gray-800/30 p-2 rounded text-xs font-mono text-gray-300 overflow-x-auto border border-gray-700/30 max-h-[120px] whitespace-pre-wrap break-all card-content">{{ JSON.stringify(step.request, null, 2) }}</pre>
+                  <pre class="code-pre p-2 rounded text-xs font-mono overflow-x-auto max-h-[120px] whitespace-pre-wrap break-all card-content">{{ JSON.stringify(step.request, null, 2) }}</pre>
                 </div>
               </div>
 
@@ -102,7 +102,7 @@
                 </div>
                 <div class="p-2">
                   <!-- 响应信息容器 - 用于显示响应的JSON数据 -->
-                  <pre class="bg-gray-800/30 p-2 rounded text-xs font-mono text-gray-300 overflow-x-auto border border-gray-700/30 max-h-[120px] whitespace-pre-wrap break-all card-content">{{ JSON.stringify(step.response, null, 2) }}</pre>
+                  <pre class="code-pre p-2 rounded text-xs font-mono overflow-x-auto max-h-[120px] whitespace-pre-wrap break-all card-content">{{ JSON.stringify(step.response, null, 2) }}</pre>
                 </div>
               </div>
 
@@ -185,14 +185,14 @@
                 <div class="p-2">
                   <!-- 提取变量容器 - 用于显示从响应中提取的变量 -->
                   <div class="space-y-2 max-h-[120px] overflow-y-auto card-content">
-                    <div v-for="(value, key) in step.extracted_variables" :key="key" class="bg-gray-800/30 rounded p-2 border border-gray-700/30 hover:bg-gray-800/50 hover:border-gray-600/50 transition-all duration-200">
+                    <div v-for="(value, key) in step.extracted_variables" :key="key" class="variable-item rounded p-2 transition-all duration-200">
                       <div class="flex items-center justify-between">
                         <span class="text-gray-300 text-xs">{{ key }}</span>
                         <a-button type="text" size="mini" @click="copyToClipboard(value)">
                           <template #icon><icon-copy class="text-gray-400 hover:text-green-400" /></template>
                         </a-button>
                       </div>
-                      <div class="mt-1 bg-gray-900/30 rounded px-2 py-1 border border-gray-700/30">
+                      <div class="variable-inline-value mt-1 rounded px-2 py-1">
                         <span class="text-green-400 text-xs font-mono break-all">{{ value }}</span>
                       </div>
                     </div>
@@ -259,7 +259,7 @@
       </template>
       <template v-else-if="currentDrawerType === 'variables'">
         <div class="space-y-3">
-          <div v-for="(value, key) in currentDrawerData" :key="key" class="bg-gray-800/30 rounded-lg p-3 border border-gray-700/30 hover:bg-gray-800/50 hover:border-gray-600/50 transition-all duration-200">
+          <div v-for="(value, key) in currentDrawerData" :key="key" class="variable-item rounded-lg p-3 transition-all duration-200">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-2">
                 <icon-code class="text-green-400" />
@@ -269,14 +269,14 @@
                 <template #icon><icon-copy class="text-gray-400 hover:text-green-400" /></template>
               </a-button>
             </div>
-            <div class="mt-2 bg-gray-900/50 rounded-lg p-3 border border-gray-700/30">
+            <div class="drawer-inline-value mt-2 rounded-lg p-3">
               <div class="text-green-400 font-mono break-all">{{ value }}</div>
             </div>
           </div>
         </div>
       </template>
       <template v-else>
-        <pre class="bg-gray-900/80 backdrop-blur-sm rounded-lg p-4 text-sm font-mono text-gray-300 whitespace-pre-wrap break-all border border-gray-700/30">{{ JSON.stringify(currentDrawerData, null, 2) }}</pre>
+        <pre class="drawer-pre rounded-lg p-4 text-sm font-mono whitespace-pre-wrap break-all">{{ JSON.stringify(currentDrawerData, null, 2) }}</pre>
       </template>
     </div>
   </a-drawer>
@@ -394,6 +394,36 @@ const toggleDrawer = (stepId: number, type: 'request' | 'response' | 'validators
 
 <style scoped>
 @reference "tailwindcss";
+.execution-steps-shell {
+  background: color-mix(in srgb, var(--api-report-card-bg) 88%, var(--theme-page-bg) 12%);
+  border-color: var(--api-report-shell-border);
+  backdrop-filter: blur(10px);
+}
+
+.steps-header {
+  border-color: var(--api-report-shell-border);
+}
+
+.steps-title {
+  color: var(--api-report-text);
+}
+
+.execution-steps-shell .text-gray-300 {
+  color: var(--api-report-text-muted);
+}
+
+.execution-steps-shell .text-gray-400,
+.execution-steps-shell .text-gray-500 {
+  color: var(--api-report-text-subtle);
+}
+
+.code-pre,
+.drawer-pre {
+  background: var(--api-report-inline-bg);
+  border: 1px solid var(--api-report-inline-border);
+  color: var(--api-report-text-muted);
+}
+
 /* 覆盖Arco Design步骤组件的默认样式 */
 :deep(.arco-steps) {
   .arco-step-content {
@@ -401,11 +431,13 @@ const toggleDrawer = (stepId: number, type: 'request' | 'response' | 'validators
   }
 
   .arco-step-title {
-    @apply !text-gray-300 !text-base !font-medium;
+    color: var(--api-report-text) !important;
+    @apply !text-base !font-medium;
   }
 
   .arco-step-description {
-    @apply !text-gray-400 !mt-2;
+    color: var(--api-report-text-subtle) !important;
+    @apply !mt-2;
   }
 }
 
@@ -450,25 +482,49 @@ const toggleDrawer = (stepId: number, type: 'request' | 'response' | 'validators
 
 /* 步骤信息卡片样式 - 用于请求、响应、断言和变量等四个卡片 */
 .step-info-card {
-  @apply bg-gray-800/30 rounded-lg overflow-hidden border border-gray-700/30 transition-all duration-200;
+  @apply rounded-lg overflow-hidden transition-all duration-200;
+  background: var(--api-report-inline-bg);
+  border: 1px solid var(--api-report-inline-border);
 
   &:hover {
-    @apply bg-gray-800/50 border-gray-600/50;
+    background: var(--api-report-card-hover);
+    border-color: rgba(var(--theme-accent-rgb), 0.12);
   }
 }
 
 /* 验证器项目样式 - 断言结果中的每个验证项 */
 .validator-item {
-  @apply bg-gray-800/30 rounded-lg p-3 border border-gray-700/30 transition-all duration-200;
+  @apply rounded-lg p-3 transition-all duration-200;
+  background: var(--api-report-inline-bg);
+  border: 1px solid var(--api-report-inline-border);
 
   &:hover {
-    @apply bg-gray-800/50 border-gray-600/50;
+    background: var(--api-report-card-hover);
+    border-color: rgba(var(--theme-accent-rgb), 0.12);
   }
 }
 
 /* 验证器值样式 - 显示期望值和实际值的容器 */
 .validator-value {
-  @apply flex items-center gap-2 bg-gray-900/30 rounded px-2 py-1 border border-gray-700/30;
+  @apply flex items-center gap-2 rounded px-2 py-1;
+  background: var(--api-report-inline-bg);
+  border: 1px solid var(--api-report-inline-border);
+}
+
+.variable-item {
+  background: var(--api-report-inline-bg);
+  border: 1px solid var(--api-report-inline-border);
+}
+
+.variable-item:hover {
+  background: var(--api-report-card-hover);
+  border-color: rgba(var(--theme-accent-rgb), 0.12);
+}
+
+.variable-inline-value,
+.drawer-inline-value {
+  background: color-mix(in srgb, var(--api-report-inline-bg) 82%, var(--theme-page-bg) 18%);
+  border: 1px solid var(--api-report-inline-border);
 }
 
 /* 最后一个步骤的状态概览行样式 */
@@ -484,23 +540,20 @@ const toggleDrawer = (stepId: number, type: 'request' | 'response' | 'validators
   }
 
   .arco-drawer-header {
-    @apply !bg-gray-900 !border-b !border-gray-700/30;
-    background-color: rgb(31, 41, 55) !important;
+    background: #f8fafc !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
   }
 
   .arco-drawer-body {
-    @apply !bg-gray-900;
-    background-color: rgb(31, 41, 55) !important;
+    background: #f8fafc !important;
   }
 
   .arco-drawer-content {
-    @apply !bg-gray-900;
-    background-color: rgb(31, 41, 55) !important;
+    background: #f8fafc !important;
   }
 
   .arco-drawer-wrapper {
-    @apply !bg-gray-900;
-    background-color: rgb(31, 41, 55) !important;
+    background: #f8fafc !important;
   }
 }
 
@@ -513,6 +566,21 @@ const toggleDrawer = (stepId: number, type: 'request' | 'response' | 'validators
 :global(.arco-drawer-body),
 :global(.arco-drawer-content),
 :global(.arco-drawer-wrapper) {
+  background-color: #f8fafc !important;
+}
+
+:global(body.api-testing-theme .custom-drawer .arco-drawer-header),
+:global(body.api-testing-theme .arco-drawer-header) {
+  background-color: rgb(31, 41, 55) !important;
+  border-bottom: 1px solid rgba(75, 85, 99, 0.4) !important;
+}
+
+:global(body.api-testing-theme .custom-drawer .arco-drawer-body),
+:global(body.api-testing-theme .custom-drawer .arco-drawer-content),
+:global(body.api-testing-theme .custom-drawer .arco-drawer-wrapper),
+:global(body.api-testing-theme .arco-drawer-body),
+:global(body.api-testing-theme .arco-drawer-content),
+:global(body.api-testing-theme .arco-drawer-wrapper) {
   background-color: rgb(31, 41, 55) !important;
 }
 </style> 

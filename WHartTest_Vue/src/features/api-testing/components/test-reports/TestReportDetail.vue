@@ -12,7 +12,7 @@
     <div class="flex-1 overflow-auto">
       <div class="min-h-full p-6">
         <!-- 主卡片容器 -->
-        <div class="w-full bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 shadow-xl rounded-xl">
+        <div class="report-detail-shell w-full shadow-xl rounded-xl">
           <a-spin :loading="loading" dot class="w-full">
             <!-- 状态卡片区域 -->
             <div class="p-4 w-full flex flex-wrap gap-4">
@@ -138,7 +138,7 @@
             </div>
 
             <!-- 基本信息和配置信息 -->
-            <div class="border-t border-gray-700/50">
+            <div class="report-detail-divider border-t">
               <div class="px-4">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <BasicInfo :report="report" />
@@ -350,94 +350,25 @@ watch(report, (newVal) => {
 
 onMounted(() => {
   fetchReportDetail()
-  
-  // 打印卡片容器宽度
-  const mainCardObserver = new ResizeObserver(entries => {
-    for (const entry of entries) {
-      const totalWidth = entry.contentRect.width
-      const padding = 32 // 2rem = 32px
-      const gaps = 5 * 16 // 5个间距，每个1rem = 16px
-      const availableWidth = totalWidth - padding - gaps
-      const cardWidth = availableWidth / 6
-      
-      console.log('卡片容器详细信息:', {
-        总宽度: totalWidth,
-        内边距: padding,
-        间距总和: gaps,
-        可用宽度: availableWidth,
-        单卡宽度: cardWidth
-      })
-
-      // 打印所有父容器的宽度
-      const containers = {
-        '最外层容器': document.querySelector('.w-full'),
-        '主卡片容器': document.querySelector('.bg-gray-800\\/30'),
-        '内边距容器': document.querySelector('.p-4'),
-        '卡片flex容器': document.querySelector('.flex.flex-wrap'),
-      }
-
-      console.log('父容器宽度信息:')
-      Object.entries(containers).forEach(([name, element]) => {
-        if (element) {
-          const rect = element.getBoundingClientRect()
-          const htmlElement = element as HTMLElement
-          console.log(`${name}:`, {
-            宽度: rect.width,
-            计算样式宽度: window.getComputedStyle(element).width,
-            盒模型: {
-              clientWidth: htmlElement.clientWidth,
-              offsetWidth: htmlElement.offsetWidth,
-              scrollWidth: htmlElement.scrollWidth,
-              style: htmlElement.style.width
-            },
-            完整样式: window.getComputedStyle(element)
-          })
-        }
-      })
-
-      // 打印每个统计卡片的详细信息
-      const statCards = document.querySelectorAll('.stat-card')
-      statCards.forEach((card, index) => {
-        const rect = card.getBoundingClientRect()
-        const computedStyle = window.getComputedStyle(card)
-        const htmlCard = card as HTMLElement
-        console.log(`统计卡片 ${index + 1} 详细信息:`, {
-          宽度: rect.width,
-          计算样式宽度: computedStyle.width,
-          外边距: {
-            左: computedStyle.marginLeft,
-            右: computedStyle.marginRight
-          },
-          内边距: {
-            左: computedStyle.paddingLeft,
-            右: computedStyle.paddingRight
-          },
-          边框: {
-            左: computedStyle.borderLeftWidth,
-            右: computedStyle.borderRightWidth
-          },
-          盒模型: {
-            clientWidth: htmlCard.clientWidth,
-            offsetWidth: htmlCard.offsetWidth,
-            scrollWidth: htmlCard.scrollWidth
-          },
-          完整样式: computedStyle
-        })
-      })
-    }
-  })
-  
-  // 修改选择器，只使用主卡片观察器
-  const mainCard = document.querySelector('.bg-gray-800\\/30.backdrop-blur-sm')
-  
-  if (mainCard) {
-    mainCardObserver.observe(mainCard)
-  }
 })
 </script> 
 
 <style scoped>
 @reference "tailwindcss";
+.report-detail-shell {
+  background: color-mix(in srgb, var(--api-report-card-bg) 88%, var(--theme-page-bg) 12%);
+  border: 1px solid var(--api-report-shell-border);
+  backdrop-filter: blur(10px);
+}
+
+.report-detail-divider {
+  border-color: var(--api-report-shell-border);
+}
+
+.report-detail-shell .text-gray-400 {
+  color: var(--api-report-text-subtle);
+}
+
 /* 滚动条样式 */
 .overflow-auto {
   scrollbar-width: none;
@@ -461,7 +392,10 @@ onMounted(() => {
 
 /* 统计卡片样式 */
 :deep(.stat-card) {
-  @apply bg-gray-900/50 backdrop-blur-sm border border-gray-700/30 rounded-lg transition-all duration-300;
+  @apply rounded-lg transition-all duration-300;
+  background: color-mix(in srgb, var(--api-report-card-bg) 90%, var(--theme-page-bg) 10%);
+  border: 1px solid var(--api-report-inline-border);
+  backdrop-filter: blur(10px);
   box-sizing: border-box !important;
   flex: 0 0 calc((100% - 5 * 1rem) / 6) !important;
   width: calc((100% - 5 * 1rem) / 6) !important;
@@ -471,12 +405,14 @@ onMounted(() => {
   padding: 0 !important;
   
   &:hover {
-    @apply bg-gray-900/70 border-gray-600/50 transform scale-[1.02];
+    background: var(--api-report-card-hover);
+    border-color: rgba(var(--theme-accent-rgb), 0.12);
+    @apply transform scale-[1.02];
   }
 
   /* 覆盖 Arco Card 的默认样式 */
   &.arco-card {
-    @apply bg-gray-900/50;
+    background: color-mix(in srgb, var(--api-report-card-bg) 90%, var(--theme-page-bg) 10%);
     width: calc((100% - 5 * 1rem) / 6) !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -510,7 +446,7 @@ onMounted(() => {
 
 /* 覆盖默认样式 */
 :deep(.arco-card) {
-  @apply bg-gray-900/50;
+  background: color-mix(in srgb, var(--api-report-card-bg) 90%, var(--theme-page-bg) 10%);
   height: 100%;
 }
 </style> 

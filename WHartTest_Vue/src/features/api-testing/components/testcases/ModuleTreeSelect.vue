@@ -46,8 +46,8 @@ const handleToggleExpand = () => {
   <div class="space-y-1">
     <!-- 当前模块 -->
     <div
-      class="px-6 py-2 cursor-pointer transition-colors bg-[rgb(70,84,102,0.4)] hover:bg-[rgb(47,66,114,0.4)] rounded-lg"
-      :class="{ 'bg-[rgb(47,66,114,0.4)]': isSelected }"
+      class="module-tree-item px-6 py-2 cursor-pointer transition-colors rounded-lg"
+      :class="{ 'module-tree-item--selected': isSelected }"
       :style="{ paddingLeft: `${paddingLeft}px` }"
       @click.stop="handleSelect"
     >
@@ -58,7 +58,7 @@ const handleToggleExpand = () => {
               v-if="module.children?.length"
               type="text"
               size="mini"
-              class="!w-4 !h-4 !p-0 !min-w-0 !text-[#6b7785] hover:!text-[#86909c]"
+              class="module-tree-toggle !w-4 !h-4 !p-0 !min-w-0"
               @click.stop="handleToggleExpand"
             >
               <template #icon>
@@ -69,7 +69,7 @@ const handleToggleExpand = () => {
             <div v-else class="w-4"></div>
           </div>
           <a-spin :loading="loading" dot>
-            <span class="text-[#e5e6e8]">{{ module.name }}</span>
+            <span class="module-tree-name">{{ module.name }}</span>
           </a-spin>
         </div>
       </div>
@@ -93,4 +93,27 @@ const handleToggleExpand = () => {
 </template>
 
 <style scoped>
+.module-tree-item {
+  background: color-mix(in srgb, var(--asd-panel-bg) 84%, transparent 16%);
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.12);
+  }
+}
+
+.module-tree-item--selected {
+  background: rgba(59, 130, 246, 0.16);
+}
+
+.module-tree-toggle {
+  color: var(--asd-text-subtle) !important;
+
+  &:hover {
+    color: var(--asd-text) !important;
+  }
+}
+
+.module-tree-name {
+  color: var(--asd-text);
+}
 </style>

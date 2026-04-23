@@ -90,7 +90,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col p-4 gap-4">
+  <div class="hooks-config h-full flex flex-col p-4 gap-4">
     <a-select
       v-model="state.selectedFunctions"
       :loading="state.loading"
@@ -109,7 +109,7 @@ onMounted(() => {
 
     <!-- 已选择函数列表 -->
     <div v-if="state.selectedFunctions.length > 0" class="flex flex-col gap-2">
-      <div class="text-gray-400 text-sm">已选择的函数：</div>
+      <div class="hooks-helper-text text-sm">已选择的函数：</div>
       <div class="flex flex-wrap gap-2">
         <a-tag
           v-for="id in state.selectedFunctions"
@@ -127,8 +127,23 @@ onMounted(() => {
 <style lang="postcss" scoped>
 @reference "tailwindcss";
 :deep(.arco-select-view) {
-  @apply bg-gray-900/60 border-gray-700;
+  @apply bg-white border-[color:var(--color-border-2)];
   
+  input {
+    @apply text-[color:var(--color-text-1)] bg-transparent;
+    &::placeholder {
+      @apply text-[color:var(--color-text-3)];
+    }
+  }
+}
+
+.hooks-helper-text {
+  color: var(--color-text-3);
+}
+
+:global(body.api-testing-theme) .hooks-config :deep(.arco-select-view) {
+  @apply bg-gray-900/60 border-gray-700;
+
   input {
     @apply text-gray-200 bg-transparent;
     &::placeholder {
@@ -137,7 +152,11 @@ onMounted(() => {
   }
 }
 
-:deep(.arco-select-dropdown) {
+:global(body.api-testing-theme) .hooks-helper-text {
+  color: rgb(156, 163, 175);
+}
+
+:global(body.api-testing-theme .arco-select-dropdown) {
   @apply bg-gray-800 border-gray-700;
 
   .arco-select-option {
@@ -154,6 +173,10 @@ onMounted(() => {
 }
 
 :deep(.arco-tag) {
+  @apply bg-blue-500/10 border-blue-500/30 text-blue-600;
+}
+
+:global(body.api-testing-theme) .hooks-config :deep(.arco-tag) {
   @apply bg-blue-500/20 border-blue-500/50 text-blue-500;
 }
 </style>

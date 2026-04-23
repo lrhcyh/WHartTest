@@ -4,6 +4,7 @@ import { Message } from '@arco-design/web-vue'
 import { IconSearch } from '@arco-design/web-vue/es/icon'
 import type { TableRowSelection } from '@arco-design/web-vue'
 import type { TestCase } from '../../services/testTaskService'
+import { useThemeStore } from '@/store/themeStore'
 
 const props = defineProps<{
   visible: boolean
@@ -23,6 +24,9 @@ const emit = defineEmits<{
   'pageChange': [current: number]
   'pageSizeChange': [pageSize: number]
 }>()
+
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 // 使用计算属性处理 visible 的双向绑定
 const modalVisible = computed({
@@ -89,15 +93,14 @@ const filteredTestCases = computed(() => {
     title="添加测试用例"
     :mask-closable="false"
     :footer="false"
-    class="custom-modal"
     :align-center="false"
     :width="1200"
+    :modal-class="isDarkTheme ? 'testtask-add-case-modal testtask-add-case-modal--dark' : 'testtask-add-case-modal testtask-add-case-modal--light'"
     @cancel="handleClose"
   >
     <a-spin :loading="loading">
-      <div class="flex flex-col gap-4">
-        <!-- 搜索框 -->
-        <div class="bg-[#1d2633] rounded p-3">
+      <div class="testtask-add-case flex flex-col gap-4">
+        <div class="modal-section rounded p-3">
           <a-input-search
             v-model="searchKeyword"
             placeholder="搜索测试用例名称或描述"
@@ -108,10 +111,9 @@ const filteredTestCases = computed(() => {
             </template>
           </a-input-search>
         </div>
-        
-        <!-- 测试用例列表 -->
-        <div class="bg-[#1d2633] rounded p-3 flex flex-col">
-          <div class="text-gray-300 font-medium mb-3">测试用例列表</div>
+
+        <div class="modal-section rounded p-3 flex flex-col">
+          <div class="section-title font-medium mb-3">测试用例列表</div>
           
           <div class="flex-1 overflow-x-auto overflow-y-auto hide-scrollbar" style="max-height: 400px">
             <a-table
@@ -152,13 +154,12 @@ const filteredTestCases = computed(() => {
                 </a-table-column>
               </template>
             </a-table>
-            <div v-else class="text-gray-400 text-center mt-20">
+            <div v-else class="empty-text text-center mt-20">
               没有找到匹配的测试用例
             </div>
           </div>
-          
-          <!-- 分页 -->
-          <div class="flex justify-end mt-3 pt-3 border-t border-gray-700">
+
+          <div class="pagination-shell flex justify-end mt-3 pt-3">
             <a-pagination
               :total="pagination.total"
               :current="pagination.current"
@@ -188,6 +189,52 @@ const filteredTestCases = computed(() => {
 </template>
 
 <style scoped>
+.testtask-add-case {
+  color: var(--tt-add-text);
+}
+
+:deep(.testtask-add-case-modal--light) {
+  --tt-modal-bg: rgba(255, 255, 255, 0.98);
+  --tt-modal-section-bg: rgba(248, 250, 252, 0.98);
+  --tt-border: rgba(148, 163, 184, 0.18);
+  --tt-text: var(--color-text-1);
+  --tt-subtle: var(--color-text-3);
+  --tt-input-bg: rgba(255, 255, 255, 0.98);
+  --tt-input-bg-hover: rgba(248, 250, 252, 1);
+  --tt-input-border: rgba(148, 163, 184, 0.2);
+  --tt-table-header: rgba(248, 250, 252, 0.98);
+  --tt-row-text: var(--color-text-2);
+  --tt-row-hover: rgba(59, 130, 246, 0.06);
+  --tt-row-checked: rgba(59, 130, 246, 0.08);
+  --tt-added-row: rgba(226, 232, 240, 0.72);
+  --tt-pagination: var(--color-text-2);
+  --tt-pagination-border: rgba(148, 163, 184, 0.24);
+  --tt-add-text: var(--color-text-1);
+  --tt-tag-bg: rgba(226, 232, 240, 0.9);
+  --tt-tag-text: rgb(51, 65, 85);
+}
+
+:deep(.testtask-add-case-modal--dark) {
+  --tt-modal-bg: rgba(20, 27, 38, 0.98);
+  --tt-modal-section-bg: rgba(29, 38, 51, 0.98);
+  --tt-border: rgba(71, 85, 105, 0.35);
+  --tt-text: rgb(226, 232, 240);
+  --tt-subtle: rgb(148, 163, 184);
+  --tt-input-bg: rgba(70, 84, 102, 0.4);
+  --tt-input-bg-hover: rgba(70, 84, 102, 0.48);
+  --tt-input-border: rgba(148, 163, 184, 0.18);
+  --tt-table-header: rgba(30, 41, 59, 0.5);
+  --tt-row-text: rgb(203, 213, 225);
+  --tt-row-hover: rgba(30, 41, 59, 0.5);
+  --tt-row-checked: rgba(22, 93, 255, 0.1);
+  --tt-added-row: rgba(51, 65, 85, 0.35);
+  --tt-pagination: rgb(148, 163, 184);
+  --tt-pagination-border: rgba(148, 163, 184, 0.2);
+  --tt-add-text: rgb(226, 232, 240);
+  --tt-tag-bg: rgb(71, 85, 105);
+  --tt-tag-text: rgb(241, 245, 249);
+}
+
 /* 隐藏滚动条但保持滚动功能 */
 .hide-scrollbar {
   scrollbar-width: none; /* Firefox */
@@ -198,45 +245,74 @@ const filteredTestCases = computed(() => {
   display: none; /* Chrome, Safari and Opera */
 }
 
-/* 弹窗样式 */
-:deep(.custom-modal) {
-  width: 80% !important;
-  min-width: 1200px !important;
-  max-width: 2400px !important;
-  margin: 50px auto !important;
+.modal-section {
+  background: var(--tt-modal-section-bg);
+  border: 1px solid var(--tt-border);
 }
 
-:deep(.custom-modal .arco-modal-body) {
+:deep(.testtask-add-case-modal .arco-modal) {
+  background: var(--tt-modal-bg) !important;
+  border: 1px solid var(--tt-border) !important;
+}
+
+:deep(.testtask-add-case-modal .arco-modal-header) {
+  background: var(--tt-modal-bg) !important;
+  border-bottom-color: var(--tt-border) !important;
+}
+
+:deep(.testtask-add-case-modal .arco-modal-title) {
+  color: var(--tt-text) !important;
+}
+
+:deep(.testtask-add-case-modal .arco-modal-body) {
   padding: 20px !important;
-  background-color: #141b26 !important;
+  background-color: var(--tt-modal-bg) !important;
   width: 100% !important;
   box-sizing: border-box !important;
   overflow: hidden !important;
 }
 
-/* 搜索框样式 */
+:deep(.testtask-add-case-modal .arco-modal-footer) {
+  background: var(--tt-modal-bg) !important;
+  border-top-color: var(--tt-border) !important;
+}
+
+.section-title,
+.custom-table :deep(.arco-table-th),
+.custom-table :deep(.arco-table-th .arco-table-th-item-title) {
+  color: var(--tt-text) !important;
+}
+
+.empty-text,
+.custom-pagination :deep(.arco-pagination-total) {
+  color: var(--tt-subtle) !important;
+}
+
+.pagination-shell {
+  border-top: 1px solid var(--tt-border);
+}
+
 .custom-search :deep(.arco-input-wrapper) {
-  background-color: rgba(70, 84, 102, 0.4) !important;
-  border-color: transparent !important;
+  background-color: var(--tt-input-bg) !important;
+  border-color: var(--tt-input-border) !important;
 }
 
 .custom-search :deep(.arco-input-wrapper:hover),
 .custom-search :deep(.arco-input-wrapper.arco-input-focus) {
-  background-color: rgba(70, 84, 102, 0.4) !important;
+  background-color: var(--tt-input-bg-hover) !important;
   border-color: #3b82f6 !important;
 }
 
 .custom-search :deep(.arco-input) {
-  color: #e2e8f0 !important;
+  color: var(--tt-text) !important;
 }
 
 .custom-search :deep(.arco-input-search-btn) {
   background-color: transparent !important;
   border-color: transparent !important;
-  color: #94a3b8 !important;
+  color: var(--tt-subtle) !important;
 }
 
-/* 表格样式 */
 .custom-table :deep(.arco-table) {
   background-color: transparent !important;
 }
@@ -267,53 +343,50 @@ const filteredTestCases = computed(() => {
   padding: 8px 16px !important;
   height: 40px !important;
   line-height: 24px !important;
-  color: #cbd5e1 !important;
+  color: var(--tt-row-text) !important;
 }
 
 .custom-table :deep(.arco-table-th) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
-  color: #e2e8f0 !important;
+  background-color: var(--tt-table-header) !important;
+  border-bottom: 1px solid var(--tt-border) !important;
   font-weight: 500 !important;
   text-align: center !important;
   padding: 12px !important;
 }
-
 
 .custom-table :deep(.arco-table-tr) {
   background-color: transparent !important;
 }
 
 .custom-table :deep(.arco-table-tr:has([class*="added-tag"])) {
-  background-color: rgba(51, 65, 85, 0.4) !important;
+  background-color: var(--tt-added-row) !important;
   
   td {
-    color: #94a3b8 !important;
+    color: var(--tt-subtle) !important;
   }
   
   &:hover {
-    background-color: rgba(51, 65, 85, 0.4) !important;
+    background-color: var(--tt-added-row) !important;
   }
 }
 
 .custom-table :deep(.arco-table-tr:hover) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
+  background-color: var(--tt-row-hover) !important;
 }
 
 .custom-table :deep(.arco-table-tr-checked) {
-  background-color: rgba(22, 93, 255, 0.1) !important;
+  background-color: var(--tt-row-checked) !important;
 }
 
-/* 已添加行样式 */
 .custom-table :deep(.has-added) {
-  background-color: rgba(51, 65, 85, 0.3) !important;
+  background-color: var(--tt-added-row) !important;
   
   td {
-    color: #94a3b8 !important;
+    color: var(--tt-subtle) !important;
   }
   
   &:hover {
-    background-color: rgba(51, 65, 85, 0.3) !important;
+    background-color: var(--tt-added-row) !important;
   }
   
   .arco-checkbox {
@@ -321,11 +394,10 @@ const filteredTestCases = computed(() => {
   }
 }
 
-/* 已添加标签样式 */
 .custom-table :deep(.added-tag) {
-  background-color: #475569 !important;
+  background-color: var(--tt-tag-bg) !important;
   border: none !important;
-  color: #f1f5f9 !important;
+  color: var(--tt-tag-text) !important;
   font-size: 12px !important;
   padding: 0 8px !important;
   height: 20px !important;
@@ -333,26 +405,24 @@ const filteredTestCases = computed(() => {
   font-weight: 500 !important;
 }
 
-/* 禁用行样式 */
 .custom-table :deep(.disabled-row) {
   opacity: 0.5 !important;
   cursor: not-allowed !important;
-  background-color: rgba(30, 41, 59, 0.3) !important;
+  background-color: var(--tt-added-row) !important;
 }
 
 .custom-table :deep(.disabled-row:hover) {
-  background-color: rgba(30, 41, 59, 0.3) !important;
+  background-color: var(--tt-added-row) !important;
 }
 
 .custom-table :deep(.disabled-row .arco-checkbox) {
   cursor: not-allowed !important;
 }
 
-/* 分页样式 */
 .custom-pagination :deep(.arco-pagination-item) {
   background-color: transparent !important;
-  border-color: rgba(148, 163, 184, 0.2) !important;
-  color: #94a3b8 !important;
+  border-color: var(--tt-pagination-border) !important;
+  color: var(--tt-pagination) !important;
   min-width: 28px !important;
   height: 28px !important;
   line-height: 28px !important;
@@ -366,8 +436,8 @@ const filteredTestCases = computed(() => {
 
 .custom-pagination :deep(.arco-select-view) {
   background-color: transparent !important;
-  border-color: rgba(148, 163, 184, 0.2) !important;
-  color: #94a3b8 !important;
+  border-color: var(--tt-pagination-border) !important;
+  color: var(--tt-pagination) !important;
   height: 28px !important;
   line-height: 28px !important;
 }
@@ -383,18 +453,13 @@ const filteredTestCases = computed(() => {
 
 .custom-pagination :deep(.arco-pagination-jumper input) {
   background-color: transparent !important;
-  border-color: rgba(148, 163, 184, 0.2) !important;
-  color: #94a3b8 !important;
+  border-color: var(--tt-pagination-border) !important;
+  color: var(--tt-pagination) !important;
   height: 28px !important;
 }
 
 .custom-pagination :deep(.arco-pagination-jumper input:hover),
 .custom-pagination :deep(.arco-pagination-jumper input:focus) {
   border-color: #3b82f6 !important;
-}
-
-.custom-pagination :deep(.arco-pagination-total) {
-  height: 28px !important;
-  line-height: 28px !important;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="api-testing-container">
+  <div class="api-testing-container" :class="isDarkTheme ? 'api-testing-container--dark' : 'api-testing-container--light'">
     <TestCaseForm
       v-if="projectId"
       :project-id="projectId"
@@ -17,19 +17,33 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import TestCaseForm from '../components/testcases/TestCaseForm.vue'
 
 const props = defineProps<{ id: string | number }>()
 const router = useRouter()
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
 const projectId = computed(() => projectStore.currentProjectId)
+const isDarkTheme = computed(() => themeStore.isBlack)
 </script>
 
 <style scoped>
 .api-testing-container {
   height: 100%;
-  background-color: rgb(17, 24, 39);
+  background: var(--tc-edit-page-bg);
+  border: 1px solid var(--tc-edit-page-border);
   border-radius: 8px;
   overflow: hidden;
+}
+
+.api-testing-container--light {
+  --tc-edit-page-bg: color-mix(in srgb, var(--theme-card-bg) 94%, var(--theme-page-bg) 6%);
+  --tc-edit-page-border: rgba(148, 163, 184, 0.16);
+}
+
+.api-testing-container--dark {
+  --tc-edit-page-bg: rgb(17, 24, 39);
+  --tc-edit-page-border: rgba(75, 85, 99, 0.35);
 }
 </style>

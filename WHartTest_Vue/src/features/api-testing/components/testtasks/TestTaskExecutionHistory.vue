@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
+import { useThemeStore } from '@/store/themeStore'
 import { getTestTaskExecutions, cancelTestTaskExecution, type TestTaskExecution } from '../../services/testTaskService'
 
 const route = useRoute()
 const router = useRouter()
+const themeStore = useThemeStore()
 const loading = ref(false)
 const executions = ref<TestTaskExecution[]>([])
 const taskSuiteId = ref<number | null>(null)
 const taskSuiteName = ref('')
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 // 定时器引用
 const refreshTimer = ref<number | null>(null)
@@ -305,11 +308,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col gap-4 p-4">
+  <div class="testtask-history-page h-full flex flex-col gap-4 p-4" :class="isDarkTheme ? 'testtask-history-page--dark' : 'testtask-history-page--light'">
     <!-- 标题区域 -->
-    <div class="bg-gray-800/85 rounded-lg shadow-dark px-6 py-5 flex justify-between items-center">
+    <div class="panel-shell rounded-lg px-6 py-5 flex justify-between items-center">
       <div class="flex items-center gap-2">
-        <h2 class="text-xl font-medium text-gray-100">
+        <h2 class="page-title text-xl font-medium">
           {{ taskSuiteName ? `"${taskSuiteName}" 的执行历史` : '测试任务执行历史' }}
         </h2>
         <a-tag v-if="taskSuiteId" color="blue">ID: {{ taskSuiteId }}</a-tag>
@@ -327,12 +330,12 @@ onUnmounted(() => {
             {{ autoRefresh ? '自动刷新中' : '自动刷新' }}
           </a-button>
         </a-tooltip>
-        <a-button type="outline" @click="goBack">返回列表</a-button>
+        <a-button type="outline" class="back-button" @click="goBack">返回列表</a-button>
       </div>
     </div>
 
     <!-- 搜索区域 -->
-    <div class="bg-gray-800/85 rounded-lg shadow-dark px-6 py-5">
+    <div class="panel-shell rounded-lg px-6 py-5">
       <div class="flex items-center gap-4">
         <div class="flex-1 flex items-center gap-4">
           <a-select
@@ -362,7 +365,7 @@ onUnmounted(() => {
     </div>
 
     <!-- 内容区域 -->
-    <div class="flex-1 bg-gray-800/85 rounded-lg shadow-dark overflow-hidden">
+    <div class="panel-shell flex-1 rounded-lg overflow-hidden">
       <div class="p-6">
         <a-table
           :loading="loading"
@@ -384,27 +387,27 @@ onUnmounted(() => {
             </a-table-column>
             <a-table-column title="环境" data-index="environment_name" :width="150" align="center">
               <template #cell="{ record }">
-                <div class="text-gray-300">{{ record.environment_name || '-' }}</div>
+                <div class="cell-text">{{ record.environment_name || '-' }}</div>
               </template>
             </a-table-column>
             <a-table-column title="开始时间" data-index="start_time" :width="180" align="center">
               <template #cell="{ record }">
-                <div class="text-gray-300">{{ formatDate(record.start_time) }}</div>
+                <div class="cell-text">{{ formatDate(record.start_time) }}</div>
               </template>
             </a-table-column>
             <a-table-column title="结束时间" data-index="end_time" :width="180" align="center">
               <template #cell="{ record }">
-                <div class="text-gray-300">{{ formatDate(record.end_time) }}</div>
+                <div class="cell-text">{{ formatDate(record.end_time) }}</div>
               </template>
             </a-table-column>
             <a-table-column title="执行时长" data-index="duration" :width="120" align="center">
               <template #cell="{ record }">
-                <div class="text-gray-300">{{ formatDuration(record.duration) }}</div>
+                <div class="cell-text">{{ formatDuration(record.duration) }}</div>
               </template>
             </a-table-column>
             <a-table-column title="用例总数" data-index="total_count" :width="100" align="center">
               <template #cell="{ record }">
-                <div class="text-gray-300">{{ record.total_count }}</div>
+                <div class="cell-text">{{ record.total_count }}</div>
               </template>
             </a-table-column>
             <a-table-column title="成功率" data-index="success_rate" :width="100" align="center">
@@ -419,12 +422,12 @@ onUnmounted(() => {
             </a-table-column>
             <a-table-column title="执行人" data-index="executed_by_name" :width="120" align="center">
               <template #cell="{ record }">
-                <div class="text-gray-300">{{ record.executed_by_name || '-' }}</div>
+                <div class="cell-text">{{ record.executed_by_name || '-' }}</div>
               </template>
             </a-table-column>
             <a-table-column title="创建时间" data-index="created_at" :width="180" align="center">
               <template #cell="{ record }">
-                <div class="text-gray-400">{{ formatDate(record.created_at) }}</div>
+                <div class="cell-text cell-text--subtle">{{ formatDate(record.created_at) }}</div>
               </template>
             </a-table-column>
             <a-table-column title="操作" align="center" :width="200" fixed="right">
@@ -453,7 +456,7 @@ onUnmounted(() => {
             </a-table-column>
           </template>
           <template #empty>
-            <div class="text-gray-400 py-8 flex justify-center items-center">
+            <div class="page-empty py-8 flex justify-center items-center">
               暂无执行记录
             </div>
           </template>
@@ -462,7 +465,7 @@ onUnmounted(() => {
     </div>
 
     <!-- 分页区域 -->
-    <div class="bg-gray-800/85 rounded-lg shadow-dark px-6 py-5">
+    <div class="panel-shell rounded-lg px-6 py-5">
       <a-pagination
         v-model:current="pagination.current"
         v-model:page-size="pagination.pageSize"
@@ -480,6 +483,96 @@ onUnmounted(() => {
 
 <style scoped>
 @reference "tailwindcss";
+.testtask-history-page {
+  min-height: 0;
+  --tt-panel-bg: color-mix(in srgb, var(--theme-card-bg) 94%, var(--theme-page-bg) 6%);
+  --tt-panel-border: rgba(148, 163, 184, 0.16);
+  --tt-panel-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --tt-text: var(--theme-text);
+  --tt-text-muted: var(--theme-text-secondary);
+  --tt-text-subtle: var(--theme-text-tertiary);
+  --tt-input-bg: #ffffff;
+  --tt-input-border: rgba(148, 163, 184, 0.18);
+  --tt-input-bg-hover: color-mix(in srgb, var(--theme-card-bg) 88%, var(--theme-page-bg) 12%);
+  --tt-table-header-bg: color-mix(in srgb, var(--theme-card-bg) 76%, var(--theme-page-bg) 24%);
+  --tt-table-row-alt: rgba(15, 23, 42, 0.02);
+  --tt-table-row-hover: rgba(15, 23, 42, 0.04);
+  --tt-secondary-bg: rgba(148, 163, 184, 0.08);
+  --tt-secondary-bg-hover: rgba(148, 163, 184, 0.14);
+  --tt-secondary-border: rgba(148, 163, 184, 0.18);
+  --tt-secondary-text: var(--theme-text-secondary);
+  --tt-secondary-text-hover: var(--theme-text);
+  --tt-outline-border: rgba(148, 163, 184, 0.28);
+  --tt-outline-text: var(--theme-text-secondary);
+  --tt-outline-hover-bg: rgba(148, 163, 184, 0.1);
+  --tt-outline-hover-border: rgba(148, 163, 184, 0.4);
+  --tt-outline-hover-text: var(--theme-text);
+  --tt-view-btn-bg: rgba(37, 99, 235, 0.12);
+  --tt-view-btn-bg-hover: rgba(37, 99, 235, 0.18);
+  --tt-view-btn-border: rgba(59, 130, 246, 0.24);
+  --tt-view-btn-text: #2563eb;
+  --tt-view-btn-text-hover: #1d4ed8;
+  --tt-cancel-btn-bg: rgba(239, 68, 68, 0.12);
+  --tt-cancel-btn-bg-hover: rgba(239, 68, 68, 0.18);
+  --tt-cancel-btn-border: rgba(239, 68, 68, 0.24);
+  --tt-cancel-btn-text: #dc2626;
+  --tt-cancel-btn-text-hover: #b91c1c;
+}
+
+.testtask-history-page--dark {
+  --tt-panel-bg: rgba(31, 41, 55, 0.85);
+  --tt-panel-border: rgba(148, 163, 184, 0.12);
+  --tt-panel-shadow: 0 18px 32px rgba(2, 6, 23, 0.28);
+  --tt-text: rgb(241, 245, 249);
+  --tt-text-muted: rgb(203, 213, 225);
+  --tt-text-subtle: rgb(148, 163, 184);
+  --tt-input-bg: rgba(51, 65, 85, 0.25);
+  --tt-input-border: rgba(148, 163, 184, 0.15);
+  --tt-input-bg-hover: rgba(51, 65, 85, 0.35);
+  --tt-table-header-bg: rgba(30, 41, 59, 0.7);
+  --tt-table-row-alt: rgba(30, 41, 59, 0.3);
+  --tt-table-row-hover: rgba(30, 41, 59, 0.6);
+  --tt-secondary-bg: rgba(148, 163, 184, 0.1);
+  --tt-secondary-bg-hover: rgba(148, 163, 184, 0.18);
+  --tt-secondary-border: rgba(148, 163, 184, 0.18);
+  --tt-secondary-text: rgb(203, 213, 225);
+  --tt-secondary-text-hover: rgb(241, 245, 249);
+  --tt-outline-border: rgba(148, 163, 184, 0.3);
+  --tt-outline-text: rgb(203, 213, 225);
+  --tt-outline-hover-bg: rgba(148, 163, 184, 0.1);
+  --tt-outline-hover-border: rgba(148, 163, 184, 0.45);
+  --tt-outline-hover-text: rgb(241, 245, 249);
+  --tt-view-btn-bg: rgba(15, 23, 42, 0.6);
+  --tt-view-btn-bg-hover: rgba(15, 23, 42, 0.72);
+  --tt-view-btn-border: rgba(59, 130, 246, 0.28);
+  --tt-view-btn-text: #60a5fa;
+  --tt-view-btn-text-hover: #93c5fd;
+  --tt-cancel-btn-bg: rgba(15, 23, 42, 0.6);
+  --tt-cancel-btn-bg-hover: rgba(15, 23, 42, 0.72);
+  --tt-cancel-btn-border: rgba(239, 68, 68, 0.28);
+  --tt-cancel-btn-text: #f87171;
+  --tt-cancel-btn-text-hover: #fca5a5;
+}
+
+.panel-shell {
+  background: var(--tt-panel-bg);
+  border: 1px solid var(--tt-panel-border);
+  box-shadow: var(--tt-panel-shadow);
+}
+
+.page-title {
+  color: var(--tt-text);
+}
+
+.page-empty,
+.cell-text {
+  color: var(--tt-text-muted);
+}
+
+.cell-text--subtle {
+  color: var(--tt-text-subtle);
+}
+
 /* 自定义滚动条 */
 .custom-scrollbar {
   scrollbar-width: none !important;
@@ -493,7 +586,7 @@ onUnmounted(() => {
 :deep(.arco-pagination) {
   .arco-pagination-item {
     border-radius: 4px !important;
-    color: #94a3b8 !important;
+    color: var(--tt-text-subtle) !important;
     background-color: transparent !important;
     border: 1px solid transparent !important;
     
@@ -513,46 +606,62 @@ onUnmounted(() => {
   .arco-pagination-jumper {
     .arco-input {
       border-radius: 4px !important;
-      background-color: rgba(51, 65, 85, 0.25) !important;
-      border: 1px solid rgba(148, 163, 184, 0.15) !important;
-      color: #f1f5f9 !important;
-      backdrop-filter: blur(4px) !important;
+      background-color: var(--tt-input-bg) !important;
+      border: 1px solid var(--tt-input-border) !important;
+      color: var(--tt-text) !important;
 
       &:hover, &:focus {
         border-color: rgba(59, 130, 246, 0.4) !important;
-        background-color: rgba(51, 65, 85, 0.35) !important;
+        background-color: var(--tt-input-bg-hover) !important;
       }
     }
   }
 
   .arco-pagination-total {
-    color: #cbd5e1 !important;
+    color: var(--tt-text-subtle) !important;
   }
 
   .arco-select-view {
-    background-color: rgba(51, 65, 85, 0.25) !important;
-    border: 1px solid rgba(148, 163, 184, 0.15) !important;
+    background-color: var(--tt-input-bg) !important;
+    border: 1px solid var(--tt-input-border) !important;
     border-radius: 4px !important;
-    backdrop-filter: blur(4px) !important;
+    color: var(--tt-text) !important;
 
     &:hover {
       border-color: rgba(59, 130, 246, 0.4) !important;
-      background-color: rgba(51, 65, 85, 0.35) !important;
+      background-color: var(--tt-input-bg-hover) !important;
     }
   }
 }
 
+:deep(.arco-select-view-value),
+:deep(.arco-select-view-single .arco-select-view-input),
+:deep(.arco-pagination-jumper-prepend),
+:deep(.arco-pagination-jumper-append) {
+  color: var(--tt-text) !important;
+}
+
+:deep(.arco-select-view-placeholder) {
+  color: var(--tt-text-subtle) !important;
+}
+
+:deep(.arco-select-view-suffix),
+:deep(.arco-pagination-item-ellipsis),
+:deep(.arco-pagination-jumper-separator) {
+  color: var(--tt-text-subtle) !important;
+}
+
 .custom-reset-button {
-  background-color: transparent !important;
-  border: 1px solid rgba(148, 163, 184, 0.3) !important;
-  color: #cbd5e1 !important;
+  background-color: var(--tt-secondary-bg) !important;
+  border: 1px solid var(--tt-secondary-border) !important;
+  color: var(--tt-secondary-text) !important;
   transition: all 0.3s ease !important;
   border-radius: 8px !important;
 
   &:hover {
-    border-color: rgba(148, 163, 184, 0.5) !important;
-    color: #f1f5f9 !important;
-    background-color: rgba(148, 163, 184, 0.1) !important;
+    border-color: rgba(59, 130, 246, 0.24) !important;
+    color: var(--tt-secondary-text-hover) !important;
+    background-color: var(--tt-secondary-bg-hover) !important;
   }
 }
 
@@ -593,17 +702,17 @@ onUnmounted(() => {
 }
 
 .custom-table :deep(.arco-table-th) {
-  background-color: rgba(30, 41, 59, 0.7) !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.2) !important;
-  color: #f1f5f9 !important;
+  background-color: var(--tt-table-header-bg) !important;
+  border-bottom: 1px solid var(--tt-panel-border) !important;
+  color: var(--tt-text) !important;
   font-weight: 500 !important;
   text-align: center !important;
 }
 
 .custom-table :deep(.arco-table-td) {
   background-color: transparent !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.15) !important;
-  color: #e2e8f0 !important;
+  border-bottom: 1px solid var(--tt-panel-border) !important;
+  color: var(--tt-text-muted) !important;
 }
 
 .custom-table :deep(.arco-table-tr) {
@@ -611,12 +720,12 @@ onUnmounted(() => {
 }
 
 .custom-table :deep(.arco-table-tr:hover) {
-  background-color: rgba(30, 41, 59, 0.6) !important;
+  background-color: var(--tt-table-row-hover) !important;
 }
 
 /* 表格行样式调整 */
 .custom-table :deep(.arco-table-tr:nth-child(even)) {
-  background-color: rgba(30, 41, 59, 0.3) !important;
+  background-color: var(--tt-table-row-alt) !important;
 }
 
 .custom-table :deep(.arco-table-tr:nth-child(odd)) {
@@ -624,42 +733,46 @@ onUnmounted(() => {
 }
 
 .custom-table :deep(.arco-table-tr:hover) {
-  background-color: rgba(30, 41, 59, 0.6) !important;
+  background-color: var(--tt-table-row-hover) !important;
 }
 
 /* 查看详情按钮样式 */
 .btn-view {
-  @apply !bg-blue-500/20 hover:!bg-blue-500/30 !border-blue-500/30 !text-blue-400 !px-3;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.1) !important;
-  backdrop-filter: blur(4px) !important;
-  background-color: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid var(--tt-view-btn-border) !important;
+  color: var(--tt-view-btn-text) !important;
+  background-color: var(--tt-view-btn-bg) !important;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.12) !important;
+  @apply !px-3;
   @apply !h-8 !font-medium !rounded-md;
   transition: all 0.2s ease;
   position: relative;
   z-index: 1;
   
   &:hover {
-    @apply !shadow-md !transform !scale-105 !text-blue-300;
+    @apply !shadow-md !transform !scale-105;
     box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2) !important;
-    background-color: rgba(15, 23, 42, 0.7) !important;
+    background-color: var(--tt-view-btn-bg-hover) !important;
+    color: var(--tt-view-btn-text-hover) !important;
   }
 }
 
 /* 取消执行按钮样式 */
 .btn-cancel {
-  @apply !bg-red-500/20 hover:!bg-red-500/30 !border-red-500/30 !text-red-400 !px-3;
-  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1) !important;
-  backdrop-filter: blur(4px) !important;
-  background-color: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid var(--tt-cancel-btn-border) !important;
+  color: var(--tt-cancel-btn-text) !important;
+  background-color: var(--tt-cancel-btn-bg) !important;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.12) !important;
+  @apply !px-3;
   @apply !h-8 !font-medium !rounded-md;
   transition: all 0.2s ease;
   position: relative;
   z-index: 1;
   
   &:hover {
-    @apply !shadow-md !transform !scale-105 !text-red-300;
+    @apply !shadow-md !transform !scale-105;
     box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2) !important;
-    background-color: rgba(15, 23, 42, 0.7) !important;
+    background-color: var(--tt-cancel-btn-bg-hover) !important;
+    color: var(--tt-cancel-btn-text-hover) !important;
   }
 }
 
@@ -689,10 +802,25 @@ onUnmounted(() => {
 
 /* 自动刷新非激活状态 */
 .auto-refresh-button[type="outline"] {
-  @apply !text-gray-400 !border-gray-500/30;
+  color: var(--tt-outline-text) !important;
+  border-color: var(--tt-outline-border) !important;
   
   &:hover {
-    @apply !text-gray-300 !border-gray-500/40 !bg-gray-700/30;
+    color: var(--tt-outline-hover-text) !important;
+    border-color: var(--tt-outline-hover-border) !important;
+    background: var(--tt-outline-hover-bg) !important;
+  }
+}
+
+.back-button {
+  color: var(--tt-outline-text) !important;
+  border-color: var(--tt-outline-border) !important;
+  background: transparent !important;
+
+  &:hover {
+    color: var(--tt-outline-hover-text) !important;
+    border-color: var(--tt-outline-hover-border) !important;
+    background: var(--tt-outline-hover-bg) !important;
   }
 }
 </style>

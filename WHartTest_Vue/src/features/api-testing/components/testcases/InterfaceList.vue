@@ -26,12 +26,12 @@ const filteredInterfaces = computed(() => {
 </script>
 
 <template>
-  <div class="flex-1 bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-    <div class="p-4 border-b border-gray-700">
+  <div class="interface-list-panel flex-1 rounded-lg border overflow-hidden">
+    <div class="interface-list-header p-4 border-b">
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-2">
-          <span class="text-[#e5e6e8]">接口列表</span>
-          <span v-if="currentModuleName" class="text-sm text-gray-400">{{ currentModuleName }}</span>
+          <span class="interface-list-title">接口列表</span>
+          <span v-if="currentModuleName" class="interface-list-subtitle text-sm">{{ currentModuleName }}</span>
         </div>
         <a-button
           type="primary"
@@ -114,13 +114,47 @@ const filteredInterfaces = computed(() => {
 </template>
 
 <style scoped>
+.interface-list-panel {
+  background: var(--asd-panel-bg);
+  border-color: var(--asd-panel-border);
+}
+
+.interface-list-header {
+  border-color: var(--asd-panel-border);
+}
+
+.interface-list-title,
+.cell-primary {
+  color: var(--asd-text);
+}
+
+.interface-list-subtitle,
+.cell-secondary,
+.empty-text {
+  color: var(--asd-text-subtle);
+}
+
+:deep(.arco-input-wrapper) {
+  background: var(--asd-control-bg) !important;
+  border-color: var(--asd-control-border) !important;
+
+  input {
+    color: var(--asd-text) !important;
+  }
+}
+
+:deep(.arco-input-wrapper input::placeholder),
+:deep(.arco-input-prefix) {
+  color: var(--asd-text-subtle) !important;
+}
+
 .interface-table {
   --checkbox-size: 16px;
 }
 
 .interface-table :deep(.arco-checkbox) {
   background-color: transparent;
-  border: 1px solid #4c5155;
+  border: 1px solid var(--asd-control-border);
   border-radius: 2px;
   width: var(--checkbox-size);
   height: var(--checkbox-size);
@@ -145,12 +179,13 @@ const filteredInterfaces = computed(() => {
 
 .interface-table :deep(.arco-table-th) {
   background-color: transparent !important;
-  border-color: #4c5155 !important;
+  border-color: var(--asd-panel-border) !important;
+  color: var(--asd-text-subtle) !important;
 }
 
 .interface-table :deep(.arco-table-td) {
   background-color: transparent !important;
-  border-color: #4c5155 !important;
+  border-color: var(--asd-panel-border) !important;
 }
 
 .interface-table :deep(.arco-table-tr) {
@@ -158,7 +193,7 @@ const filteredInterfaces = computed(() => {
 }
 
 .interface-table :deep(.arco-table-tr:hover) {
-  background-color: rgba(255, 255, 255, 0.04) !important;
+  background-color: var(--asd-panel-hover) !important;
 }
 
 .interface-table :deep(.arco-table-tr-checked) {

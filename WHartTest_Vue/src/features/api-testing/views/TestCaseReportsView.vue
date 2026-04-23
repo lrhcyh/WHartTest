@@ -1,64 +1,71 @@
 <template>
-  <div class="api-testing-container">
-    <a-spin :loading="loading" class="h-full">
-      <div v-if="testcase" class="h-full overflow-auto p-4">
-        <TestCaseHistoryReports
-          :testcase-id="Number(id)"
-          :testcase-name="testcase.name"
-          :pagination="pagination"
-          @update:pagination="pagination = $event"
-          @back="router.push('/api-testing')"
-          @view-report="(report) => router.push({ name: 'ApiTestReportDetail', params: { id: report.id } })"
-        />
-      </div>
-      <div v-else-if="!loading" class="flex items-center justify-center h-full text-gray-500">
-        未找到测试用例
-      </div>
-    </a-spin>
+  <div class="api-testing-container testcase-reports-view" :class="isDarkTheme ? 'testcase-reports-view--dark' : 'testcase-reports-view--light'">
+    <TestCaseReports
+      :testcase-id="Number(id)"
+      @back="handleBack"
+      @view-report="(report) => router.push({ name: 'ApiTestReportDetail', params: { id: report.id } })"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useProjectStore } from '@/store/projectStore'
-import { testcaseService } from '../services/testcaseService'
-import type { ApiTestCase } from '../types/testcase'
-import TestCaseHistoryReports from '../components/testcases/TestCaseHistoryReports.vue'
+import { useThemeStore } from '@/store/themeStore'
+import TestCaseReports from '../components/testcases/TestCaseReports.vue'
 
 const props = defineProps<{ id: string | number }>()
 const router = useRouter()
-const projectStore = useProjectStore()
-const projectId = computed(() => projectStore.currentProjectId)
-const testcase = ref<ApiTestCase | null>(null)
-const loading = ref(false)
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.isBlack)
 
-const pagination = ref({
-  current: 1,
-  pageSize: 10,
-  total: 0,
-  showTotal: true,
-  showJumper: true,
-  showPageSize: true,
-})
-
-onMounted(async () => {
-  if (!projectId.value) return
-  loading.value = true
-  try {
-    const res = await testcaseService.get(projectId.value, Number(props.id))
-    if (res.success && res.data) testcase.value = res.data as ApiTestCase
-  } finally {
-    loading.value = false
-  }
-})
+const handleBack = () => {
+  router.push({ path: '/api-testing', query: { tab: 'testcases' } })
+}
 </script>
 
 <style scoped>
 .api-testing-container {
   height: 100%;
-  background-color: rgb(17, 24, 39);
   border-radius: 8px;
   overflow: hidden;
+}
+
+.testcase-reports-view {
+  --api-report-shell-bg: color-mix(in srgb, var(--theme-card-bg) 92%, var(--theme-page-bg) 8%);
+  --api-report-shell-border: rgba(148, 163, 184, 0.16);
+  --api-report-shell-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --api-report-card-bg: rgba(255, 255, 255, 0.76);
+  --api-report-card-hover: rgba(255, 255, 255, 0.92);
+  --api-report-inline-bg: rgba(248, 250, 252, 0.92);
+  --api-report-inline-border: rgba(148, 163, 184, 0.14);
+  --api-report-header-bg: rgba(255, 255, 255, 0.82);
+  --api-report-table-header-bg: color-mix(in srgb, var(--theme-card-bg) 76%, var(--theme-page-bg) 24%);
+  --api-report-table-row-hover: rgba(15, 23, 42, 0.05);
+  --api-report-drawer-bg: color-mix(in srgb, var(--theme-card-bg) 88%, var(--theme-page-bg) 12%);
+  --api-report-text: var(--theme-text);
+  --api-report-text-muted: var(--theme-text-secondary);
+  --api-report-text-subtle: var(--theme-text-tertiary);
+  background: var(--api-report-shell-bg);
+  border: 1px solid var(--api-report-shell-border);
+  box-shadow: var(--api-report-shell-shadow);
+}
+
+.testcase-reports-view--dark {
+  --api-report-shell-bg: rgba(17, 24, 39, 0.96);
+  --api-report-shell-border: rgba(55, 65, 81, 0.72);
+  --api-report-shell-shadow: 0 18px 34px rgba(2, 6, 23, 0.28);
+  --api-report-card-bg: rgba(17, 24, 39, 0.55);
+  --api-report-card-hover: rgba(17, 24, 39, 0.72);
+  --api-report-inline-bg: rgba(17, 24, 39, 0.78);
+  --api-report-inline-border: rgba(75, 85, 99, 0.3);
+  --api-report-header-bg: rgba(31, 41, 55, 0.72);
+  --api-report-table-header-bg: rgba(31, 41, 55, 0.56);
+  --api-report-table-row-hover: rgba(31, 41, 55, 0.5);
+  --api-report-drawer-bg: rgba(31, 41, 55, 1);
+}
+
+.empty-text {
+  color: var(--api-report-text-subtle);
 }
 </style>

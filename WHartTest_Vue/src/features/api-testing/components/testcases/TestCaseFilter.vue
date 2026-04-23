@@ -177,7 +177,7 @@ const priorityColors = {
         <div v-if="groupLoading" class="flex items-center justify-center py-2">
           <a-spin />
         </div>
-        <div v-else class="text-gray-400 text-center py-2">
+        <div v-else class="filter-empty-state text-center py-2">
           暂无分组
         </div>
       </template>
@@ -250,7 +250,7 @@ const priorityColors = {
         <div v-if="tagLoading" class="flex items-center justify-center py-2">
           <a-spin />
         </div>
-        <div v-else class="text-gray-400 text-center py-2">
+        <div v-else class="filter-empty-state text-center py-2">
           暂无标签
         </div>
       </template>
@@ -274,17 +274,33 @@ const priorityColors = {
 
 <style scoped>
 :deep(.arco-select-view) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
-  border-color: rgba(148, 163, 184, 0.1) !important;
-  color: #e2e8f0 !important;
+  background-color: var(--tc-input-bg) !important;
+  border-color: var(--tc-input-border) !important;
+  color: var(--tc-text) !important;
   height: 32px !important;
   padding: 0 8px !important;
   display: flex !important;
   align-items: center !important;
 
   &:hover {
-    border-color: #60a5fa !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+    background-color: var(--tc-input-bg-hover) !important;
   }
+}
+
+:deep(.arco-select-view-value),
+:deep(.arco-select-view-single),
+:deep(.arco-select-view-multiple),
+:deep(.arco-select-view-placeholder),
+:deep(.arco-select-view-suffix),
+:deep(.arco-select-view-prefix) {
+  color: var(--tc-text) !important;
+}
+
+:deep(.arco-select-view-placeholder),
+:deep(.arco-select-view-suffix),
+:deep(.arco-select-view-prefix) {
+  color: var(--tc-text-subtle) !important;
 }
 
 :deep(.arco-select-view-inner) {
@@ -310,8 +326,8 @@ const priorityColors = {
   height: 22px !important;
   margin: 0 !important;
   padding: 0 4px !important;
-  background: rgba(148, 163, 184, 0.1) !important;
-  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  background: rgba(var(--theme-accent-rgb), 0.08) !important;
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.18) !important;
   border-radius: 2px !important;
 
   .arco-tag-content {
@@ -344,8 +360,8 @@ const priorityColors = {
   }
 }
 
-:deep(.arco-select-dropdown),
-:deep(.arco-select-dropdown .arco-select-dropdown-list) {
+:global(body.api-testing-theme .arco-select-dropdown),
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-dropdown-list) {
   background-color: rgb(31, 41, 55) !important;
   border: 1px solid rgba(148, 163, 184, 0.1) !important;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
@@ -356,14 +372,14 @@ const priorityColors = {
   padding: 4px 0 !important;
 }
 
-:deep(.arco-select-dropdown-list) {
+:global(body.api-testing-theme .arco-select-dropdown-list) {
   padding: 4px !important;
   max-height: none !important;
   height: auto !important;
   overflow: visible !important;
 }
 
-:deep(.arco-select-option) {
+:global(body.api-testing-theme .arco-select-option) {
   color: #e2e8f0 !important;
   text-align: left !important;
   padding: 8px 12px !important;
@@ -392,7 +408,7 @@ const priorityColors = {
   }
 }
 
-:deep(.arco-select-popup-inner) {
+:global(body.api-testing-theme .arco-select-popup-inner) {
   display: flex !important;
   justify-content: flex-start !important;
 }
@@ -402,5 +418,9 @@ const priorityColors = {
   align-items: center !important;
   gap: 8px !important;
   margin-left: 12px !important;
+}
+
+.filter-empty-state {
+  color: var(--tc-text-subtle);
 }
 </style>

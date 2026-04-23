@@ -26,10 +26,10 @@ const filteredModules = computed(() => {
 </script>
 
 <template>
-  <div class="w-[280px] bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-    <div class="p-4 border-b border-gray-700">
+  <div class="module-list-panel w-[280px] rounded-lg border overflow-hidden">
+    <div class="module-list-header p-4 border-b">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-[#e5e6e8]">模块列表</span>
+        <span class="module-list-title">模块列表</span>
       </div>
       <div class="flex items-center gap-2">
         <a-input-search
@@ -61,6 +61,33 @@ const filteredModules = computed(() => {
 </template>
 
 <style scoped>
+.module-list-panel {
+  background: var(--asd-panel-bg);
+  border-color: var(--asd-panel-border);
+}
+
+.module-list-header {
+  border-color: var(--asd-panel-border);
+}
+
+.module-list-title {
+  color: var(--asd-text);
+}
+
+:deep(.arco-input-wrapper) {
+  background: var(--asd-control-bg) !important;
+  border-color: var(--asd-control-border) !important;
+
+  input {
+    color: var(--asd-text) !important;
+  }
+}
+
+:deep(.arco-input-wrapper input::placeholder),
+:deep(.arco-input-prefix) {
+  color: var(--asd-text-subtle) !important;
+}
+
 .hide-scrollbar {
   scrollbar-width: none;  /* Firefox */
   -ms-overflow-style: none;  /* IE and Edge */

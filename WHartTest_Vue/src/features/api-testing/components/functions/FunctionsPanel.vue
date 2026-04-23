@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { Message, Modal, Spin } from '@arco-design/web-vue'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import { getFunctions, createFunction, updateFunction, deleteFunction, type Function, getFunctionDetail } from '../../services/functionService'
 import FunctionList from './FunctionList.vue'
 import FunctionDetail from './FunctionDetail.vue'
 import FunctionForm from './FunctionForm.vue'
 
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
 const loading = ref(false)
 const formLoading = ref(false)
 const detailLoading = ref(false)
@@ -17,6 +19,7 @@ const createVisible = ref(false)
 const editVisible = ref(false)
 const editingFunction = ref<Function | null>(null)
 const globalLoading = ref(false)
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 // 获取函数列表
 const fetchFunctions = async () => {
@@ -267,7 +270,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="function-management h-full flex p-2 gap-2">
+  <div class="functions-panel function-management h-full flex p-2 gap-2" :class="isDarkTheme ? 'functions-panel--dark' : 'functions-panel--light'">
     <!-- 左侧函数列表 -->
     <FunctionList
       :loading="loading"
@@ -282,7 +285,7 @@ onMounted(() => {
     <!-- 右侧内容区域 -->
     <div class="flex-1 min-w-0">
       <a-spin :loading="globalLoading" dot class="!block h-full">
-        <div class="bg-gray-800 rounded-lg shadow-lg h-full flex flex-col">
+        <div class="function-main-shell rounded-lg h-full flex flex-col">
           <template v-if="selectedFunction">
             <FunctionDetail
               :loading="detailLoading"
@@ -322,8 +325,45 @@ onMounted(() => {
 </template>
 
 <style lang="postcss" scoped>
+.functions-panel {
+  --func-shell-bg: color-mix(in srgb, var(--theme-card-bg) 92%, var(--theme-page-bg) 8%);
+  --func-shell-border: rgba(148, 163, 184, 0.16);
+  --func-shell-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --func-card-bg: rgba(255, 255, 255, 0.76);
+  --func-card-border: rgba(148, 163, 184, 0.14);
+  --func-input-bg: #ffffff;
+  --func-input-border: rgba(148, 163, 184, 0.18);
+  --func-input-hover-bg: color-mix(in srgb, var(--theme-card-bg) 88%, var(--theme-page-bg) 12%);
+  --func-editor-bg: #ffffff;
+  --func-editor-border: rgba(148, 163, 184, 0.18);
+  --func-editor-scrollbar: rgba(148, 163, 184, 0.28);
+  --func-text: var(--theme-text);
+  --func-text-muted: var(--theme-text-secondary);
+  --func-text-subtle: var(--theme-text-tertiary);
+}
+
+.functions-panel--dark {
+  --func-shell-bg: rgba(31, 41, 55, 0.92);
+  --func-shell-border: rgba(55, 65, 81, 0.72);
+  --func-shell-shadow: 0 18px 34px rgba(2, 6, 23, 0.28);
+  --func-card-bg: rgba(17, 24, 39, 0.55);
+  --func-card-border: rgba(75, 85, 99, 0.32);
+  --func-input-bg: rgba(17, 24, 39, 0.6);
+  --func-input-border: rgba(55, 65, 81, 1);
+  --func-input-hover-bg: rgba(17, 24, 39, 0.82);
+  --func-editor-bg: rgba(17, 24, 39, 0.9);
+  --func-editor-border: rgba(75, 85, 99, 0.5);
+  --func-editor-scrollbar: rgba(75, 85, 99, 0.9);
+}
+
+.function-main-shell {
+  background: var(--func-shell-bg);
+  border: 1px solid var(--func-shell-border);
+  box-shadow: var(--func-shell-shadow);
+}
+
 :deep(.arco-empty) {
-  color: rgb(107, 114, 128);
+  color: var(--func-text-subtle);
 }
 
 :deep(.arco-btn-primary) {
@@ -346,20 +386,27 @@ onMounted(() => {
 }
 
 :deep(.arco-form-item-label) {
-  color: rgb(209, 213, 219);
+  color: var(--func-text);
 }
 
 :deep(.arco-input-wrapper),
-:deep(.arco-textarea-wrapper) {
-  background-color: rgba(17, 24, 39, 0.6);
-  border-color: rgb(55, 65, 81);
+:deep(.arco-textarea-wrapper),
+:deep(.arco-select-view) {
+  background-color: var(--func-input-bg);
+  border-color: var(--func-input-border);
+
+  &:hover,
+  &:focus-within {
+    border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+    background-color: var(--func-input-hover-bg);
+  }
   
   input,
   textarea {
-    color: rgb(229, 231, 235);
+    color: var(--func-text);
     background-color: transparent;
     &::placeholder {
-      color: rgb(107, 114, 128);
+      color: var(--func-text-subtle);
     }
   }
 }
@@ -367,7 +414,7 @@ onMounted(() => {
 :deep(.monaco-editor) {
   .margin,
   .monaco-editor-background {
-    background-color: rgba(17, 24, 39, 0.6);
+    background-color: var(--func-editor-bg);
   }
 }
 
@@ -383,14 +430,14 @@ onMounted(() => {
 }
 
 :deep(.monaco-editor .monaco-scrollable-element .monaco-editor-background) {
-  background-color: rgba(17, 24, 39, 0.6);
+  background-color: var(--func-editor-bg);
 }
 
 :deep(.monaco-editor .monaco-scrollable-element .scrollbar) {
-  background-color: rgb(31, 41, 55);
+  background-color: transparent;
   
   .slider {
-    background-color: rgb(75, 85, 99);
+    background-color: var(--func-editor-scrollbar);
   }
 }
 

@@ -14,9 +14,11 @@ import ModuleForm from './ModuleForm.vue'
 import ApiInterfaceList from './ApiInterfaceList.vue'
 import ApiInterfacePagination from './ApiInterfacePagination.vue'
 import { useApiTabsStore } from '../../stores/apiTabsStore'
+import { useThemeStore } from '@/store/themeStore'
 
 const projectStore = useProjectStore()
 const tabsStore = useApiTabsStore()
+const themeStore = useThemeStore()
 const loading = ref(false)
 const formLoading = ref(false)
 const apis = ref<ApiModule[]>([])
@@ -31,6 +33,7 @@ const noModuleInterfaces = ref<ApiInterface[]>([])
 const hasNoModuleInterfaces = ref(false)
 // 自动调试标志
 const autoDebug = ref(false)
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 // 视图模式控制
 // 模块树显示模式: 'list' - 列表模式（不显示接口）, 'detail' - 详情模式（显示接口）
@@ -796,7 +799,7 @@ watch(() => tabsStore.tabs, () => {
 </script>
 
 <template>
-  <div class="api-management h-full flex p-2 gap-2">
+  <div class="api-management h-full flex p-2 gap-2" :class="isDarkTheme ? 'api-management--dark' : 'api-management--light'">
     <!-- 左侧模块列表 -->
     <div class="w-80 flex flex-col">
       <div class="flex-1 bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col">
@@ -870,7 +873,7 @@ watch(() => tabsStore.tabs, () => {
                       >
                         <div class="flex items-center gap-2">
                           <icon-folder class="text-gray-400" />
-                          <span class="text-gray-300">未选择模块接口</span>
+                          <span class="text-gray-100 font-medium">未选择模块接口</span>
                           <a-tag size="small" type="arcoblue">{{ noModuleInterfaces.length }}</a-tag>
                         </div>
                         <div class="flex items-center">
@@ -1005,7 +1008,7 @@ watch(() => tabsStore.tabs, () => {
       </div>
 
       <!-- 详情视图 -->
-      <div v-else class="h-full flex flex-col bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+      <div v-else class="detail-view-shell h-full flex flex-col rounded-lg overflow-hidden">
         <!-- 页签栏 -->
         <ApiTabs
           :current-interface="selectedInterface"
@@ -1111,7 +1114,7 @@ watch(() => tabsStore.tabs, () => {
 }
 
 /* 弹窗样式 */
-:global(.arco-modal-container) {
+:global(body.api-testing-theme .arco-modal-container) {
   .arco-modal-error {
     .arco-modal-title {
       @apply text-gray-100;
@@ -1122,7 +1125,7 @@ watch(() => tabsStore.tabs, () => {
   }
 }
 
-:global(.arco-modal-wrapper) {
+:global(body.api-testing-theme .arco-modal-wrapper) {
   .arco-modal {
     @apply bg-gray-800 border border-gray-700;
 
@@ -1192,7 +1195,7 @@ watch(() => tabsStore.tabs, () => {
   }
 }
 
-:deep(.arco-select-dropdown) {
+:global(body.api-testing-theme .arco-select-dropdown) {
   @apply bg-gray-800 border border-gray-700;
 
   .arco-select-option {
@@ -1206,5 +1209,278 @@ watch(() => tabsStore.tabs, () => {
       @apply bg-gray-700;
     }
   }
+}
+
+/* 亮色主题兜底：覆盖接口管理页主链路中写死的深色 utility class */
+.api-management--dark {
+  --interface-dark-surface: rgba(30, 41, 59, 0.96);
+  --interface-dark-surface-soft: rgba(15, 23, 42, 0.78);
+  --interface-dark-surface-muted: rgba(51, 65, 85, 0.72);
+  --interface-dark-border: rgba(148, 163, 184, 0.14);
+  --interface-dark-text-primary: #f8fafc;
+  --interface-dark-text-secondary: #cbd5e1;
+  --interface-dark-text-muted: #94a3b8;
+  --interface-dark-hover: rgba(96, 165, 250, 0.12);
+  --interface-dark-hover-strong: rgba(96, 165, 250, 0.18);
+  --interface-module-surface: rgba(51, 65, 85, 0.54);
+  --interface-module-hover: rgba(96, 165, 250, 0.16);
+  --interface-module-active: rgba(96, 165, 250, 0.24);
+  --interface-module-active-border: rgba(147, 197, 253, 0.22);
+  --interface-dark-shadow: 0 20px 44px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(148, 163, 184, 0.05);
+  background-color: rgba(0, 0, 0, 0.18);
+}
+
+.api-management--dark :deep([class~='bg-gray-800']),
+.api-management--dark :deep([class~='bg-gray-800/50']),
+.api-management--dark :deep([class~='bg-gray-800/85']) {
+  background-color: var(--interface-dark-surface) !important;
+}
+
+.api-management--dark :deep([class~='bg-gray-900/50']),
+.api-management--dark :deep([class~='bg-gray-900/60']),
+.api-management--dark :deep([class~='bg-gray-950']) {
+  background-color: var(--interface-dark-surface-soft) !important;
+}
+
+.api-management--dark :deep([class~='bg-gray-700']),
+.api-management--dark :deep([class~='bg-gray-700/30']),
+.api-management--dark :deep([class~='bg-gray-700/50']) {
+  background-color: var(--interface-dark-surface-muted) !important;
+}
+
+.api-management--dark :deep([class~='border-gray-700']),
+.api-management--dark :deep([class~='border-gray-700/50']),
+.api-management--dark :deep([class~='border-gray-600']),
+.api-management--dark :deep([class~='border-gray-500']) {
+  border-color: var(--interface-dark-border) !important;
+}
+
+.api-management--dark :deep([class~='text-gray-100']),
+.api-management--dark :deep([class~='text-gray-200']) {
+  color: var(--interface-dark-text-primary) !important;
+}
+
+.api-management--dark :deep([class~='text-gray-300']) {
+  color: var(--interface-dark-text-secondary) !important;
+}
+
+.api-management--dark :deep([class~='text-gray-400']),
+.api-management--dark :deep([class~='text-gray-500']) {
+  color: var(--interface-dark-text-muted) !important;
+}
+
+.api-management--dark :deep([class~='shadow-lg']),
+.api-management--dark :deep([class~='shadow-dark']) {
+  box-shadow: var(--interface-dark-shadow) !important;
+}
+
+.api-management--dark :deep([class~='hover:bg-gray-700/30']:hover),
+.api-management--dark :deep([class~='hover:bg-gray-700/50']:hover),
+.api-management--dark :deep([class~='hover:bg-gray-800/50']:hover),
+.api-management--dark :deep([class~='hover:bg-[rgb(70,84,102,0.4)]']:hover) {
+  background-color: var(--interface-dark-hover) !important;
+}
+
+.api-management--dark :deep(.arco-input-wrapper),
+.api-management--dark :deep(.arco-textarea-wrapper),
+.api-management--dark :deep(.arco-select-view),
+.api-management--dark :deep(.arco-pagination-jumper .arco-input-wrapper) {
+  border-color: var(--interface-dark-border) !important;
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.03) !important;
+}
+
+.api-management--dark :deep(.arco-tree .arco-tree-node:hover) {
+  background-color: var(--interface-dark-hover) !important;
+}
+
+.api-management--dark :deep(.arco-tree .arco-tree-node.arco-tree-node-selected) {
+  background-color: var(--interface-dark-hover-strong) !important;
+}
+
+.api-management--dark :deep(.arco-tabs-nav::before),
+.api-management--dark :deep(.arco-tabs-tab),
+.api-management--dark :deep(.arco-table-th),
+.api-management--dark :deep(.arco-table-td),
+.api-management--dark :deep(.arco-table-header) {
+  border-color: var(--interface-dark-border) !important;
+}
+
+.api-management--dark .detail-view-shell {
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.api-management--light {
+  --interface-surface: #fff;
+  --interface-surface-soft: #f8fafc;
+  --interface-surface-muted: #eef2f7;
+  --interface-border: rgba(15, 23, 42, 0.12);
+  --interface-text-primary: var(--color-text-1);
+  --interface-text-secondary: var(--color-text-2);
+  --interface-text-muted: var(--color-text-3);
+  --interface-hover: rgba(var(--theme-accent-rgb), 0.06);
+  --interface-hover-strong: rgba(var(--theme-accent-rgb), 0.12);
+  --interface-module-surface: rgba(15, 23, 42, 0.05);
+  --interface-module-hover: rgba(var(--theme-accent-rgb), 0.1);
+  --interface-module-active: rgba(var(--theme-accent-rgb), 0.16);
+  --interface-module-active-border: rgba(var(--theme-accent-rgb), 0.2);
+  --interface-shadow: 0 18px 40px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.08);
+  background-color: rgba(15, 23, 42, 0.04);
+}
+
+.api-management--light :deep([class~='bg-gray-800']),
+.api-management--light :deep([class~='bg-gray-800/50']),
+.api-management--light :deep([class~='bg-gray-800/85']) {
+  background-color: var(--interface-surface) !important;
+}
+
+.api-management--light :deep([class~='bg-gray-900/50']),
+.api-management--light :deep([class~='bg-gray-900/60']),
+.api-management--light :deep([class~='bg-gray-950']) {
+  background-color: var(--interface-surface-soft) !important;
+}
+
+.api-management--light :deep([class~='bg-gray-700']),
+.api-management--light :deep([class~='bg-gray-700/30']),
+.api-management--light :deep([class~='bg-gray-700/50']) {
+  background-color: var(--interface-surface-muted) !important;
+}
+
+.api-management--light :deep([class~='bg-[rgb(70,84,102,0.2)]']),
+.api-management--light :deep([class~='!bg-[rgb(70,84,102,0.2)]']) {
+  background-color: rgba(15, 23, 42, 0.05) !important;
+}
+
+.api-management--light :deep([class~='bg-[rgb(70,84,102,0.4)]']),
+.api-management--light :deep([class~='!bg-[rgb(70,84,102,0.4)]']) {
+  background-color: rgba(15, 23, 42, 0.09) !important;
+}
+
+.api-management--light :deep([class~='border-gray-700']),
+.api-management--light :deep([class~='border-gray-700/50']),
+.api-management--light :deep([class~='border-gray-600']),
+.api-management--light :deep([class~='border-gray-500']) {
+  border-color: var(--interface-border) !important;
+}
+
+.api-management--light :deep([class~='text-gray-100']),
+.api-management--light :deep([class~='text-gray-200']) {
+  color: var(--interface-text-primary) !important;
+}
+
+.api-management--light :deep([class~='text-gray-300']) {
+  color: var(--interface-text-secondary) !important;
+}
+
+.api-management--light :deep([class~='text-gray-400']),
+.api-management--light :deep([class~='text-gray-500']) {
+  color: var(--interface-text-muted) !important;
+}
+
+.api-management--light :deep([class~='shadow-lg']),
+.api-management--light :deep([class~='shadow-dark']) {
+  box-shadow: var(--interface-shadow) !important;
+}
+
+.api-management--light :deep([class~='hover:bg-gray-700/30']:hover),
+.api-management--light :deep([class~='hover:bg-gray-700/50']:hover),
+.api-management--light :deep([class~='hover:bg-gray-800/50']:hover),
+.api-management--light :deep([class~='hover:bg-[rgb(70,84,102,0.4)]']:hover) {
+  background-color: var(--interface-hover) !important;
+}
+
+.api-management--light :deep([class~='hover:text-gray-300']:hover),
+.api-management--light :deep([class~='hover:text-gray-200']:hover) {
+  color: var(--interface-text-primary) !important;
+}
+
+.api-management--light :deep([class~='hover:border-gray-600']:hover),
+.api-management--light :deep([class~='hover:border-gray-500']:hover) {
+  border-color: var(--interface-border) !important;
+}
+
+.api-management--light :deep(.arco-input-wrapper),
+.api-management--light :deep(.arco-textarea-wrapper),
+.api-management--light :deep(.arco-select-view),
+.api-management--light :deep(.arco-pagination-jumper .arco-input-wrapper) {
+  background-color: var(--interface-surface) !important;
+  border-color: var(--interface-border) !important;
+  box-shadow: none !important;
+}
+
+.api-management--light :deep(.arco-input-wrapper:hover),
+.api-management--light :deep(.arco-textarea-wrapper:hover),
+.api-management--light :deep(.arco-select-view:hover) {
+  border-color: rgba(var(--theme-accent-rgb), 0.24) !important;
+}
+
+.api-management--light :deep(.arco-input-wrapper input),
+.api-management--light :deep(.arco-input),
+.api-management--light :deep(.arco-textarea),
+.api-management--light :deep(.arco-select-view-value),
+.api-management--light :deep(.arco-select-view-single .arco-select-view-value) {
+  color: var(--interface-text-primary) !important;
+}
+
+.api-management--light :deep(.arco-input-wrapper input::placeholder),
+.api-management--light :deep(.arco-textarea::placeholder),
+.api-management--light :deep(.arco-select-view-placeholder) {
+  color: var(--interface-text-muted) !important;
+}
+
+.api-management--light :deep(.arco-switch) {
+  background-color: var(--color-neutral-3) !important;
+  border-color: var(--interface-border) !important;
+}
+
+.api-management--light :deep(.arco-switch .arco-switch-handle) {
+  background-color: #fff !important;
+}
+
+.api-management--light :deep(.arco-tree .arco-tree-node:hover) {
+  background-color: var(--interface-hover) !important;
+}
+
+.api-management--light :deep(.arco-tree .arco-tree-node.arco-tree-node-selected) {
+  background-color: var(--interface-hover-strong) !important;
+}
+
+.api-management--light :deep(.arco-tree .arco-tree-node-switcher) {
+  color: var(--interface-text-muted) !important;
+}
+
+.api-management--light :deep(.arco-tabs-nav::before),
+.api-management--light :deep(.arco-tabs-tab) {
+  border-color: var(--interface-border) !important;
+}
+
+.api-management--light :deep(.arco-tabs-tab),
+.api-management--light :deep(.arco-tabs-tab-title),
+.api-management--light :deep(.arco-tabs-tab-icon) {
+  color: var(--interface-text-muted) !important;
+}
+
+.api-management--light :deep(.arco-tabs-tab:hover),
+.api-management--light :deep(.arco-tabs-tab-active) {
+  color: var(--interface-text-primary) !important;
+}
+
+.api-management--light :deep(.arco-table-header),
+.api-management--light :deep(.arco-table-th),
+.api-management--light :deep(.arco-table-thead > tr > .arco-table-th) {
+  background-color: var(--interface-surface-soft) !important;
+  color: var(--interface-text-primary) !important;
+  border-color: var(--interface-border) !important;
+}
+
+.api-management--light :deep(.arco-table-td) {
+  background-color: var(--interface-surface) !important;
+  color: var(--interface-text-secondary) !important;
+  border-color: var(--interface-border) !important;
+}
+
+.api-management--light .detail-view-shell {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72);
 }
 </style>

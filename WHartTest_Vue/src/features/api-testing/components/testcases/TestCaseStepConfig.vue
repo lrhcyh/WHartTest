@@ -7,7 +7,7 @@ import ApiSetupHooksConfig from '../interfaces/ApiSetupHooksConfig.vue'
 import ApiTeardownHooksConfig from '../interfaces/ApiTeardownHooksConfig.vue'
 import ApiExtractConfig from '../interfaces/ApiExtractConfig.vue'
 import ApiAssertConfig from '../interfaces/ApiAssertConfig.vue'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 interface Props {
   modelValue: TestCaseStep
@@ -29,14 +29,6 @@ const extractRef = ref()
 const assertRef = ref()
 
 const activeTab = ref('headers')
-
-watch(() => props.modelValue, (newValue) => {
-  console.log('步骤配置接收到的数据:', {
-    headers: newValue.interface_data.headers,
-    params: newValue.interface_data.params,
-    body: newValue.interface_data.body
-  })
-}, { immediate: true, deep: true })
 
 const updateInterfaceData = (key: string, value: any) => {
   const updatedStep = {
@@ -173,7 +165,8 @@ defineExpose({
 }
 
 :deep(.arco-tabs-nav) {
-  @apply bg-gray-900/60 border-b border-gray-700;
+  background: var(--tcf-control-bg) !important;
+  border-bottom: 1px solid var(--tcf-panel-border) !important;
 }
 
 :deep(.arco-tabs-nav-tab) {
@@ -185,18 +178,19 @@ defineExpose({
 }
 
 :deep(.arco-tabs-tab) {
-  @apply text-gray-400 border-0;
+  color: var(--tcf-text-subtle) !important;
+  border: 0 !important;
 
   &:hover {
-    @apply text-blue-400;
+    color: rgb(59, 130, 246) !important;
   }
 
   &.arco-tabs-tab-active {
-    @apply text-blue-500;
+    color: rgb(37, 99, 235) !important;
   }
 }
 
 :deep(.arco-tabs-nav-ink) {
-  @apply bg-blue-500;
+  background: rgb(37, 99, 235) !important;
 }
 </style>

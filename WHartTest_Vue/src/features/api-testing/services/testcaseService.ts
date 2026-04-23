@@ -190,7 +190,10 @@ export async function getTestCaseReferencedInterfaces(testcaseId: number) {
   const res = await testcaseService.referencedInterfaces(pid, testcaseId);
   if (!res.success) {
     const err: any = new Error(res.error || res.message || '操作失败');
-    err.errors = res.errors;
+    const errors = (res as any).errors;
+    if (errors) {
+      err.errors = errors;
+    }
     throw err;
   }
   return { data: res.data ?? [], status: 'success' };

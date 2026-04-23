@@ -79,7 +79,7 @@ const handleShowReport = () => {
 </script>
 
 <template>
-  <div class="flex justify-between items-center">
+  <div class="testcase-header flex justify-between items-center">
     <div class="flex items-center gap-4 flex-wrap">
       <test-case-basic-info-comp
         :model-value="modelValue"
@@ -163,9 +163,9 @@ const handleShowReport = () => {
         @click="handleCancel"
       >
         <template #icon>
-          <icon-close class="!text-gray-400" />
+          <icon-close class="cancel-icon" />
         </template>
-        <span class="!text-gray-400">取消</span>
+        <span class="cancel-text">取消</span>
       </a-button>
 
       <a-button
@@ -190,29 +190,54 @@ const handleShowReport = () => {
 @reference "tailwindcss";
 :global(.arco-modal-mask) {
   backdrop-filter: blur(4px) !important;
-  @apply bg-black/60;
+  background: rgba(15, 23, 42, 0.2) !important;
 }
 
-:deep(.arco-modal) {
-  @apply bg-gray-900 rounded-lg;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 40px rgba(0, 0, 0, 0.8) !important;
-  border: none !important;
+:global(.arco-modal) {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16) !important;
 }
 
-:deep(.arco-modal-header) {
-  @apply bg-transparent border-b border-gray-700 pb-4;
+:global(.arco-modal-header) {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14) !important;
+  padding-bottom: 1rem !important;
 }
 
-:deep(.arco-modal-title) {
-  @apply text-gray-200;
+:global(.arco-modal-title) {
+  color: #0f172a !important;
 }
 
-:deep(.arco-modal-body) {
-  @apply bg-transparent py-6;
+:global(.arco-modal-body) {
+  background: transparent !important;
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
 }
 
-:deep(.arco-modal-footer) {
-  @apply bg-transparent border-t border-gray-700 pt-4;
+:global(.arco-modal-footer) {
+  background: transparent !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.14) !important;
+  padding-top: 1rem !important;
+}
+
+:global(body.api-testing-theme .arco-modal) {
+  background: rgb(17, 24, 39) !important;
+  border-color: rgba(75, 85, 99, 0.4) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 40px rgba(0, 0, 0, 0.55) !important;
+}
+
+:global(body.api-testing-theme .arco-modal-header) {
+  border-bottom-color: rgba(75, 85, 99, 0.4) !important;
+}
+
+:global(body.api-testing-theme .arco-modal-title) {
+  color: rgb(226, 232, 240) !important;
+}
+
+:global(body.api-testing-theme .arco-modal-footer) {
+  border-top-color: rgba(75, 85, 99, 0.4) !important;
 }
 
 :deep(.arco-table) {
@@ -220,48 +245,55 @@ const handleShowReport = () => {
 }
 
 :deep(.arco-table-th) {
-  @apply bg-gray-900/60 text-gray-400 border-gray-700;
+  background: var(--tcf-control-bg) !important;
+  color: var(--tcf-text-subtle) !important;
+  border-color: var(--tcf-panel-border) !important;
   &::before {
-    @apply bg-gray-700;
+    background: var(--tcf-panel-border) !important;
   }
 }
 
 :deep(.arco-table-td) {
-  @apply bg-transparent text-gray-300 border-gray-700;
+  background: transparent !important;
+  color: var(--tcf-text-muted) !important;
+  border-color: var(--tcf-panel-border) !important;
 }
 
 :deep(.arco-table-tr) {
   &:hover {
     .arco-table-td {
-      @apply bg-gray-700/50;
+      background: var(--tcf-section-hover) !important;
     }
   }
 }
 
 :deep(.arco-input-wrapper) {
-  @apply bg-gray-900/60 border-gray-700;
+  background: var(--tcf-control-bg) !important;
+  border-color: var(--tcf-control-border) !important;
 
   input {
-    @apply text-gray-200;
+    color: var(--tcf-text) !important;
     &::placeholder {
-      @apply text-gray-500;
+      color: var(--tcf-text-subtle) !important;
     }
   }
 }
 
 :deep(.arco-textarea-wrapper) {
-  @apply bg-gray-900/60 border-gray-700;
+  background: var(--tcf-control-bg) !important;
+  border-color: var(--tcf-control-border) !important;
 
   textarea {
-    @apply text-gray-200;
+    color: var(--tcf-text) !important;
     &::placeholder {
-      @apply text-gray-500;
+      color: var(--tcf-text-subtle) !important;
     }
   }
 }
 
 :deep(.arco-btn-dashed) {
-  @apply border-gray-600 text-gray-400;
+  border-color: var(--tcf-control-border) !important;
+  color: var(--tcf-text-subtle) !important;
 
   &:hover {
     @apply border-blue-500 text-blue-500;
@@ -269,42 +301,70 @@ const handleShowReport = () => {
 }
 
 :deep(.arco-btn-text) {
-  @apply text-gray-400;
+  color: var(--tcf-text-subtle) !important;
 
   &:hover {
-    @apply text-blue-500 bg-blue-500/10;
+    color: rgb(59, 130, 246) !important;
+    background: rgba(59, 130, 246, 0.1) !important;
 
     &[status="danger"] {
-      @apply text-red-500 bg-red-500/10;
+      color: rgb(239, 68, 68) !important;
+      background: rgba(239, 68, 68, 0.1) !important;
     }
   }
 }
 
 :deep(.arco-select-view) {
-  @apply bg-gray-900/60 border-gray-700;
+  background: var(--tcf-control-bg) !important;
+  border-color: var(--tcf-control-border) !important;
 
-  input {
-    @apply text-gray-200;
-    &::placeholder {
-      @apply text-gray-500;
-    }
+  &:hover {
+    background: var(--tcf-control-hover) !important;
+    border-color: rgba(59, 130, 246, 0.24) !important;
   }
 }
 
-:deep(.arco-select-dropdown) {
-  @apply bg-gray-800 border-gray-700;
+:deep(.arco-select-view-input),
+:deep(.arco-select-view-value),
+:deep(.arco-select-view-single .arco-select-view-value) {
+  color: var(--tcf-text) !important;
+}
 
-  .arco-select-option {
-    @apply text-gray-300;
+:global(.arco-select-dropdown) {
+  background: #ffffff !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 10px !important;
+}
 
-    &:hover {
-      @apply bg-gray-700;
-    }
+:global(.arco-select-dropdown .arco-select-option) {
+  color: #334155 !important;
 
-    &.arco-select-option-active {
-      @apply bg-blue-500/20 text-blue-500;
-    }
+  &:hover {
+    background: #f8fafc !important;
   }
+}
+
+:global(.arco-select-dropdown .arco-select-option.arco-select-option-active) {
+  background: rgba(59, 130, 246, 0.12) !important;
+  color: #2563eb !important;
+}
+
+:global(body.api-testing-theme .arco-select-dropdown) {
+  background: rgb(31, 41, 55) !important;
+  border-color: rgba(75, 85, 99, 0.4) !important;
+}
+
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option) {
+  color: rgb(203, 213, 225) !important;
+
+  &:hover {
+    background: rgba(51, 65, 85, 0.9) !important;
+  }
+}
+
+.cancel-icon,
+.cancel-text {
+  color: var(--tcf-text-subtle) !important;
 }
 
 :deep(.arco-tag) {

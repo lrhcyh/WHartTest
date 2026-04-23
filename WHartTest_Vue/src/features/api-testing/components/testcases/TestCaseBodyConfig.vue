@@ -122,9 +122,9 @@ defineExpose({ getBody })
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div class="testcase-body-config h-full flex flex-col">
     <!-- 顶部类型选择 -->
-    <div class="flex-shrink-0 bg-gray-800 border-b border-gray-700">
+    <div class="body-type-bar flex-shrink-0 border-b">
       <a-radio-group v-model="bodyType" type="button" class="p-4 w-full">
         <a-radio value="none">none</a-radio>
         <a-radio value="form-data">form-data</a-radio>
@@ -161,7 +161,7 @@ defineExpose({ getBody })
       <div v-if="bodyType === 'raw'" class="flex-1 min-h-0">
         <div class="h-full flex flex-col gap-2">
           <div class="flex-shrink-0">
-            <a-radio-group v-model="rawLanguage" type="button" size="small">
+            <a-radio-group v-model="rawLanguage" type="button" size="small" class="raw-language-group">
               <a-radio value="json">JSON</a-radio>
               <a-radio value="text">Text</a-radio>
               <a-radio value="javascript">JavaScript</a-radio>
@@ -169,7 +169,7 @@ defineExpose({ getBody })
               <a-radio value="xml">XML</a-radio>
             </a-radio-group>
           </div>
-          <div class="flex-1">
+          <div class="editor-shell flex-1">
             <VueMonacoEditor
               v-model:value="bodyContent"
               :language="rawLanguage"
@@ -186,12 +186,12 @@ defineExpose({ getBody })
         <div class="relative">
           <a-upload action="/" :auto-upload="false" :limit="1" @change="(fileList: any) => bodyContent = fileList[0]">
             <template #upload-button>
-              <div class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
-                <p class="text-gray-400">点击或拖拽文件到此处上传</p>
+              <div class="binary-upload-box border-2 border-dashed rounded-lg p-4 text-center">
+                <p class="binary-upload-text">点击或拖拽文件到此处上传</p>
               </div>
             </template>
           </a-upload>
-          <div v-if="bodyContent" class="text-gray-400 mt-4 text-center">
+          <div v-if="bodyContent" class="binary-upload-text mt-4 text-center">
             已选择文件: {{ bodyContent.file?.name }} ({{ (bodyContent.file?.size / 1024).toFixed(2) }} KB)
           </div>
         </div>
@@ -202,51 +202,75 @@ defineExpose({ getBody })
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+:deep(.body-type-bar) {
+  background: var(--tcf-section-bg);
+  border-color: var(--tcf-panel-border);
+}
+
 :deep(.arco-radio-group-button) {
-  @apply bg-gray-900/60 border-gray-700;
+  background: var(--tcf-control-bg) !important;
+  border-color: var(--tcf-control-border) !important;
 
   .arco-radio-button {
-    @apply border-gray-700 text-gray-400;
+    border-color: var(--tcf-control-border) !important;
+    color: var(--tcf-text-subtle) !important;
 
     &.arco-radio-button-checked {
-      @apply text-blue-500 bg-blue-500/10;
+      color: rgb(59, 130, 246) !important;
+      background: rgba(59, 130, 246, 0.12) !important;
     }
   }
 }
 
 :deep(.arco-input-wrapper) {
-  @apply bg-gray-900/60 border-gray-700 !h-[32px];
+  background: var(--tcf-control-bg) !important;
+  border-color: var(--tcf-control-border) !important;
+  @apply !h-[32px];
 
   input {
-    @apply text-gray-200 bg-transparent;
+    color: var(--tcf-text) !important;
+    background: transparent !important;
     &::placeholder {
-      @apply text-gray-500;
+      color: var(--tcf-text-subtle) !important;
     }
   }
 }
 
 :deep(.arco-checkbox) {
-  @apply text-gray-400;
+  color: var(--tcf-text-subtle) !important;
 }
 
 :deep(.arco-btn-outline) {
-  @apply border-gray-600 text-gray-300;
+  border-color: var(--tcf-control-border) !important;
+  color: var(--tcf-text-muted) !important;
 
   &:hover {
-    @apply border-blue-500 text-blue-500;
+    border-color: rgba(59, 130, 246, 0.32) !important;
+    color: rgb(59, 130, 246) !important;
   }
 }
 
 :deep(.arco-btn-text) {
-  @apply text-gray-400;
+  color: var(--tcf-text-subtle) !important;
 
   &:hover {
-    @apply text-red-500 bg-red-500/10;
+    color: rgb(239, 68, 68) !important;
+    background: rgba(239, 68, 68, 0.08) !important;
   }
 }
 
 :deep(.arco-upload) {
-  @apply border border-gray-700 rounded p-4 bg-gray-900/60;
+  border: 1px solid var(--tcf-control-border) !important;
+  border-radius: 0.5rem !important;
+  padding: 1rem !important;
+  background: var(--tcf-control-bg) !important;
+}
+
+.editor-shell {
+  background: var(--tcf-control-bg);
+  border: 1px solid var(--tcf-control-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
 :deep(.monaco-editor) {
@@ -254,7 +278,7 @@ defineExpose({ getBody })
 
   .margin,
   .monaco-editor-background {
-    @apply bg-gray-900/60;
+    background: var(--tcf-control-bg) !important;
   }
 }
 
@@ -267,7 +291,25 @@ defineExpose({ getBody })
 }
 
 :deep(.monaco-editor .monaco-scrollable-element .monaco-editor-background) {
-  @apply bg-gray-900/60;
+  background: var(--tcf-control-bg) !important;
+}
+
+:deep(.monaco-editor .current-line),
+:deep(.monaco-editor .view-overlays .current-line-exact) {
+  background: rgba(59, 130, 246, 0.08) !important;
+}
+
+:deep(.monaco-editor .margin-view-overlays .current-line-margin) {
+  background: rgba(59, 130, 246, 0.08) !important;
+}
+
+.binary-upload-box {
+  border-color: var(--tcf-control-border);
+  background: var(--tcf-control-bg);
+}
+
+.binary-upload-text {
+  color: var(--tcf-text-subtle) !important;
 }
 
 /* 隐藏滚动条但保留滚动效果 */

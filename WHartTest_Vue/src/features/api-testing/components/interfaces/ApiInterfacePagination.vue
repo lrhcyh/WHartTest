@@ -36,9 +36,9 @@ const handlePageSizeChange = (value: string | number | boolean | Record<string, 
 </script>
 
 <template>
-  <div class="flex items-center justify-between px-4 py-3 border-t border-gray-700">
+  <div class="api-interface-pagination flex items-center justify-between px-4 py-3 border-t">
     <!-- 左侧信息 -->
-    <div v-if="showTotal" class="text-sm text-gray-400">
+    <div v-if="showTotal" class="pagination-total text-sm">
       共 {{ total }} 条数据
     </div>
 
@@ -46,7 +46,7 @@ const handlePageSizeChange = (value: string | number | boolean | Record<string, 
     <div class="flex items-center gap-4">
       <!-- 每页数量选择器 -->
       <div v-if="showSizeChanger" class="flex items-center gap-2">
-        <span class="text-sm text-gray-400">每页</span>
+        <span class="pagination-size-label text-sm">每页</span>
         <a-select
           :model-value="pageSize"
           :options="pageSizeOptions.map(v => ({ label: `${v} 条`, value: v }))"
@@ -71,11 +71,30 @@ const handlePageSizeChange = (value: string | number | boolean | Record<string, 
 </template>
 
 <style lang="postcss" scoped>
+.api-interface-pagination {
+  border-color: rgba(148, 163, 184, 0.18);
+  --pagination-text: var(--color-text-3);
+  --pagination-input-bg: rgba(255, 255, 255, 0.96);
+  --pagination-input-border: rgba(148, 163, 184, 0.22);
+}
+
+.pagination-total,
+.pagination-size-label {
+  color: var(--pagination-text);
+}
+
+:global(body.api-testing-theme) .api-interface-pagination {
+  border-color: rgb(55, 65, 81);
+  --pagination-text: rgb(148, 163, 184);
+  --pagination-input-bg: rgba(30, 41, 59, 0.5);
+  --pagination-input-border: rgba(148, 163, 184, 0.1);
+}
+
 /* 分页样式 - 参考项目管理页面 */
 :deep(.arco-pagination) {
   .arco-pagination-item {
     border-radius: 6px !important;
-    color: #94a3b8 !important;
+    color: var(--pagination-text) !important;
     background-color: transparent !important;
     
     &:hover {
@@ -92,9 +111,9 @@ const handlePageSizeChange = (value: string | number | boolean | Record<string, 
   .arco-pagination-jumper {
     .arco-input {
       border-radius: 6px !important;
-      background-color: rgba(30, 41, 59, 0.5) !important;
-      border-color: rgba(148, 163, 184, 0.1) !important;
-      color: #e2e8f0 !important;
+      background-color: var(--pagination-input-bg) !important;
+      border-color: var(--pagination-input-border) !important;
+      color: var(--color-text-1) !important;
 
       &:hover, &:focus {
         border-color: #60a5fa !important;
@@ -103,21 +122,21 @@ const handlePageSizeChange = (value: string | number | boolean | Record<string, 
   }
 
   .arco-pagination-total {
-    color: #94a3b8 !important;
+    color: var(--pagination-text) !important;
   }
 }
 
 /* 选择器样式 */
 :deep(.arco-select) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
-  border-color: rgba(148, 163, 184, 0.1) !important;
+  background-color: var(--pagination-input-bg) !important;
+  border-color: var(--pagination-input-border) !important;
   
   &:hover, &:focus-within {
     border-color: #60a5fa !important;
   }
   
   .arco-select-view-value {
-    color: #e2e8f0 !important;
+    color: var(--color-text-1) !important;
   }
 }
 

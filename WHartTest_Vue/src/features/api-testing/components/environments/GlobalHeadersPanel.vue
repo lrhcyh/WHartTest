@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import {
   getGlobalHeaders,
   createGlobalHeader,
@@ -12,16 +13,16 @@ import {
 } from '../../services/globalHeaderService'
 import {
   IconPlus,
-  IconSettings,
   IconEdit,
   IconDelete,
   IconCode,
   IconInfoCircle,
   IconExclamationCircle
 } from '@arco-design/web-vue/es/icon'
-import { VARIABLE_TYPES } from '../../services/environmentService'
 
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.isBlack)
 const globalHeaders = ref<GlobalHeader[]>([])
 const loading = ref(false)
 const showCreateModal = ref(false)
@@ -337,16 +338,16 @@ defineExpose({
 </script>
 
 <template>
-  <div class="h-full overflow-hidden flex flex-col">
+  <div class="global-headers-panel h-full overflow-hidden flex flex-col" :class="isDarkTheme ? 'global-headers--dark' : 'global-headers--light'">
     <!-- 说明信息卡片 -->
-    <div class="p-4 text-sm text-gray-400 space-y-2 bg-gray-900/30 mb-4 rounded-lg border border-gray-700 flex-shrink-0 info-card">
+    <div class="info-card p-4 text-sm space-y-2 mb-4 rounded-lg flex-shrink-0">
       <div class="flex items-start gap-2">
         <icon-info-circle class="text-blue-400 mt-0.5 flex-shrink-0" />
         <div>全局请求头会自动应用于所属项目的所有接口和测试用例</div>
       </div>
       <div class="flex items-start gap-2">
         <icon-code class="text-teal-400 mt-0.5 flex-shrink-0" />
-        <div>您可以在值中使用 <code class="px-1 py-0.5 bg-gray-800 rounded">$变量名</code> 或 <code class="px-1 py-0.5 bg-gray-800 rounded">${变量名}</code> 引用环境变量</div>
+        <div>您可以在值中使用 <code class="inline-code px-1 py-0.5 rounded">$变量名</code> 或 <code class="inline-code px-1 py-0.5 rounded">${变量名}</code> 引用环境变量</div>
       </div>
       <div class="flex items-start gap-2">
         <icon-exclamation-circle class="text-amber-400 mt-0.5 flex-shrink-0" />
@@ -356,17 +357,17 @@ defineExpose({
 
     <!-- 请求头列表标题 -->
     <div class="flex items-center gap-2 mb-4 flex-shrink-0">
-      <icon-code class="text-gray-400" />
-      <span class="text-gray-300 font-medium">请求头列表</span>
+      <icon-code class="panel-title-icon" />
+      <span class="panel-title-text font-medium">请求头列表</span>
       
       <a-button 
         size="mini" 
         type="text" 
-        class="ml-auto"
+        class="ml-auto panel-action-btn"
         @click="handleCreate"
       >
         <template #icon>
-          <icon-plus class="text-gray-400" />
+          <icon-plus class="panel-action-icon" />
         </template>
         添加请求头
       </a-button>
@@ -382,7 +383,7 @@ defineExpose({
           <div
             v-for="(header, index) in globalHeaders"
             :key="header.id"
-            class="header-card p-3 bg-gray-900/60 rounded-lg border border-gray-700 hover:border-teal-500 transition-all duration-300"
+            class="header-card p-3 rounded-lg border transition-all duration-300"
             :data-index="index"
             ref="headerCardRef"
           >
@@ -390,7 +391,7 @@ defineExpose({
             <div class="flex items-center gap-3 w-full">
               <!-- 图标 -->
               <div 
-                class="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center flex-shrink-0 icon-container"
+                class="header-icon-shell w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 icon-container"
                 :data-index="index"
                 ref="iconContainerRef"
               >
@@ -399,7 +400,7 @@ defineExpose({
               
               <!-- 键值对显示 -->
               <div 
-                class="flex-1 min-w-0 px-3 py-2 bg-gray-800/50 rounded text-sm text-gray-300 overflow-hidden header-value-container"
+                class="header-value-container flex-1 min-w-0 px-3 py-2 rounded text-sm overflow-hidden"
                 :title="`${header.name}: ${header.value}`"
                 :data-index="index"
                 ref="valueContainerRef"
@@ -451,7 +452,7 @@ defineExpose({
             </div>
             
             <!-- 描述信息（如果有） -->
-            <div v-if="header.description" class="text-xs text-gray-400 break-all px-2 py-1 border-l-2 border-gray-700 pl-3 mt-2">
+            <div v-if="header.description" class="header-description text-xs break-all px-2 py-1 pl-3 mt-2">
               {{ header.description }}
             </div>
           </div>
@@ -463,12 +464,12 @@ defineExpose({
           >
             <div class="empty-state-content text-center w-full py-10 px-4">
               <div class="mb-4">
-                <div class="w-16 h-16 rounded-full bg-teal-500/10 flex items-center justify-center mx-auto">
+                <div class="empty-state-icon-shell w-16 h-16 rounded-full flex items-center justify-center mx-auto">
                   <icon-code class="text-teal-400 text-2xl" />
                 </div>
               </div>
-              <div class="text-base text-gray-300 mb-2">暂无全局请求头</div>
-              <div class="text-sm text-gray-400 mb-6 max-w-md mx-auto">
+              <div class="empty-state-title text-base mb-2">暂无全局请求头</div>
+              <div class="empty-state-description text-sm mb-6 max-w-md mx-auto">
                 您可以添加全局请求头，这些请求头将应用于所有接口请求
               </div>
               <a-button type="outline" @click="handleCreate">
@@ -522,10 +523,10 @@ defineExpose({
               <span class="toggle-capsule-handle"></span>
             </button>
             <div class="text-sm ml-2">
-              <span :class="formData.is_enabled ? 'text-green-500' : 'text-gray-400'">
+              <span :class="formData.is_enabled ? 'text-green-500' : 'status-disabled-text'">
                 {{ formData.is_enabled ? '已启用' : '已禁用' }}
               </span>
-              <span class="text-gray-400 ml-2">
+              <span class="status-subtext ml-2">
                 {{ formData.is_enabled ? '（请求头将应用于所有接口）' : '（请求头暂不生效）' }}
               </span>
             </div>
@@ -533,14 +534,14 @@ defineExpose({
         </a-form-item>
       </a-form>
       
-      <div class="bg-blue-500/10 p-3 rounded-lg mt-2 border border-blue-500/20">
+      <div class="helper-card p-3 rounded-lg mt-2 border">
         <div class="flex items-start gap-2">
           <icon-info-circle class="text-blue-400 mt-0.5" />
-          <div class="text-xs text-gray-300 w-full">
-            <div class="font-medium mb-1 text-center">请求头使用说明</div>
-            <div class="text-gray-400 text-center">
+          <div class="helper-body text-xs w-full">
+            <div class="helper-title font-medium mb-1 text-center">请求头使用说明</div>
+            <div class="text-center">
               <p>1. 全局请求头将应用于所有接口请求</p>
-              <p>2. 可以使用环境变量，如：<code class="bg-gray-700 px-1 py-0.5 rounded">Bearer $token</code></p>
+              <p>2. 可以使用环境变量，如：<code class="inline-code px-1 py-0.5 rounded">Bearer $token</code></p>
               <p>3. 请求头的优先级：接口级 > 全局级</p>
             </div>
           </div>
@@ -589,10 +590,10 @@ defineExpose({
               <span class="toggle-capsule-handle"></span>
             </button>
             <div class="text-sm ml-2">
-              <span :class="formData.is_enabled ? 'text-green-500' : 'text-gray-400'">
+              <span :class="formData.is_enabled ? 'text-green-500' : 'status-disabled-text'">
                 {{ formData.is_enabled ? '已启用' : '已禁用' }}
               </span>
-              <span class="text-gray-400 ml-2">
+              <span class="status-subtext ml-2">
                 {{ formData.is_enabled ? '（请求头将应用于所有接口）' : '（请求头暂不生效）' }}
               </span>
             </div>
@@ -600,14 +601,14 @@ defineExpose({
         </a-form-item>
       </a-form>
       
-      <div class="bg-blue-500/10 p-3 rounded-lg mt-2 border border-blue-500/20">
+      <div class="helper-card p-3 rounded-lg mt-2 border">
         <div class="flex items-start gap-2">
           <icon-info-circle class="text-blue-400 mt-0.5" />
-          <div class="text-xs text-gray-300 w-full">
-            <div class="font-medium mb-1 text-center">请求头使用说明</div>
-            <div class="text-gray-400 text-center">
+          <div class="helper-body text-xs w-full">
+            <div class="helper-title font-medium mb-1 text-center">请求头使用说明</div>
+            <div class="text-center">
               <p>1. 全局请求头将应用于所有接口请求</p>
-              <p>2. 可以使用环境变量，如：<code class="bg-gray-700 px-1 py-0.5 rounded">Bearer $token</code></p>
+              <p>2. 可以使用环境变量，如：<code class="inline-code px-1 py-0.5 rounded">Bearer $token</code></p>
               <p>3. 请求头的优先级：接口级 > 全局级</p>
             </div>
           </div>
@@ -618,6 +619,52 @@ defineExpose({
 </template>
 
 <style lang="postcss" scoped>
+.global-headers-panel {
+  --gh-text: var(--color-text-1);
+  --gh-text-muted: var(--color-text-2);
+  --gh-text-subtle: var(--color-text-3);
+  --gh-card-bg: rgba(255, 255, 255, 0.88);
+  --gh-card-border: rgba(148, 163, 184, 0.18);
+  --gh-card-hover-border: rgba(20, 184, 166, 0.42);
+  --gh-value-bg: rgba(248, 250, 252, 0.94);
+  --gh-value-hover-bg: rgba(241, 245, 249, 0.98);
+  --gh-value-border: rgba(148, 163, 184, 0.16);
+  --gh-description-border: rgba(148, 163, 184, 0.22);
+  --gh-info-bg: linear-gradient(135deg, rgba(239, 246, 255, 0.96), rgba(248, 250, 252, 0.96));
+  --gh-info-border: rgba(148, 163, 184, 0.18);
+  --gh-helper-bg: rgba(59, 130, 246, 0.08);
+  --gh-helper-border: rgba(59, 130, 246, 0.18);
+  --gh-code-bg: rgba(226, 232, 240, 0.9);
+  --gh-code-hover-bg: rgba(203, 213, 225, 0.96);
+  --gh-button-hover-bg: rgba(15, 23, 42, 0.04);
+  --gh-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  --gh-shadow-hover: 0 12px 26px rgba(15, 23, 42, 0.1);
+  --gh-empty-shadow: 0 0 15px rgba(20, 184, 166, 0.12);
+}
+
+.global-headers--dark {
+  --gh-text: rgba(229, 231, 235, 0.94);
+  --gh-text-muted: rgba(209, 213, 219, 0.92);
+  --gh-text-subtle: rgba(156, 163, 175, 0.96);
+  --gh-card-bg: rgba(17, 24, 39, 0.6);
+  --gh-card-border: rgba(55, 65, 81, 1);
+  --gh-card-hover-border: rgba(20, 184, 166, 0.72);
+  --gh-value-bg: rgba(31, 41, 55, 0.5);
+  --gh-value-hover-bg: rgba(75, 85, 99, 0.5);
+  --gh-value-border: rgba(75, 85, 99, 0.3);
+  --gh-description-border: rgba(55, 65, 81, 1);
+  --gh-info-bg: linear-gradient(to right, rgba(30, 41, 59, 0.7), rgba(30, 41, 59, 0.5));
+  --gh-info-border: rgba(55, 65, 81, 1);
+  --gh-helper-bg: rgba(59, 130, 246, 0.1);
+  --gh-helper-border: rgba(59, 130, 246, 0.2);
+  --gh-code-bg: rgba(31, 41, 55, 1);
+  --gh-code-hover-bg: rgba(30, 41, 59, 1);
+  --gh-button-hover-bg: rgba(255, 255, 255, 0.05);
+  --gh-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --gh-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --gh-empty-shadow: 0 0 15px rgba(20, 184, 166, 0.2);
+}
+
 .custom-scrollbar {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
@@ -634,13 +681,48 @@ defineExpose({
   }
 }
 
+.panel-title-icon,
+.panel-action-icon,
+.status-disabled-text,
+.status-subtext,
+.helper-body,
+.empty-state-description,
+.header-description {
+  color: var(--gh-text-subtle);
+}
+
+.panel-title-text,
+.helper-title,
+.empty-state-title {
+  color: var(--gh-text);
+}
+
+.inline-code {
+  background: var(--gh-code-bg);
+  color: var(--gh-text);
+  font-family: 'Consolas', 'Monaco', monospace;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--gh-code-hover-bg);
+  }
+}
+
+.header-icon-shell,
+.empty-state-icon-shell {
+  background: rgba(20, 184, 166, 0.1);
+}
+
 .header-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: var(--gh-card-bg);
+  border-color: var(--gh-card-border);
+  box-shadow: var(--gh-shadow);
   transition: all 0.3s ease;
   
   &:hover {
+    border-color: var(--gh-card-hover-border);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--gh-shadow-hover);
   }
   
   /* 请求头值样式 */
@@ -672,17 +754,19 @@ defineExpose({
   }
   
   .header-value-container {
+    background: var(--gh-value-bg);
+    color: var(--gh-text-muted);
     position: relative;
     cursor: default;
     transition: all 0.2s ease;
-    border: 1px solid transparent;
+    border: 1px solid var(--gh-value-border);
     max-width: 100%;
     overflow: hidden;
     box-sizing: border-box; /* 确保宽度计算包含内边距和边框 */
     
     &:hover {
-      background-color: rgba(75, 85, 99, 0.5);
-      border-color: rgba(20, 184, 166, 0.2);
+      background-color: var(--gh-value-hover-bg);
+      border-color: var(--gh-card-hover-border);
     }
     
     .header-value {
@@ -708,7 +792,7 @@ defineExpose({
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        color: #d1d5db; /* 更亮的文本颜色 */
+        color: var(--gh-text); /* 更亮的文本颜色 */
         flex: 1;
         min-width: 0;
       }
@@ -822,6 +906,10 @@ defineExpose({
   }
 }
 
+.header-description {
+  border-left: 2px solid var(--gh-description-border);
+}
+
 /* 空状态样式 - 新版本 */
 .empty-state-container {
   position: absolute;
@@ -837,11 +925,11 @@ defineExpose({
 .empty-state-content {
   .w-16.h-16 {
     transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(20, 184, 166, 0.2);
+    box-shadow: var(--gh-empty-shadow);
     
     &:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+      box-shadow: 0 0 20px rgba(20, 184, 166, 0.22);
     }
   }
   
@@ -871,17 +959,15 @@ defineExpose({
 }
 
 .info-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(to right, rgba(30, 41, 59, 0.7), rgba(30, 41, 59, 0.5));
-  
-  code {
-    font-family: 'Consolas', 'Monaco', monospace;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      background-color: rgba(30, 41, 59, 1);
-    }
-  }
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  background: var(--gh-info-bg);
+  border: 1px solid var(--gh-info-border);
+  color: var(--gh-text-muted);
+}
+
+.helper-card {
+  background: var(--gh-helper-bg);
+  border-color: var(--gh-helper-border);
 }
 
 :deep(.arco-tag-green) {
@@ -900,7 +986,7 @@ defineExpose({
   transition: all 0.2s ease;
   
   &:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--gh-button-hover-bg);
     transform: translateY(-1px);
   }
 }

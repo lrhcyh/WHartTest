@@ -5,7 +5,6 @@ import { useProjectStore } from '@/store/projectStore'
 import type { CreateTestCaseData, TestCaseStep } from '../../services/testcaseService'
 import type { ApiInterface } from '../../types/interface'
 import type { ApiModule } from '../../types/module'
-import { moduleService } from '../../services/moduleService'
 import { interfaceService } from '../../services/interfaceService'
 import { testcaseService } from '../../services/testcaseService'
 import TestCaseRequestHeader from './TestCaseRequestHeader.vue'
@@ -40,6 +39,7 @@ type Step = TestCaseStep
 
 interface Props {
   modelValue: Step
+  modules?: ApiModule[]
   readonly?: boolean
   testCaseId?: number
 }
@@ -47,6 +47,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   readonly: false,
   testCaseId: 0,
+  modules: () => [],
   modelValue: () => ({
     id: 0,
     name: '',
@@ -123,8 +124,54 @@ const response = ref<{
 provide('apiResponse', response)
 
 // 模块选择相关
-const modules = ref<ApiModule[]>([])
-const selectedModuleId = ref<number>()
+const modules = computed(() => normalizeModuleTree(props.modules || []))
+
+const normalizeModuleId = (moduleValue: unknown): number | null => {
+  if (moduleValue === null || moduleValue === undefined || moduleValue === '') {
+    return null
+  }
+
+  if (typeof moduleValue === 'object') {
+    const valueWithId = moduleValue as { id?: unknown }
+    if (valueWithId.id !== undefined) {
+      return normalizeModuleId(valueWithId.id)
+    }
+    return null
+  }
+
+  const normalizedId = Number(moduleValue)
+  return Number.isFinite(normalizedId) && normalizedId > 0 ? normalizedId : null
+}
+
+const normalizeModuleTree = (moduleTree: ApiModule[]): ApiModule[] => {
+  return moduleTree.map((module) => ({
+    ...module,
+    id: Number(module.id),
+    parent: module.parent === null || module.parent === undefined ? null : Number(module.parent),
+    children: module.children ? normalizeModuleTree(module.children) : []
+  }))
+}
+
+const findModuleById = (moduleId: number | null | undefined, moduleTree: ApiModule[]): ApiModule | undefined => {
+  if (!moduleId) {
+    return undefined
+  }
+
+  for (const module of moduleTree) {
+    if (Number(module.id) === moduleId) {
+      return module
+    }
+
+    if (module.children?.length) {
+      const matchedModule = findModuleById(moduleId, module.children)
+      if (matchedModule) {
+        return matchedModule
+      }
+    }
+  }
+
+  return undefined
+}
 
 const savingLoading = ref(false)
 const sendingLoading = ref(false)
@@ -134,41 +181,8 @@ const updateStep = (newStep: Step) => {
   emit('update:modelValue', newStep)
 }
 
-// 获取模块列表
-const fetchModules = async () => {
-  if (!projectStore.currentProjectId) return
-  try {
-    const res = await moduleService.tree(projectStore.currentProjectId)
-    if (res.success && res.data) {
-      modules.value = Array.isArray(res.data) ? res.data : (res.data as any).results || []
-    }
-  } catch (error) {
-    console.error('获取模块列表失败:', error)
-  }
-}
-
-// 监听 modelValue 变化，同步更新 selectedModuleId
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    const moduleId = newValue?.interface_info?.module_info?.id || newValue?.interface_info?.module?.id
-    if (moduleId) {
-      selectedModuleId.value = moduleId
-      // 确保模块列表已加载
-      if (modules.value.length === 0) {
-        fetchModules()
-      }
-    }
-  },
-  { immediate: true, deep: true }
-)
-
-// 组件挂载时获取模块列表和测试用例名称
+// 组件挂载时获取测试用例名称
 onMounted(async () => {
-  if (projectStore.currentProjectId) {
-    fetchModules()
-  }
-
   // 如果有测试用例ID，尝试获取测试用例名称
   if (props.testCaseId && projectStore.currentProjectId) {
     try {
@@ -187,11 +201,16 @@ onMounted(async () => {
 const stepInterface = computed({
   get: () => {
     console.log('获取接口数据 - 当前 modelValue:', props.modelValue)
+    const normalizedModuleId =
+      normalizeModuleId(props.modelValue.interface_info?.module_info?.id) ??
+      normalizeModuleId(props.modelValue.interface_info?.module) ??
+      normalizeModuleId(props.modelValue.interface_data?.module)
+
     const interfaceData = {
       method: props.modelValue.interface_data.method || props.modelValue.interface_info.method || 'GET',
       url: props.modelValue.interface_data.url || props.modelValue.interface_info.url || '',
       name: props.modelValue.name || '',
-      module: props.modelValue.interface_data.module || props.modelValue.interface_info.module?.id || null,
+      module: normalizedModuleId,
       interface: null as ApiInterface | null
     }
 
@@ -224,7 +243,7 @@ const stepInterface = computed({
         method: props.modelValue.interface_info.method,
         url: props.modelValue.interface_info.url,
         project: props.modelValue.interface_info.project.id,
-        module: props.modelValue.interface_info.module.id,
+        module: normalizedModuleId,
         headers,
         params,
         body: body as any,
@@ -241,11 +260,13 @@ const stepInterface = computed({
     if (value) {
       console.log('设置接口数据:', value)
 
-      const selectedModule = value.module ? modules.value.find(m => m.id === value.module) : undefined
-      const defaultModule = {
-        id: 0,
-        name: ''
-      }
+      const normalizedModuleId = normalizeModuleId(value.module)
+      const foundModule = findModuleById(normalizedModuleId, modules.value)
+      const moduleObj = foundModule
+        ? { id: foundModule.id, name: foundModule.name }
+        : normalizedModuleId != null
+          ? { id: normalizedModuleId, name: '' }
+          : { id: 0, name: '' }
       const defaultProject = {
         id: Number(projectStore.currentProjectId),
         name: ''
@@ -258,21 +279,15 @@ const stepInterface = computed({
           ...props.modelValue.interface_info,
           method: value.method,
           url: value.url,
-          module: selectedModule ? {
-            id: selectedModule.id,
-            name: selectedModule.name
-          } : props.modelValue.interface_info.module || defaultModule,
-          module_info: selectedModule ? {
-            id: selectedModule.id,
-            name: selectedModule.name
-          } : props.modelValue.interface_info.module_info || defaultModule,
+          module: moduleObj,
+          module_info: moduleObj,
           project: props.modelValue.interface_info.project || defaultProject
         },
         interface_data: {
           ...props.modelValue.interface_data,
           method: value.method,
           url: value.url,
-          module: value.module
+          module: normalizedModuleId
         }
       }
       console.log('更新后的步骤数据:', newStep)
@@ -610,6 +625,7 @@ const handleSave = async (requestData: { method: string, url: string, name: stri
     // 如果获取到有效的接口数据
     if (savedInterface) {
       console.log('保存成功，接口数据:', savedInterface)
+      const selectedModule = findModuleById(requestData.module, modules.value)
 
       // 更新步骤数据
       updateStep({
@@ -619,11 +635,11 @@ const handleSave = async (requestData: { method: string, url: string, name: stri
           ...savedInterface,
           module: {
             id: requestData.module,
-            name: modules.value.find(m => m.id === requestData.module)?.name || ''
+            name: selectedModule?.name || ''
           },
           module_info: {
             id: requestData.module,
-            name: modules.value.find(m => m.id === requestData.module)?.name || ''
+            name: selectedModule?.name || ''
           },
           project: {
             id: Number(projectStore.currentProjectId),
@@ -1137,7 +1153,7 @@ const refreshTestCaseData = async () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col gap-2 p-2 overflow-hidden">
+  <div class="testcase-step-detail h-full flex flex-col gap-2 p-2 overflow-hidden">
     <!-- 顶部接口信息卡片 -->
     <div class="mx-0.5 flex-shrink-0 card-bg rounded-lg shadow-lg overflow-hidden">
       <div class="px-4 py-3">
@@ -1206,11 +1222,11 @@ const refreshTestCaseData = async () => {
     <!-- 拖动条 -->
     <div
       ref="resizeDragHandle"
-      class="resize-handle mx-0.5 h-3 bg-gray-700/50 hover:bg-blue-500/50 cursor-row-resize transition-colors flex items-center justify-center gap-1"
+      class="resize-handle mx-0.5 h-3 cursor-row-resize transition-colors flex items-center justify-center gap-1"
     >
-      <div class="w-6 h-[2px] bg-gray-400 rounded-full"></div>
-      <div class="w-6 h-[2px] bg-gray-400 rounded-full"></div>
-      <div class="w-6 h-[2px] bg-gray-400 rounded-full"></div>
+      <div class="resize-handle__bar w-6 h-[2px] rounded-full"></div>
+      <div class="resize-handle__bar w-6 h-[2px] rounded-full"></div>
+      <div class="resize-handle__bar w-6 h-[2px] rounded-full"></div>
     </div>
 
     <!-- 底部响应结果卡片 -->
@@ -1227,6 +1243,10 @@ const refreshTestCaseData = async () => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+.testcase-step-detail {
+  color: var(--tcf-text-muted);
+}
+
 :deep(.arco-tabs) {
   @apply h-full flex flex-col;
 
@@ -1244,7 +1264,7 @@ const refreshTestCaseData = async () => {
   }
 
   .arco-tabs-header {
-    @apply border-b border-gray-700;
+    border-bottom: 1px solid var(--tcf-panel-border) !important;
   }
 
   .arco-tabs-nav-tab {
@@ -1252,16 +1272,16 @@ const refreshTestCaseData = async () => {
   }
 
   .arco-tabs-tab {
-    @apply text-gray-400;
+    color: var(--tcf-text-subtle) !important;
 
     &.arco-tabs-tab-active {
-      @apply text-blue-500;
+      color: rgb(59, 130, 246) !important;
     }
   }
 }
 
 .card-bg {
-  @apply bg-gray-800;
+  background: var(--tcf-section-bg);
 }
 
 .cursor-row-resize {
@@ -1271,8 +1291,8 @@ const refreshTestCaseData = async () => {
 
 :deep(.menu-item) {
   box-shadow: inset 0 1px 0 0 rgba(148, 163, 184, 0.2) !important;
-  background-color: rgba(17, 24, 39, 0.8) !important;
-  border: 1px solid rgba(75, 85, 99, 0.4) !important;
+  background-color: var(--tcf-control-bg) !important;
+  border: 1px solid var(--tcf-control-border) !important;
 
   :deep(.arco-input-wrapper) {
     background-color: transparent !important;
@@ -1280,13 +1300,13 @@ const refreshTestCaseData = async () => {
 
   :deep(.arco-input) {
     background-color: transparent !important;
-    color: #fff !important;
+    color: var(--tcf-text) !important;
   }
 
   :deep(.arco-input-prefix) {
     margin-right: 4px;
     padding-right: 8px;
-    border-right: 1px solid rgba(75, 85, 99, 0.4);
+    border-right: 1px solid var(--tcf-control-border);
   }
 }
 
@@ -1313,42 +1333,60 @@ const refreshTestCaseData = async () => {
 }
 
 :deep(.arco-dropdown-list) {
-  @apply bg-gray-800 rounded-lg;
+  background: var(--tcf-card-bg) !important;
+  border-radius: 12px !important;
   padding: 2px 0 !important;
   width: 80px !important;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2) !important;
-  border: 1px solid rgba(75, 85, 99, 0.4) !important;
+  border: 1px solid var(--tcf-panel-border) !important;
 }
 
 /* 选择器样式 */
 :deep(.arco-select) {
-  @apply bg-gray-900/60;
+  background: var(--tcf-control-bg) !important;
 
   .arco-select-view {
-    @apply bg-transparent border-0;
+    background: transparent !important;
+    border: 0 !important;
   }
 
   input {
-    @apply text-gray-200 bg-transparent;
+    color: var(--tcf-text) !important;
+    background: transparent !important;
     &::placeholder {
-      @apply text-gray-500;
+      color: var(--tcf-text-subtle) !important;
     }
   }
 }
 
 :deep(.arco-select-dropdown) {
-  @apply bg-gray-800 border-gray-700 rounded-lg;
+  background: var(--tcf-card-bg) !important;
+  border-color: var(--tcf-panel-border) !important;
+  border-radius: 12px !important;
 
   .arco-select-option {
-    @apply text-gray-300;
+    color: var(--tcf-text-muted) !important;
 
     &:hover {
-      @apply bg-gray-700;
+      background: var(--tcf-section-hover) !important;
     }
 
     &.arco-select-option-active {
-      @apply bg-blue-500/20 text-blue-500;
+      background: rgba(59, 130, 246, 0.12) !important;
+      color: rgb(59, 130, 246) !important;
     }
   }
+}
+
+.resize-handle {
+  background: var(--tcf-resize-bg);
+
+  &:hover {
+    background: var(--tcf-resize-hover);
+  }
+}
+
+.resize-handle__bar {
+  background: var(--tcf-text-subtle);
 }
 </style>

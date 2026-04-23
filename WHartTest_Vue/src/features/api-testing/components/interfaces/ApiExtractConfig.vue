@@ -128,7 +128,7 @@ onMounted(() => {
               />
               <a-button
                 type="text"
-                class="absolute right-0 top-0 bottom-0 text-gray-400 hover:text-blue-500"
+                class="extract-code-trigger absolute right-0 top-0 bottom-0 hover:text-blue-500"
                 @click="openResponseViewer(index)"
                 :disabled="!apiResponse"
               >
@@ -174,9 +174,40 @@ onMounted(() => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+.extract-code-trigger {
+  color: var(--color-text-3);
+}
+
 :deep(.arco-input-wrapper) {
-  @apply bg-gray-900/60 border-gray-700;
+  @apply bg-white border-[color:var(--color-border-2)];
   
+  input {
+    @apply text-[color:var(--color-text-1)] bg-transparent;
+    &::placeholder {
+      @apply text-[color:var(--color-text-3)];
+    }
+  }
+}
+
+:deep(.arco-checkbox) {
+  @apply text-[color:var(--color-text-2)];
+}
+
+:deep(.arco-btn-outline) {
+  @apply border-[color:var(--color-border-2)] text-[color:var(--color-text-2)];
+  
+  &:hover {
+    @apply border-blue-500 text-blue-500;
+  }
+}
+
+:global(body.api-testing-theme) .extract-code-trigger {
+  color: rgb(156, 163, 175);
+}
+
+:global(body.api-testing-theme) :deep(.arco-input-wrapper) {
+  @apply bg-gray-900/60 border-gray-700;
+
   input {
     @apply text-gray-200 bg-transparent;
     &::placeholder {
@@ -185,15 +216,11 @@ onMounted(() => {
   }
 }
 
-:deep(.arco-checkbox) {
+:global(body.api-testing-theme) :deep(.arco-checkbox) {
   @apply text-gray-400;
 }
 
-:deep(.arco-btn-outline) {
+:global(body.api-testing-theme) :deep(.arco-btn-outline) {
   @apply border-gray-600 text-gray-300;
-  
-  &:hover {
-    @apply border-blue-500 text-blue-500;
-  }
 }
 </style>

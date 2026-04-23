@@ -7,9 +7,7 @@ import {
   IconFile, 
   IconCheckCircle,
   IconRobot,
-  IconBug,
   IconCalendar, 
-  IconDashboard,
   IconCloseCircle,
   IconRight,
   IconUp,
@@ -18,6 +16,7 @@ import {
 import { Message } from '@arco-design/web-vue'
 import { getDashboardSummary } from '../../services/dashboardService'
 import type { DashboardSummary, RecentTask } from '../../services/dashboardService'
+import { useThemeStore } from '@/store/themeStore'
 
 // 扩展DashboardSummary类型以包含recent_reports
 interface ExtendedDashboardSummary extends Omit<DashboardSummary, 'recent_reports'> {
@@ -39,8 +38,10 @@ interface RecentReport {
 }
 
 const router = useRouter()
+const themeStore = useThemeStore()
 const loading = ref(false)
 const dashboardData = ref<ExtendedDashboardSummary | null>(null)
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 // 获取仪表盘数据
 const fetchDashboardData = async () => {
@@ -204,7 +205,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full w-full overflow-auto">
+  <div class="api-dashboard h-full w-full overflow-auto" :class="isDarkTheme ? 'api-dashboard--dark' : 'api-dashboard--light'">
     <div class="p-4 sm:p-6 w-full box-border">
 
         
@@ -243,11 +244,11 @@ onMounted(() => {
         <!-- 下方内容区域 -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 w-full box-border">
           <!-- 左侧快速导航 -->
-          <div class="bg-gray-700 rounded-lg p-4 sm:p-6 shadow-xl border border-white/10 box-border">
-            <div class="text-lg font-medium mb-6">快速导航</div>
+          <div class="dashboard-panel rounded-lg p-4 sm:p-6 shadow-xl border box-border">
+            <div class="dashboard-title text-lg font-medium mb-6">快速导航</div>
             <div class="space-y-4">
               <div 
-                class="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-gray-800/50 hover:bg-gray-750 transition-all hover:translate-x-1 border border-white/5 hover:border-white/10 backdrop-blur-sm cursor-pointer box-border"
+                class="dashboard-list-item flex items-center justify-between p-3 sm:p-4 rounded-lg transition-all hover:translate-x-1 border backdrop-blur-sm cursor-pointer box-border"
                 @click="goToTestCases"
               >
                 <div class="flex items-center gap-3">
@@ -255,17 +256,17 @@ onMounted(() => {
                     <IconCode />
                   </div>
                   <div>
-                    <div class="font-medium">测试用例</div>
-                    <div class="text-sm text-gray-400">
+                    <div class="dashboard-item-title font-medium">测试用例</div>
+                    <div class="dashboard-subtle text-sm">
                       {{ dashboardData?.total_testcases || 0 }} 个用例
                     </div>
                   </div>
                 </div>
-                <IconRight class="text-gray-400" />
+                <IconRight class="dashboard-arrow" />
               </div>
               
               <div 
-                class="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-gray-800/50 hover:bg-gray-750 transition-all hover:translate-x-1 border border-white/5 hover:border-white/10 backdrop-blur-sm cursor-pointer box-border"
+                class="dashboard-list-item flex items-center justify-between p-3 sm:p-4 rounded-lg transition-all hover:translate-x-1 border backdrop-blur-sm cursor-pointer box-border"
                 @click="goToApis"
               >
                 <div class="flex items-center gap-3">
@@ -273,17 +274,17 @@ onMounted(() => {
                     <IconRobot />
                   </div>
                   <div>
-                    <div class="font-medium">接口管理</div>
-                    <div class="text-sm text-gray-400">
+                    <div class="dashboard-item-title font-medium">接口管理</div>
+                    <div class="dashboard-subtle text-sm">
                       {{ dashboardData?.total_interfaces || 0 }} 个接口
                     </div>
                   </div>
                 </div>
-                <IconRight class="text-gray-400" />
+                <IconRight class="dashboard-arrow" />
               </div>
               
               <div 
-                class="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-gray-800/50 hover:bg-gray-750 transition-all hover:translate-x-1 border border-white/5 hover:border-white/10 backdrop-blur-sm cursor-pointer box-border"
+                class="dashboard-list-item flex items-center justify-between p-3 sm:p-4 rounded-lg transition-all hover:translate-x-1 border backdrop-blur-sm cursor-pointer box-border"
                 @click="goToProjects"
               >
                 <div class="flex items-center gap-3">
@@ -291,17 +292,17 @@ onMounted(() => {
                     <IconFolder />
                   </div>
                   <div>
-                    <div class="font-medium">项目管理</div>
-                    <div class="text-sm text-gray-400">
+                    <div class="dashboard-item-title font-medium">项目管理</div>
+                    <div class="dashboard-subtle text-sm">
                       {{ dashboardData?.total_projects || 0 }} 个项目
                     </div>
                   </div>
                 </div>
-                <IconRight class="text-gray-400" />
+                <IconRight class="dashboard-arrow" />
               </div>
               
               <div 
-                class="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-gray-800/50 hover:bg-gray-750 transition-all hover:translate-x-1 border border-white/5 hover:border-white/10 backdrop-blur-sm cursor-pointer box-border"
+                class="dashboard-list-item flex items-center justify-between p-3 sm:p-4 rounded-lg transition-all hover:translate-x-1 border backdrop-blur-sm cursor-pointer box-border"
                 @click="goToEnvironments"
               >
                 <div class="flex items-center gap-3">
@@ -309,15 +310,15 @@ onMounted(() => {
                     <IconFolder />
                   </div>
                   <div>
-                    <div class="font-medium">环境管理</div>
-                    <div class="text-sm text-gray-400">配置测试环境</div>
+                    <div class="dashboard-item-title font-medium">环境管理</div>
+                    <div class="dashboard-subtle text-sm">配置测试环境</div>
                   </div>
                 </div>
-                <IconRight class="text-gray-400" />
+                <IconRight class="dashboard-arrow" />
               </div>
               
               <div 
-                class="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-gray-800/50 hover:bg-gray-750 transition-all hover:translate-x-1 border border-white/5 hover:border-white/10 backdrop-blur-sm cursor-pointer box-border"
+                class="dashboard-list-item flex items-center justify-between p-3 sm:p-4 rounded-lg transition-all hover:translate-x-1 border backdrop-blur-sm cursor-pointer box-border"
                 @click="goToFunctions"
               >
                 <div class="flex items-center gap-3">
@@ -325,19 +326,19 @@ onMounted(() => {
                     <IconCode />
                   </div>
                   <div>
-                    <div class="font-medium">函数管理</div>
-                    <div class="text-sm text-gray-400">自定义测试函数</div>
+                    <div class="dashboard-item-title font-medium">函数管理</div>
+                    <div class="dashboard-subtle text-sm">自定义测试函数</div>
                   </div>
                 </div>
-                <IconRight class="text-gray-400" />
+                <IconRight class="dashboard-arrow" />
               </div>
             </div>
           </div>
 
           <!-- 中间测试报告情况 -->
-          <div class="bg-gray-700 rounded-lg p-4 sm:p-6 shadow-xl border border-white/10 box-border">
+          <div class="dashboard-panel rounded-lg p-4 sm:p-6 shadow-xl border box-border">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-              <div class="text-lg font-medium mb-2 sm:mb-0">测试报告情况</div>
+              <div class="dashboard-title text-lg font-medium mb-2 sm:mb-0">测试报告情况</div>
               <a-button type="outline" class="hover:border-blue-500 hover:text-blue-500 transition-colors" @click="goToTestReports">
                 查看全部
                 <template #icon>
@@ -350,7 +351,7 @@ onMounted(() => {
               <div 
                 v-for="(item, index) in recentReports" 
                 :key="index"
-                class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 rounded-lg bg-gray-800/50 hover:bg-gray-750 transition-all hover:translate-x-1 border border-white/5 hover:border-white/10 cursor-pointer box-border"
+                class="dashboard-list-item flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 rounded-lg transition-all hover:translate-x-1 border cursor-pointer box-border"
                 @click="goToReportDetail(item.id)"
               >
                 <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-0">
@@ -361,13 +362,13 @@ onMounted(() => {
                     <icon-close-circle v-else />
                   </div>
                   <div class="max-w-[180px] sm:max-w-none">
-                    <div class="font-medium truncate">{{ item.testcase__name }}</div>
-                    <div class="text-sm text-gray-400">{{ formatDate(item.start_time) }} · {{ formatDuration(item.duration) }}</div>
+                    <div class="dashboard-item-title font-medium truncate">{{ item.testcase__name }}</div>
+                    <div class="dashboard-subtle text-sm">{{ formatDate(item.start_time) }} · {{ formatDuration(item.duration) }}</div>
                   </div>
                 </div>
                 <div class="flex items-center gap-4 sm:gap-8 w-full sm:w-auto justify-between sm:justify-start">
                   <div class="text-right">
-                    <div class="font-medium">通过率</div>
+                    <div class="dashboard-item-title font-medium">通过率</div>
                     <div class="text-sm" :class="item.success_rate === 1 ? 'text-green-500' : 'text-yellow-500'">
                       {{ (item.success_rate * 100).toFixed(0) }}%
                     </div>
@@ -383,9 +384,9 @@ onMounted(() => {
           </div>
 
           <!-- 右侧执行列表 -->
-          <div class="bg-gray-700 rounded-lg p-4 sm:p-6 shadow-xl border border-white/10 box-border">
+          <div class="dashboard-panel rounded-lg p-4 sm:p-6 shadow-xl border box-border">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-              <div class="text-lg font-medium mb-2 sm:mb-0">最近执行情况</div>
+              <div class="dashboard-title text-lg font-medium mb-2 sm:mb-0">最近执行情况</div>
               <a-button type="outline" class="hover:border-blue-500 hover:text-blue-500 transition-colors" @click="goToTestTasks">
             查看全部
             <template #icon>
@@ -398,7 +399,7 @@ onMounted(() => {
           <div 
                 v-for="(item, index) in recentTasks" 
             :key="index"
-                class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 rounded-lg bg-gray-800/50 hover:bg-gray-750 transition-all hover:translate-x-1 border border-white/5 hover:border-white/10 cursor-pointer box-border"
+                class="dashboard-list-item flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 rounded-lg transition-all hover:translate-x-1 border cursor-pointer box-border"
                 @click="goToTaskDetail(item.id)"
               >
                 <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-0">
@@ -409,13 +410,13 @@ onMounted(() => {
                 <icon-close-circle v-else />
               </div>
                   <div class="max-w-[180px] sm:max-w-none">
-                    <div class="font-medium truncate">{{ item.task_suite__name }}</div>
-                    <div class="text-sm text-gray-400">{{ formatDate(item.created_at) }}</div>
+                    <div class="dashboard-item-title font-medium truncate">{{ item.task_suite__name }}</div>
+                    <div class="dashboard-subtle text-sm">{{ formatDate(item.created_at) }}</div>
               </div>
             </div>
                 <div class="flex items-center gap-4 sm:gap-8 w-full sm:w-auto justify-between sm:justify-start">
               <div class="text-right">
-                <div class="font-medium">通过率</div>
+                <div class="dashboard-item-title font-medium">通过率</div>
                     <div class="text-sm" :class="item.success_rate === 1 ? 'text-green-500' : 'text-yellow-500'">
                       {{ (item.success_rate * 100).toFixed(0) }}%
                 </div>
@@ -436,12 +437,60 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.hover\:bg-gray-750:hover {
-  background-color: rgba(31, 41, 55, 0.7);
+.api-dashboard {
+  --dash-panel-bg: rgba(255, 255, 255, 0.94);
+  --dash-panel-border: rgba(148, 163, 184, 0.18);
+  --dash-panel-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+  --dash-item-bg: rgba(248, 250, 252, 0.96);
+  --dash-item-border: rgba(148, 163, 184, 0.14);
+  --dash-item-hover: rgba(241, 245, 249, 0.98);
+  --dash-text: var(--color-text-1);
+  --dash-subtle: var(--color-text-3);
+}
+
+.api-dashboard--dark {
+  --dash-panel-bg: rgba(55, 65, 81, 0.94);
+  --dash-panel-border: rgba(255, 255, 255, 0.08);
+  --dash-panel-shadow: 0 -4px 10px -1px rgba(0, 0, 0, 0.2),
+    0 10px 25px -5px rgba(0, 0, 0, 0.4),
+    -8px 0 15px -3px rgba(0, 0, 0, 0.3),
+    8px 0 15px -3px rgba(0, 0, 0, 0.3);
+  --dash-item-bg: rgba(31, 41, 55, 0.5);
+  --dash-item-border: rgba(255, 255, 255, 0.05);
+  --dash-item-hover: rgba(31, 41, 55, 0.7);
+  --dash-text: rgb(255, 255, 255);
+  --dash-subtle: rgb(156, 163, 175);
 }
 
 .backdrop-blur-sm {
   backdrop-filter: blur(8px);
+}
+
+.dashboard-panel {
+  background: var(--dash-panel-bg);
+  border-color: var(--dash-panel-border) !important;
+  box-shadow: var(--dash-panel-shadow);
+}
+
+.dashboard-list-item {
+  background: var(--dash-item-bg);
+  border-color: var(--dash-item-border) !important;
+}
+
+.dashboard-list-item:hover {
+  background: var(--dash-item-hover);
+  border-color: color-mix(in srgb, var(--dash-panel-border) 40%, #ffffff 60%) !important;
+}
+
+.dashboard-title,
+.dashboard-item-title,
+.api-dashboard {
+  color: var(--dash-text);
+}
+
+.dashboard-subtle,
+.dashboard-arrow {
+  color: var(--dash-subtle) !important;
 }
 
 /* 隐藏滚动条但保持可滚动 - 全局应用 */
@@ -471,12 +520,5 @@ onMounted(() => {
   width: 0 !important;
   height: 0 !important;
   display: none !important;
-}
-
-.shadow-xl {
-  box-shadow: 0 -4px 10px -1px rgba(0, 0, 0, 0.2),
-              0 10px 25px -5px rgba(0, 0, 0, 0.4),
-              -8px 0 15px -3px rgba(0, 0, 0, 0.3),
-              8px 0 15px -3px rgba(0, 0, 0, 0.3);
 }
 </style> 

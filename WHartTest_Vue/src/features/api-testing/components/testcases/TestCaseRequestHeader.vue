@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { IconSend, IconSave, IconRight, IconDown, IconQuestionCircle } from '@arco-design/web-vue/es/icon'
+import { IconSend, IconSave, IconQuestionCircle } from '@arco-design/web-vue/es/icon'
 import { Message } from '@arco-design/web-vue'
 import { useEnvironmentStore } from '../../stores/environmentStore'
 import type { ApiInterface } from '../../types/interface'
@@ -12,7 +12,7 @@ interface Props {
     method: string
     url: string
     name: string
-    module: number | null
+    module: number | string | null
     interface?: ApiInterface | null
   }
   savingLoading?: boolean
@@ -41,70 +41,100 @@ const currentEnvironmentBaseUrl = computed(() => {
   return currentEnv?.base_url || ''
 })
 
-const expandedModules = ref<number[]>([])
-
 const processModules = (modules: ApiModule[], level = 0): (ApiModule & { level: number })[] => {
   return modules.reduce((acc: (ApiModule & { level: number })[], mod) => {
     acc.push({ ...mod, level })
-    if (mod.children?.length && expandedModules.value.includes(mod.id)) {
+    if (mod.children?.length) {
       acc.push(...processModules(mod.children, level + 1))
     }
     return acc
   }, [])
 }
 
-const toggleModule = (moduleId: number, event: Event) => {
-  event.preventDefault()
-  event.stopPropagation()
-  const index = expandedModules.value.indexOf(moduleId)
-  if (index === -1) {
-    expandedModules.value.push(moduleId)
-  } else {
-    expandedModules.value.splice(index, 1)
-  }
-}
-
 const processedModules = computed(() => {
   return processModules(props.modules)
 })
 
-const apiName = computed({
-  get: () => props.modelValue.name || '',
-  set: (value) => {
-    emit('update:modelValue', {
-      ...props.modelValue,
-      name: value
-    })
+const normalizeModuleValue = (moduleValue: unknown) => {
+  if (typeof moduleValue === 'object' && moduleValue !== null && 'value' in moduleValue) {
+    return normalizeModuleValue((moduleValue as { value?: unknown }).value)
   }
-})
 
-const selectedModule = computed({
-  get: () => props.modelValue.module || undefined,
-  set: (value) => {
-    emit('update:modelValue', {
-      ...props.modelValue,
-      module: value || null
-    })
+  if (typeof moduleValue === 'boolean') {
+    return undefined
   }
-})
 
-const requestUrl = computed({
-  get: () => props.modelValue.url || '',
-  set: (value) => {
-    emit('update:modelValue', {
-      ...props.modelValue,
-      url: value
-    })
+  if (moduleValue === null || moduleValue === undefined || moduleValue === '') {
+    return undefined
   }
-})
+
+  const normalizedId = Number(moduleValue)
+  return Number.isFinite(normalizedId) && normalizedId > 0 ? normalizedId : undefined
+}
+
+const apiName = ref('')
+const selectedModule = ref<number>()
+const requestUrl = ref('')
 
 const selectedMethod = ref('GET')
 
-watch(() => props.modelValue.method, (newMethod) => {
-  if (newMethod && newMethod !== selectedMethod.value) {
-    selectedMethod.value = newMethod
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (apiName.value !== (newValue.name || '')) {
+      apiName.value = newValue.name || ''
+    }
+    if (requestUrl.value !== (newValue.url || '')) {
+      requestUrl.value = newValue.url || ''
+    }
+    if (selectedMethod.value !== (newValue.method || 'GET')) {
+      selectedMethod.value = newValue.method || 'GET'
+    }
+  },
+  { immediate: true, deep: true }
+)
+
+watch(
+  () => props.modelValue.module,
+  (newModule, oldModule) => {
+    selectedModule.value = normalizeModuleValue(newModule)
+  },
+  { immediate: true }
+)
+
+watch(apiName, (newValue) => {
+  if (newValue === (props.modelValue.name || '')) {
+    return
   }
-}, { immediate: true })
+
+  emit('update:modelValue', {
+    ...props.modelValue,
+    name: newValue
+  })
+})
+
+watch(requestUrl, (newValue) => {
+  if (newValue === (props.modelValue.url || '')) {
+    return
+  }
+
+  emit('update:modelValue', {
+    ...props.modelValue,
+    url: newValue
+  })
+})
+
+watch(selectedModule, (newValue, oldValue) => {
+  const normalizedValue = normalizeModuleValue(newValue) || null
+  const currentModule = normalizeModuleValue(props.modelValue.module) || null
+  if (normalizedValue === currentModule) {
+    return
+  }
+  emit('update:modelValue', {
+    ...props.modelValue,
+    module: normalizedValue
+  })
+})
 
 watch(selectedMethod, (newMethod) => {
   if (newMethod !== props.modelValue.method) {
@@ -192,7 +222,7 @@ const getCurrentMethodColor = () => {
 </script>
 
 <template>
-  <div class="p-4 border-b border-gray-700">
+  <div class="testcase-request-header p-4 border-b">
     <div class="flex gap-2 mb-3">
       <a-dropdown
         trigger="click"
@@ -224,7 +254,7 @@ const getCurrentMethodColor = () => {
         class="menu-item rounded-lg flex-1"
       >
         <template #prefix v-if="currentEnvironmentBaseUrl">
-          <span class="text-gray-500">{{ currentEnvironmentBaseUrl }}</span>
+          <span class="base-url-text">{{ currentEnvironmentBaseUrl }}</span>
         </template>
       </a-input>
 
@@ -266,7 +296,7 @@ const getCurrentMethodColor = () => {
     </div>
 
     <div class="flex gap-2">
-      <div class="border border-gray-600 rounded-lg" style="width: 20%">
+      <div class="module-select-shell rounded-lg" style="width: 20%">
         <a-select
           v-model="selectedModule"
           placeholder="请选择模块"
@@ -275,21 +305,14 @@ const getCurrentMethodColor = () => {
           :style="{ width: '100%' }"
         >
           <a-option
-            v-for="mod in processedModules"
-            :key="mod.id"
-            :value="mod.id"
+            v-for="module in processedModules"
+            :key="module.id"
+            :value="module.id"
+            :label="module.name"
           >
-            <div class="flex items-center gap-2" :style="{ paddingLeft: `${mod.level * 16}px` }">
-              <div
-                v-if="mod.children?.length"
-                class="w-4 h-4 flex items-center justify-center cursor-pointer"
-                @click="toggleModule(mod.id, $event)"
-              >
-                <icon-right v-if="!expandedModules.includes(mod.id)" class="!w-3 !h-3 !text-[#6b7785]" />
-                <icon-down v-else class="!w-3 !h-3 !text-[#6b7785]" />
-              </div>
-              <span v-else class="w-4"></span>
-              {{ mod.name }}
+            <div class="flex items-center gap-2" :style="{ paddingLeft: `${module.level * 16}px` }">
+              <span class="w-4"></span>
+              {{ module.name }}
             </div>
           </a-option>
         </a-select>
@@ -309,11 +332,15 @@ const getCurrentMethodColor = () => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+.testcase-request-header {
+  border-color: var(--tcf-panel-border) !important;
+}
+
 /* 输入框menu-item样式 */
 .menu-item {
   box-shadow: inset 0 1px 0 0 rgba(148, 163, 184, 0.2) !important;
-  background-color: rgba(17, 24, 39, 0.8) !important;
-  border: 1px solid rgba(75, 85, 99, 0.4) !important;
+  background-color: var(--tcf-control-bg) !important;
+  border: 1px solid var(--tcf-control-border) !important;
 }
 
 /* 请求方法按钮样式 */
@@ -353,12 +380,13 @@ const getCurrentMethodColor = () => {
 
 /* 输入框样式 */
 :deep(.arco-input-wrapper) {
-  @apply bg-gray-900/60 border-gray-700;
+  background: var(--tcf-control-bg) !important;
+  border-color: var(--tcf-control-border) !important;
 
   input {
-    @apply text-gray-200;
+    color: var(--tcf-text) !important;
     &::placeholder {
-      @apply text-gray-500;
+      color: var(--tcf-text-subtle) !important;
     }
   }
 }
@@ -366,15 +394,17 @@ const getCurrentMethodColor = () => {
 :deep(.arco-input-prefix) {
   margin-right: 4px;
   padding-right: 8px;
-  border-right: 1px solid rgba(75, 85, 99, 0.4);
+  border-right: 1px solid var(--tcf-control-border);
 }
 
 /* 按钮样式 */
 :deep(.arco-btn-outline) {
-  @apply border-gray-600 text-gray-300;
+  border-color: var(--tcf-control-border) !important;
+  color: var(--tcf-text-muted) !important;
 
   &:hover {
-    @apply border-blue-500 text-blue-500;
+    border-color: rgba(59, 130, 246, 0.4) !important;
+    color: rgb(59, 130, 246) !important;
   }
 }
 
@@ -390,93 +420,130 @@ const getCurrentMethodColor = () => {
 }
 
 /* 下拉菜单样式 */
-:global(.arco-dropdown-list) {
-  @apply bg-gray-800 rounded-lg;
-  padding: 2px 0 !important;
-  width: 80px !important;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2) !important;
-  border: 1px solid rgba(75, 85, 99, 0.4) !important;
+:global(.arco-dropdown),
+:global(.arco-dropdown-list),
+:global(.arco-dropdown-list-wrapper) {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12) !important;
+}
+
+:global(body.api-testing-theme .arco-dropdown),
+:global(body.api-testing-theme .arco-dropdown-list),
+:global(body.api-testing-theme .arco-dropdown-list-wrapper) {
+  background: rgb(31, 41, 55) !important;
+  border-color: rgba(75, 85, 99, 0.4) !important;
 }
 
 /* 模块选择下拉框样式 */
 :deep(.arco-select) {
-  @apply bg-gray-900/60;
+  background: var(--tcf-control-bg) !important;
 
   .arco-select-view {
     box-shadow: inset 0 1px 0 0 rgba(148, 163, 184, 0.2) !important;
-    background-color: rgba(17, 24, 39, 0.8) !important;
-    border: 1px solid rgba(75, 85, 99, 0.4) !important;
+    background-color: var(--tcf-control-bg) !important;
+    border: 1px solid var(--tcf-control-border) !important;
     @apply rounded-lg;
 
     &:hover {
-      border-color: rgba(75, 85, 99, 0.6) !important;
+      border-color: rgba(59, 130, 246, 0.28) !important;
+      background: var(--tcf-control-hover) !important;
     }
   }
 
   .arco-select-view-value {
-    @apply text-gray-200;
+    color: var(--tcf-text) !important;
   }
 
   input {
-    @apply text-gray-200 bg-transparent;
+    color: var(--tcf-text) !important;
+    background: transparent !important;
     &::placeholder {
-      @apply text-gray-500;
+      color: var(--tcf-text-subtle) !important;
     }
   }
 }
 
-:deep(.arco-select-dropdown) {
-  @apply bg-gray-800 border-gray-700 rounded-lg;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid rgba(75, 85, 99, 0.4) !important;
+:global(.arco-select-dropdown) {
+  background: #ffffff !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12) !important;
   padding: 4px !important;
   margin: 4px 0 !important;
+}
 
-  .arco-select-option {
-    @apply text-gray-300 rounded-lg px-2 py-1 my-1;
+:global(body.api-testing-theme .arco-select-dropdown) {
+  background: rgb(31, 41, 55) !important;
+  border-color: rgba(75, 85, 99, 0.4) !important;
+}
 
-    &:hover {
-      @apply bg-gray-700;
-    }
+:global(.arco-select-dropdown .arco-select-option) {
+  color: #334155 !important;
+  border-radius: 8px !important;
+  padding: 0.25rem 0.5rem !important;
+  margin: 0.25rem 0 !important;
 
-    &.arco-select-option-active,
-    &.arco-select-option-selected {
-      @apply bg-blue-500/20 text-blue-500;
-    }
+  &:hover {
+    background: #f8fafc !important;
+  }
+
+  &.arco-select-option-active,
+  &.arco-select-option-selected {
+    background: rgba(59, 130, 246, 0.12) !important;
+    color: #2563eb !important;
+  }
+}
+
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option) {
+  color: rgb(203, 213, 225) !important;
+
+  &:hover {
+    background: rgba(51, 65, 85, 0.9) !important;
   }
 }
 
 /* 模块树形结构样式 */
-:deep(.arco-select-dropdown .arco-select-option) {
-  @apply p-0;
+:global(.arco-select-dropdown .arco-select-option) {
+  padding: 0 !important;
   background: transparent !important;
   margin: 2px 0 !important;
   border-radius: 4px !important;
 
   &:hover {
-    background: rgb(47, 66, 114, 0.4) !important;
+    background: rgba(59, 130, 246, 0.1) !important;
   }
 
   &.arco-select-option-active,
   &.arco-select-option-selected {
-    background: rgb(47, 66, 114, 0.4) !important;
+    background: rgba(59, 130, 246, 0.14) !important;
   }
 }
 
-:deep(.arco-select-dropdown .arco-select-option .arco-btn) {
-  @apply bg-transparent;
+:global(.arco-select-dropdown .arco-select-option .arco-btn) {
+  background: transparent !important;
   border: none !important;
 
   &:hover {
-    @apply bg-transparent;
+    background: transparent !important;
   }
 
   .arco-icon {
-    @apply text-[#6b7785];
+    color: #6b7785 !important;
 
     &:hover {
-      @apply text-[#86909c];
+      color: #86909c !important;
     }
   }
+}
+
+.base-url-text {
+  color: var(--tcf-text-subtle) !important;
+}
+
+.module-select-shell {
+  border: 1px solid var(--tcf-control-border);
+  background: var(--tcf-control-bg);
 }
 </style>

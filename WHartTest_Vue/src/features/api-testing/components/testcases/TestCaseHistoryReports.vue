@@ -200,7 +200,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full">
+  <div class="history-reports-panel h-full">
     <a-table
       :data="reports"
       :columns="columns"
@@ -224,28 +224,45 @@ onMounted(() => {
   @apply !bg-transparent;
 
   .arco-table-th {
-    @apply !bg-gray-800/30 !text-gray-300 !border-gray-700;
+    background: var(--api-report-table-header-bg) !important;
+    color: var(--api-report-text) !important;
+    border-color: var(--api-report-shell-border) !important;
   }
 
   .arco-table-td {
-    @apply !bg-transparent !text-gray-300 !border-gray-700;
+    background: transparent !important;
+    color: var(--api-report-text-muted) !important;
+    border-color: var(--api-report-shell-border) !important;
   }
 
   .arco-table-tr:hover .arco-table-td {
-    @apply !bg-gray-800/30;
+    background: var(--api-report-table-row-hover) !important;
   }
+}
+
+:deep(.arco-btn-text) {
+  color: var(--theme-accent) !important;
+}
+
+:deep(.arco-btn-text:hover) {
+  color: var(--theme-accent-hover) !important;
+  background: rgba(var(--theme-accent-rgb), 0.08) !important;
+}
+
+.empty-text {
+  color: var(--api-report-text-subtle);
 }
 
 /* 分页样式 */
 :deep(.arco-pagination) {
   .arco-pagination-item {
     border-radius: 4px !important;
-    color: #94a3b8 !important;
+    color: var(--api-report-text-subtle) !important;
     background-color: transparent !important;
     border: 1px solid transparent !important;
 
     &:hover {
-      color: #60a5fa !important;
+      color: var(--theme-accent-hover) !important;
       background-color: rgba(59, 130, 246, 0.1) !important;
       border-color: rgba(59, 130, 246, 0.2) !important;
     }
@@ -260,13 +277,13 @@ onMounted(() => {
   .arco-pagination-jumper {
     .arco-input {
       border-radius: 4px !important;
-      background-color: rgba(30, 41, 59, 0.5) !important;
-      border: 1px solid rgba(148, 163, 184, 0.1) !important;
-      color: #e2e8f0 !important;
+      background-color: var(--api-report-inline-bg) !important;
+      border: 1px solid var(--api-report-inline-border) !important;
+      color: var(--api-report-text) !important;
 
       &:hover, &:focus {
         border-color: rgba(59, 130, 246, 0.5) !important;
-        background-color: rgba(30, 41, 59, 0.7) !important;
+        background-color: var(--api-report-card-hover) !important;
       }
     }
   }

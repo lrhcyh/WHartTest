@@ -62,12 +62,12 @@ const getMethodColor = (method: string) => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div class="api-interface-list h-full flex flex-col">
     <!-- 搜索区域 -->
     <div class="p-4">
       <div class="flex items-center justify-between gap-4">
         <div class="flex items-center gap-3 flex-shrink-0">
-          <span class="text-gray-300 whitespace-nowrap">{{ currentModuleName || '全部接口' }}</span>
+          <span class="list-module-name whitespace-nowrap">{{ currentModuleName || '全部接口' }}</span>
           <a-tag size="small" class="flex-shrink-0">{{ filteredInterfaces.length }} 个接口</a-tag>
         </div>
         <a-input-search
@@ -106,38 +106,38 @@ const getMethodColor = (method: string) => {
             </a-table-column>
             <a-table-column title="接口名称" data-index="name" align="center">
               <template #cell="{ record }">
-                <span class="cursor-pointer hover:text-blue-400">{{ record.name }}</span>
+                <span class="list-name-link cursor-pointer">{{ record.name }}</span>
               </template>
             </a-table-column>
             <a-table-column title="URL" data-index="url">
               <template #cell="{ record }">
-                <span class="text-gray-400">{{ record.url }}</span>
+                <span class="list-url-text">{{ record.url }}</span>
               </template>
             </a-table-column>
             <a-table-column title="创建时间" data-index="created_at" :width="150" align="center">
               <template #cell="{ record }">
                 <a-tooltip v-if="record.created_at" :content="formatShortDateTime(record.created_at)">
                   <div class="flex items-center gap-1 justify-center">
-                    <icon-clock-circle class="text-gray-500" :size="14" />
-                    <span class="text-gray-400 text-xs">
+                    <icon-clock-circle class="list-time-icon" :size="14" />
+                    <span class="list-time-text text-xs">
                       {{ formatRelativeTime(record.created_at) }}
                     </span>
                   </div>
                 </a-tooltip>
-                <span v-else class="text-gray-400">-</span>
+                <span v-else class="list-time-text">-</span>
               </template>
             </a-table-column>
             <a-table-column title="更新时间" data-index="updated_at" :width="150" align="center">
               <template #cell="{ record }">
                 <a-tooltip v-if="record.updated_at" :content="formatShortDateTime(record.updated_at)">
                   <div class="flex items-center gap-1 justify-center">
-                    <icon-clock-circle class="text-blue-400" :size="14" />
-                    <span class="text-gray-400 text-xs">
+                    <icon-clock-circle class="list-time-icon list-time-icon--updated" :size="14" />
+                    <span class="list-time-text text-xs">
                       {{ formatRelativeTime(record.updated_at) }}
                     </span>
                   </div>
                 </a-tooltip>
-                <span v-else class="text-gray-400">-</span>
+                <span v-else class="list-time-text">-</span>
               </template>
             </a-table-column>
             <a-table-column title="操作" align="center" :width="150">
@@ -180,6 +180,46 @@ const getMethodColor = (method: string) => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+.api-interface-list {
+  --interface-list-text: var(--color-text-2);
+  --interface-list-muted: var(--color-text-3);
+  --interface-list-header-bg: rgba(248, 250, 252, 0.96);
+  --interface-list-row-hover: rgba(59, 130, 246, 0.06);
+  --interface-list-row-selected: rgba(59, 130, 246, 0.12);
+  --interface-list-empty: rgba(100, 116, 139, 0.9);
+}
+
+.list-module-name,
+.list-url-text,
+.list-time-text {
+  color: var(--interface-list-muted);
+}
+
+.list-name-link {
+  color: var(--interface-list-text);
+}
+
+.list-name-link:hover {
+  color: rgb(96, 165, 250);
+}
+
+.list-time-icon {
+  color: rgba(100, 116, 139, 0.9);
+}
+
+.list-time-icon--updated {
+  color: rgb(96, 165, 250);
+}
+
+:global(body.api-testing-theme) .api-interface-list {
+  --interface-list-text: rgb(229, 231, 235);
+  --interface-list-muted: rgb(156, 163, 175);
+  --interface-list-header-bg: rgba(30, 41, 59, 0.5);
+  --interface-list-row-hover: rgba(59, 130, 246, 0.05);
+  --interface-list-row-selected: rgba(59, 130, 246, 0.1);
+  --interface-list-empty: rgb(107, 114, 128);
+}
+
 .custom-table {
   @apply h-full;
 }
@@ -215,10 +255,18 @@ const getMethodColor = (method: string) => {
 }
 
 .custom-table :deep(.arco-table-header) {
-  background-color: rgba(30, 41, 59, 0.5) !important;
+  background-color: var(--interface-list-header-bg) !important;
   position: sticky;
   top: 0;
   z-index: 2;
+}
+
+.custom-table :deep(.arco-table-th) {
+  color: var(--interface-list-text) !important;
+}
+
+.custom-table :deep(.arco-table-td) {
+  color: var(--interface-list-text) !important;
 }
 
 .custom-table :deep(.arco-table-content) {
@@ -235,16 +283,27 @@ const getMethodColor = (method: string) => {
 
 /* 选中行样式 */
 .custom-table :deep(.selected-row) {
-  background-color: rgba(59, 130, 246, 0.1) !important;
+  background-color: var(--interface-list-row-selected) !important;
 }
 
 .custom-table :deep(.arco-table-tr:hover) {
-  background-color: rgba(59, 130, 246, 0.05) !important;
+  background-color: var(--interface-list-row-hover) !important;
   cursor: pointer;
 }
 
 /* 空状态样式 */
 :deep(.arco-empty) {
-  @apply text-gray-500;
+  color: var(--interface-list-empty);
+}
+
+:deep(.arco-input-wrapper),
+:deep(.arco-input-wrapper input) {
+  color: var(--interface-list-text) !important;
+}
+
+:deep(.arco-input-wrapper input::placeholder),
+:deep(.arco-input-search-prefix),
+:deep(.arco-input-search-suffix) {
+  color: var(--interface-list-muted) !important;
 }
 </style>

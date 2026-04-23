@@ -79,7 +79,7 @@
     <div v-if="!currentProjectId" class="no-project-selected">
       <a-empty :description="pageText.noProjectSelected">
         <template #image>
-          <icon-folder style="font-size: 48px; color: #c2c7d0;" />
+          <icon-folder style="font-size: 48px; color: var(--theme-empty-icon);" />
         </template>
       </a-empty>
     </div>
@@ -792,10 +792,12 @@ defineExpose({
 <style scoped>
 .testcase-content {
   flex: 1;
-  background-color: #fff;
+  background-color: var(--theme-card-bg);
+  color: var(--theme-page-text);
+  border: 1px solid var(--theme-card-border);
   border-radius: 8px;
   padding: 16px;
-  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.2), 0 0 10px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--theme-card-shadow);
   height: 100%;
   box-sizing: border-box;
   display: flex;
@@ -907,7 +909,7 @@ defineExpose({
 }
 
 .text-gray {
-  color: #86909c;
+  color: var(--theme-text-tertiary);
 }
 
 :deep(.test-case-table .arco-table-td) {
@@ -945,7 +947,7 @@ defineExpose({
   gap: 6px;
   position: sticky;
   bottom: 16px;
-  background-color: #fff;
+  background-color: var(--theme-card-bg);
   z-index: 1;
   padding: 8px 0;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
@@ -978,7 +980,7 @@ defineExpose({
 .testcase-name-link {
   display: inline-block;
   max-width: 160px;
-  color: #1890ff;
+  color: var(--theme-accent);
   cursor: pointer;
   text-decoration: none;
   transition: color 0.2s;
@@ -988,7 +990,7 @@ defineExpose({
 }
 
 .testcase-name-link:hover {
-  color: #40a9ff;
+  color: var(--theme-accent-hover);
   text-decoration: underline;
 }
 

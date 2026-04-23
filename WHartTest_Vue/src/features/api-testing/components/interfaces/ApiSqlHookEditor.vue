@@ -480,6 +480,7 @@ onMounted(() => {
 <template>
   <a-modal
     :visible="props.visible"
+    modal-class="sql-hook-editor-modal"
     @cancel="handleCancel"
     :unmount-on-close="false"
     :footer="false"
@@ -490,7 +491,7 @@ onMounted(() => {
     <div class="flex flex-col gap-4 p-2">
       <!-- SQL名称 -->
       <div>
-        <div class="text-gray-400 text-sm mb-1">SQL名称</div>
+        <div class="sql-field-label text-sm mb-1">SQL名称</div>
         <a-input
           v-model="sqlNameRef"
           placeholder="输入SQL名称"
@@ -500,7 +501,7 @@ onMounted(() => {
       
       <!-- 数据库配置选择 -->
       <div>
-        <div class="text-gray-400 text-sm mb-1">数据库配置</div>
+        <div class="sql-field-label text-sm mb-1">数据库配置</div>
         <a-select
           v-model="selectedDbConfigRef"
           placeholder="选择数据库配置"
@@ -514,34 +515,34 @@ onMounted(() => {
             {{ config.name }} ({{ config.database }} - {{ config.type }})
           </a-option>
         </a-select>
-        <div class="text-gray-500 text-xs mt-1">
+        <div class="sql-helper-text text-xs mt-1">
           SQL将在选定的数据库上执行
         </div>
       </div>
       
       <!-- 变量名 -->
       <div>
-        <div class="text-gray-400 text-sm mb-1">变量名（可选）</div>
+        <div class="sql-field-label text-sm mb-1">变量名（可选）</div>
         <a-input
           v-model="varNameRef"
           placeholder="输入变量名，用于保存结果"
           allow-clear
         />
-        <div class="text-gray-500 text-xs mt-1">
+        <div class="sql-helper-text text-xs mt-1">
           如果需要SQL查询结果，请指定变量名，后续步骤可引用该变量
         </div>
       </div>
       
       <!-- SQL内容 -->
       <div class="flex-1">
-        <div class="text-gray-400 text-sm mb-1">SQL语句</div>
+        <div class="sql-field-label text-sm mb-1">SQL语句</div>
         <a-textarea
           v-model="sqlContentRef"
           placeholder="输入SQL语句，如 SELECT * FROM users WHERE id = 1"
           allow-clear
           :auto-size="{ minRows: 8, maxRows: 15 }"
         />
-        <div class="text-gray-500 text-xs mt-1">
+        <div class="sql-helper-text text-xs mt-1">
           只需输入SQL语句，系统会自动生成完整的钩子函数代码
         </div>
       </div>
@@ -557,61 +558,100 @@ onMounted(() => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
-:deep(.arco-modal) {
-  @apply bg-gray-800 border border-gray-700;
-  
-  .arco-modal-header {
-    @apply border-b border-gray-700;
-  }
-  
-  .arco-modal-title {
-    @apply text-gray-200;
-  }
-  
-  .arco-modal-close-btn {
-    @apply text-gray-400;
-    
-    &:hover {
-      @apply text-gray-200;
-    }
-  }
+
+.sql-field-label {
+  color: var(--color-text-2);
+}
+
+.sql-helper-text {
+  color: var(--color-text-3);
+}
+
+:global(.sql-hook-editor-modal .arco-modal) {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+:global(.sql-hook-editor-modal .arco-modal-header) {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+:global(.sql-hook-editor-modal .arco-modal-title) {
+  color: var(--color-text-1);
+}
+
+:global(.sql-hook-editor-modal .arco-modal-close-btn) {
+  color: var(--color-text-3);
+}
+
+:global(.sql-hook-editor-modal .arco-modal-close-btn:hover) {
+  color: var(--color-text-1);
+}
+
+:global(body.api-testing-theme) .sql-field-label {
+  color: rgb(156, 163, 175);
+}
+
+:global(body.api-testing-theme) .sql-helper-text {
+  color: rgb(107, 114, 128);
+}
+
+:global(body.api-testing-theme .sql-hook-editor-modal .arco-modal) {
+  background: rgb(31, 41, 55);
+  border: 1px solid rgb(55, 65, 81);
+}
+
+:global(body.api-testing-theme .sql-hook-editor-modal .arco-modal-header) {
+  border-bottom-color: rgb(55, 65, 81);
+}
+
+:global(body.api-testing-theme .sql-hook-editor-modal .arco-modal-title) {
+  color: rgb(229, 231, 235);
+}
+
+:global(body.api-testing-theme .sql-hook-editor-modal .arco-modal-close-btn) {
+  color: rgb(156, 163, 175);
+}
+
+:global(body.api-testing-theme .sql-hook-editor-modal .arco-modal-close-btn:hover) {
+  color: rgb(229, 231, 235);
 }
 
 :deep(.arco-input-wrapper) {
-  @apply bg-gray-900/60 border-gray-700;
+  @apply bg-white border-[color:var(--color-border-2)];
   
   .arco-input {
-    @apply text-gray-200 bg-transparent;
+    @apply text-[color:var(--color-text-1)] bg-transparent;
     &::placeholder {
-      @apply text-gray-500;
+      @apply text-[color:var(--color-text-3)];
     }
   }
 }
 
 :deep(.arco-textarea-wrapper) {
-  @apply bg-gray-900/60 border-gray-700;
+  @apply bg-white border-[color:var(--color-border-2)];
   
   .arco-textarea {
-    @apply text-gray-200 bg-transparent;
+    @apply text-[color:var(--color-text-1)] bg-transparent;
     &::placeholder {
-      @apply text-gray-500;
+      @apply text-[color:var(--color-text-3)];
     }
   }
 }
 
 :deep(.arco-select-view) {
-  @apply bg-gray-900/60 border-gray-700;
+  @apply bg-white border-[color:var(--color-border-2)];
   
   .arco-select-view-value {
-    @apply text-gray-200;
+    @apply text-[color:var(--color-text-1)];
   }
 }
 
 :deep(.arco-btn) {
-  @apply bg-gray-700 border-gray-600 text-gray-200;
+  @apply text-[color:var(--color-text-2)];
   
   &:hover {
-    @apply bg-gray-600 border-gray-500;
+    @apply border-blue-500 text-blue-500;
   }
   
   &.arco-btn-primary {
@@ -620,6 +660,36 @@ onMounted(() => {
     &:hover {
       @apply bg-blue-600 border-blue-600;
     }
+  }
+}
+
+:global(body.api-testing-theme) :deep(.arco-input-wrapper) {
+  @apply bg-gray-900/60 border-gray-700;
+
+  .arco-input {
+    @apply text-gray-200 bg-transparent;
+    &::placeholder {
+      @apply text-gray-500;
+    }
+  }
+}
+
+:global(body.api-testing-theme) :deep(.arco-textarea-wrapper) {
+  @apply bg-gray-900/60 border-gray-700;
+
+  .arco-textarea {
+    @apply text-gray-200 bg-transparent;
+    &::placeholder {
+      @apply text-gray-500;
+    }
+  }
+}
+
+:global(body.api-testing-theme) :deep(.arco-select-view) {
+  @apply bg-gray-900/60 border-gray-700;
+
+  .arco-select-view-value {
+    @apply text-gray-200;
   }
 }
 

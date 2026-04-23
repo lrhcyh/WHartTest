@@ -562,9 +562,9 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col bg-gray-900">
+  <div class="env-form-panel h-full flex flex-col">
     <!-- 移除顶部按钮区域，直接从表单内容开始 -->
-    <div class="flex-1 overflow-y-auto px-8 py-6">
+    <div class="form-scroll-area flex-1 overflow-y-auto px-8 py-6">
       <a-spin :loading="loading" dot>
         <a-form
           ref="formRef"
@@ -574,13 +574,13 @@ const handleSubmit = async () => {
         >
           <!-- 左侧：基本信息卡片 -->
           <div class="space-y-6">
-            <div class="bg-[#1D2433] rounded-xl shadow-xl shadow-black/10">
-              <div class="px-6 py-4 border-b border-gray-800">
+            <div class="form-section-card rounded-xl">
+              <div class="form-section-header px-6 py-4 border-b">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/20 to-indigo-500/10 flex items-center justify-center">
                     <icon-settings class="text-indigo-400" />
                   </div>
-                  <span class="text-base font-medium text-gray-200">基本信息</span>
+                  <span class="text-base font-medium form-section-title">基本信息</span>
                 </div>
               </div>
               
@@ -591,7 +591,7 @@ const handleSubmit = async () => {
                     v-model="modelValue.name"
                     placeholder="请输入环境名称，例如：开发环境、测试环境"
                     allow-clear
-                    class="!bg-gray-900/60"
+                    class="field-control"
                   >
                     <template #prefix>
                       <icon-storage class="text-indigo-400" />
@@ -605,7 +605,7 @@ const handleSubmit = async () => {
                     v-model="modelValue.base_url"
                     placeholder="请输入基础URL，例如：https://api.example.com"
                     allow-clear
-                    class="!bg-gray-900/60"
+                    class="field-control"
                   >
                     <template #prefix>
                       <icon-link class="text-indigo-400" />
@@ -620,9 +620,9 @@ const handleSubmit = async () => {
                       v-model="props.modelValue.verify_ssl"
                       :default-checked="props.modelValue.verify_ssl !== false"
                     />
-                    <span class="text-gray-300">验证SSL证书</span>
+                    <span class="form-text-muted">验证SSL证书</span>
                     <a-tooltip content="启用时会验证HTTPS请求的SSL证书，禁用可以跳过SSL验证（不安全但在开发环境可能需要）">
-                      <icon-info-circle class="text-gray-500" />
+                      <icon-info-circle class="form-text-subtle" />
                     </a-tooltip>
                   </div>
                 </a-form-item>
@@ -634,7 +634,7 @@ const handleSubmit = async () => {
                     placeholder="请选择关联的数据库配置"
                     allow-clear
                     :loading="loadingDatabaseConfigs"
-                    class="!bg-gray-900/60"
+                    class="field-control"
                     @clear="handleClearDatabaseConfig"
                     :format-selected="formatDatabaseSelection"
                     @dropdown-visible-change="onDropdownVisibleChange"
@@ -645,7 +645,7 @@ const handleSubmit = async () => {
                       <icon-storage class="text-indigo-400" />
                     </template>
                     <template #empty>
-                      <div class="text-center p-2 text-gray-400">
+                      <div class="text-center p-2 form-text-subtle">
                         {{ loadingDatabaseConfigs ? '正在加载数据库配置...' : '无数据库配置' }}
                       </div>
                     </template>
@@ -673,37 +673,37 @@ const handleSubmit = async () => {
                     placeholder="请输入环境描述信息（选填）"
                     allow-clear
                     :auto-size="{ minRows: 3, maxRows: 5 }"
-                    class="!bg-gray-900/60"
+                    class="field-control"
                   />
                 </a-form-item>
 
                 <!-- 是否启用 -->
                 <a-form-item field="is_active" class="!mb-0">
-                  <div class="flex items-center gap-3 p-3 bg-gray-900/40 rounded-lg">
+                  <div class="toggle-card flex items-center gap-3 p-3 rounded-lg">
                     <a-switch v-model="modelValue.is_active" class="!scale-110" />
-                    <span class="text-gray-300">{{ modelValue.is_active ? '启用环境' : '禁用环境' }}</span>
+                    <span class="form-text-muted">{{ modelValue.is_active ? '启用环境' : '禁用环境' }}</span>
                   </div>
                 </a-form-item>
               </div>
             </div>
 
             <!-- 帮助提示 -->
-            <div class="p-4 bg-[#1D2433] rounded-xl shadow-xl shadow-black/10">
+            <div class="help-card p-4 rounded-xl">
               <div class="flex items-center gap-2 mb-2">
-                <icon-info-circle class="text-gray-400" />
-                <span class="text-sm font-medium text-gray-300">使用说明</span>
+                <icon-info-circle class="form-text-subtle" />
+                <span class="text-sm font-medium form-text-muted">使用说明</span>
               </div>
-              <ul class="text-xs text-gray-400 space-y-1.5">
+              <ul class="text-xs form-text-subtle space-y-1.5">
                 <li class="flex items-center gap-2">
-                  <div class="w-1 h-1 rounded-full bg-gray-500"></div>
+                  <div class="helper-dot w-1 h-1 rounded-full"></div>
                   <span>变量名不能重复，且必须是有效的标识符</span>
                 </li>
                 <li class="flex items-center gap-2">
-                  <div class="w-1 h-1 rounded-full bg-gray-500"></div>
+                  <div class="helper-dot w-1 h-1 rounded-full"></div>
                   <span>变量名和变量值都是必填项</span>
                 </li>
                 <li class="flex items-center gap-2">
-                  <div class="w-1 h-1 rounded-full bg-gray-500"></div>
+                  <div class="helper-dot w-1 h-1 rounded-full"></div>
                   <span>关联数据库配置后，您可以在测试用例中访问该数据库</span>
                 </li>
               </ul>
@@ -711,13 +711,13 @@ const handleSubmit = async () => {
           </div>
 
           <!-- 右侧：环境变量卡片 -->
-          <div class="bg-[#1D2433] rounded-xl shadow-xl shadow-black/10">
-            <div class="px-6 py-4 border-b border-gray-800">
+          <div class="form-section-card rounded-xl">
+            <div class="form-section-header px-6 py-4 border-b">
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-500/10 flex items-center justify-center">
                   <icon-apps class="text-purple-400" />
                 </div>
-                <span class="text-base font-medium text-gray-200">环境变量</span>
+                <span class="text-base font-medium form-section-title">环境变量</span>
               </div>
             </div>
             
@@ -749,6 +749,7 @@ const handleSubmit = async () => {
                     v-model="editingVariable.name"
                     placeholder="变量名"
                     allow-clear
+                    class="field-control"
                   >
                     <template #prefix>
                       <icon-code class="text-purple-400" />
@@ -758,6 +759,7 @@ const handleSubmit = async () => {
                     v-model="editingVariable.value"
                     placeholder="变量值"
                     allow-clear
+                    class="field-control"
                   >
                     <template #prefix>
                       <icon-edit class="text-purple-400" />
@@ -767,7 +769,7 @@ const handleSubmit = async () => {
                   <a-select
                     v-model="editingVariable.type"
                     placeholder="选择变量类型"
-                    class="!bg-gray-900/60"
+                    class="field-control"
                   >
                     <a-option
                       v-for="item in VARIABLE_TYPES"
@@ -781,20 +783,21 @@ const handleSubmit = async () => {
                     v-model="editingVariable.description"
                     placeholder="变量描述（选填）"
                     allow-clear
+                    class="field-control"
                   >
                     <template #prefix>
                       <icon-info-circle class="text-purple-400" />
                     </template>
                   </a-input>
                   <!-- 敏感变量开关 -->
-                  <div class="flex items-center gap-3 p-3 bg-gray-900/40 rounded-lg">
+                  <div class="toggle-card flex items-center gap-3 p-3 rounded-lg">
                     <a-switch
                       v-model="editingVariable.is_sensitive"
                       class="!scale-110"
                     />
                     <div class="flex items-center gap-2">
                       <icon-lock class="text-purple-400" />
-                      <span class="text-gray-300">敏感变量</span>
+                      <span class="form-text-muted">敏感变量</span>
                     </div>
                   </div>
                 </div>
@@ -806,3 +809,80 @@ const handleSubmit = async () => {
     </div>
   </div>
 </template> 
+
+<style lang="postcss" scoped>
+.env-form-panel {
+  background: transparent;
+}
+
+.form-scroll-area {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.form-section-card,
+.help-card {
+  background: var(--env-shell-bg);
+  border: 1px solid var(--env-shell-border);
+  box-shadow: var(--env-shell-shadow);
+}
+
+.form-section-header {
+  border-bottom-color: var(--env-header-border);
+}
+
+.form-section-title,
+.form-text-muted {
+  color: var(--env-text);
+}
+
+.form-text-subtle {
+  color: var(--env-text-subtle);
+}
+
+.toggle-card {
+  background: color-mix(in srgb, var(--env-block-bg) 86%, var(--theme-page-bg) 14%);
+  border: 1px solid var(--env-block-border);
+}
+
+.helper-dot {
+  background: var(--env-text-subtle);
+}
+
+:deep(.arco-form-item-label-col > label),
+:deep(.arco-form-item-label) {
+  color: var(--env-text) !important;
+}
+
+:deep(.field-control .arco-input-wrapper),
+:deep(.field-control .arco-textarea-wrapper),
+:deep(.field-control .arco-select-view) {
+  background: var(--env-input-bg) !important;
+  border-color: var(--env-input-border) !important;
+
+  &:hover,
+  &:focus-within {
+    border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+    background: var(--env-input-hover-bg) !important;
+  }
+}
+
+:deep(.field-control .arco-input),
+:deep(.field-control .arco-textarea),
+:deep(.field-control .arco-select-view-value) {
+  color: var(--env-text) !important;
+}
+
+:deep(.field-control .arco-input::placeholder),
+:deep(.field-control .arco-textarea::placeholder),
+:deep(.field-control .arco-select-view-placeholder),
+:deep(.field-control .arco-input-prefix),
+:deep(.field-control .arco-input-suffix),
+:deep(.field-control .arco-select-view-suffix) {
+  color: var(--env-text-subtle) !important;
+}
+</style>

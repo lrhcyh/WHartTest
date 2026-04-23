@@ -132,12 +132,12 @@ const handleInterfaceSelect = async (api: ApiInterface) => {
 </script>
 
 <template>
-  <div class="space-y-1">
+  <div class="module-tree space-y-1">
     <!-- 当前模块 -->
     <div
-      class="px-6 py-2 cursor-pointer transition-colors bg-[rgb(70,84,102,0.4)] hover:bg-[rgb(47,66,114,0.4)] rounded-lg"
+      class="module-tree__item px-6 py-2 cursor-pointer transition-colors rounded-lg"
       :class="{ 
-        'bg-[rgb(47,66,114,0.4)]': isSelected
+        'module-tree__item--selected': isSelected
       }"
       :style="{ paddingLeft: `${paddingLeft}px` }"
       @click.stop="emit('select', module)"
@@ -149,7 +149,7 @@ const handleInterfaceSelect = async (api: ApiInterface) => {
               v-if="(displayMode === 'detail' && (module.children?.length || interfaces.length)) || (displayMode === 'list' && module.children?.length)"
               type="text"
               size="mini"
-              class="!w-4 !h-4 !p-0 !min-w-0 !text-[#6b7785] hover:!text-[#86909c]"
+              class="module-tree__toggle-btn !w-4 !h-4 !p-0 !min-w-0"
               @click.stop="emit('toggle-expand', module.id)"
             >
               <template #icon>
@@ -160,7 +160,7 @@ const handleInterfaceSelect = async (api: ApiInterface) => {
             <div v-else class="w-4"></div>
           </div>
           <a-spin :loading="interfaceLoading" dot>
-            <span class="text-[#e5e6e8]">{{ module.name }}</span>
+            <span class="module-tree__name">{{ module.name }}</span>
           </a-spin>
         </div>
         <div class="flex items-center -mr-4">
@@ -168,7 +168,7 @@ const handleInterfaceSelect = async (api: ApiInterface) => {
             v-if="level < 2"
             type="text"
             size="mini"
-            class="!p-0 !text-[#6b7785] hover:!text-[#86909c]"
+            class="module-tree__action-btn !p-0"
             @click.stop="emit('add-child', module.id)"
           >
             <template #icon><icon-plus /></template>
@@ -176,7 +176,7 @@ const handleInterfaceSelect = async (api: ApiInterface) => {
           <a-button
             type="text"
             size="mini"
-            class="!p-0 !text-[#6b7785] hover:!text-[#86909c]"
+            class="module-tree__action-btn !p-0"
             @click.stop="emit('edit', module)"
           >
             <template #icon><icon-edit /></template>
@@ -184,7 +184,7 @@ const handleInterfaceSelect = async (api: ApiInterface) => {
           <a-button
             type="text"
             size="mini"
-            class="!p-0 !text-[#6b7785] hover:!text-[#86909c]"
+            class="module-tree__action-btn !p-0"
             @click.stop="emit('delete', module)"
           >
             <template #icon><icon-delete /></template>
@@ -200,7 +200,7 @@ const handleInterfaceSelect = async (api: ApiInterface) => {
           <div
             v-for="api in interfaces"
             :key="api.id"
-            class="px-6 py-2 text-sm text-gray-400 hover:text-gray-300 rounded bg-[rgb(70,84,102,0.2)] hover:bg-[rgb(70,84,102,0.4)] min-w-0 cursor-pointer"
+            class="module-tree__interface-item px-6 py-2 text-sm rounded min-w-0 cursor-pointer"
             :style="{ paddingLeft: `${paddingLeft + 4}px` }"
             @click="handleInterfaceSelect(api)"
           >
@@ -218,7 +218,7 @@ const handleInterfaceSelect = async (api: ApiInterface) => {
                 <a-button
                   type="text"
                   size="mini"
-                  class="!p-0 !text-[#6b7785] hover:!text-[#86909c]"
+                  class="module-tree__action-btn !p-0"
                   @click.stop="emit('run-interface', api)"
                   title="调试接口"
                 >
@@ -227,7 +227,7 @@ const handleInterfaceSelect = async (api: ApiInterface) => {
                 <a-button
                   type="text"
                   size="mini"
-                  class="!p-0 !text-[#6b7785] hover:!text-[#86909c]"
+                  class="module-tree__action-btn !p-0"
                   @click.stop="emit('edit-interface', api)"
                   title="编辑接口"
                 >
@@ -236,7 +236,7 @@ const handleInterfaceSelect = async (api: ApiInterface) => {
                 <a-button
                   type="text"
                   size="mini"
-                  class="!p-0 !text-[#6b7785] hover:!text-[#86909c]"
+                  class="module-tree__action-btn !p-0"
                   @click.stop="emit('delete-interface', api)"
                   title="删除接口"
                 >
@@ -275,6 +275,59 @@ const handleInterfaceSelect = async (api: ApiInterface) => {
 </template>
 
 <style lang="postcss" scoped>
+.module-tree {
+  --module-action-text: rgb(100, 116, 139);
+  --module-action-hover: rgb(71, 85, 105);
+  --module-interface-bg: rgba(148, 163, 184, 0.16);
+  --module-interface-hover-bg: rgba(148, 163, 184, 0.26);
+  --module-interface-text: var(--color-text-2);
+}
+
+.module-tree__toggle-btn,
+.module-tree__action-btn {
+  color: var(--module-action-text) !important;
+}
+
+.module-tree__toggle-btn:hover,
+.module-tree__action-btn:hover {
+  color: var(--module-action-hover) !important;
+}
+
+.module-tree__interface-item {
+  background: var(--module-interface-bg);
+  color: var(--module-interface-text);
+}
+
+.module-tree__interface-item:hover {
+  background: var(--module-interface-hover-bg);
+}
+
+:global(body.api-testing-theme) .module-tree {
+  --module-action-text: #6b7785;
+  --module-action-hover: #86909c;
+  --module-interface-bg: rgba(70, 84, 102, 0.2);
+  --module-interface-hover-bg: rgba(70, 84, 102, 0.4);
+  --module-interface-text: rgb(156, 163, 175);
+}
+
+.module-tree__item {
+  background-color: var(--interface-module-surface, rgba(15, 23, 42, 0.05));
+}
+
+.module-tree__item:hover {
+  background-color: var(--interface-module-hover, rgba(24, 144, 255, 0.1));
+}
+
+.module-tree__item--selected {
+  background-color: var(--interface-module-active, rgba(24, 144, 255, 0.16));
+  box-shadow: inset 0 0 0 1px var(--interface-module-active-border, rgba(24, 144, 255, 0.2));
+}
+
+.module-tree__name {
+  color: var(--interface-text-primary, var(--color-text-1, #1d2129));
+  font-weight: 500;
+}
+
 /* 隐藏滚动条但保留滚动功能 */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */

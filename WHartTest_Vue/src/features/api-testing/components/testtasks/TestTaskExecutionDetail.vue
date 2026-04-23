@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
 import { getTestTaskExecution, type TestTaskExecution } from '../../services/testTaskService'
+import { useThemeStore } from '@/store/themeStore'
 
 const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const executionData = ref<TestTaskExecution | null>(null)
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.isBlack)
+const progressTrackColor = computed(() => isDarkTheme.value ? 'rgba(30, 41, 59, 0.5)' : 'rgba(148, 163, 184, 0.18)')
 
 // 自动刷新相关
 const refreshTimer = ref<number | null>(null)
@@ -33,16 +37,10 @@ const fetchExecutionDetail = async (isAutoRefresh = false) => {
       const oldStatus = executionData.value?.status
       executionData.value = response.data
       
-      // 检查状态变化
       if (isAutoRefresh && oldStatus !== response.data.status) {
-        console.log(`[自动刷新] 状态更新: ${oldStatus} -> ${response.data.status}`)
-        
-        // 如果任务已完成、取消或出错，停止自动刷新
         if (['completed', 'canceled', 'error'].includes(response.data.status)) {
-          console.log('[自动刷新] 任务已结束，停止自动刷新')
           stopAutoRefresh()
-          
-          // 如果任务完成，自动跳转到结果页面
+
           if (response.data.status === 'completed') {
             Message.success('任务执行完成，正在跳转到结果页面...')
             setTimeout(() => {
@@ -50,7 +48,7 @@ const fetchExecutionDetail = async (isAutoRefresh = false) => {
                 name: 'ApiTestTaskExecutionCaseResults',
                 params: { id: response.data.id }
               })
-            }, 1000) // 延迟1秒跳转，让用户看到提示信息
+            }, 1000)
           } else if (response.data.status === 'canceled') {
             Message.warning('任务已取消')
           } else {
@@ -75,12 +73,10 @@ const fetchExecutionDetail = async (isAutoRefresh = false) => {
 
 // 启动自动刷新
 const startAutoRefresh = () => {
-  stopAutoRefresh() // 先清除已有的定时器
-  
-  // 只在任务处于执行中或等待状态时启动自动刷新
+  stopAutoRefresh()
+
   if (autoRefresh.value && executionData.value &&
       ['pending', 'running'].includes(executionData.value.status)) {
-    console.log('[自动刷新] 启动自动刷新，间隔:', refreshInterval.value)
     refreshTimer.value = setInterval(() => {
       fetchExecutionDetail(true)
     }, refreshInterval.value)
@@ -92,7 +88,6 @@ const stopAutoRefresh = () => {
   if (refreshTimer.value) {
     clearInterval(refreshTimer.value)
     refreshTimer.value = null
-    console.log('[自动刷新] 已停止')
   }
 }
 
@@ -211,11 +206,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col gap-4 p-4">
-    <!-- 标题区域 -->
-    <div class="bg-gray-800/85 rounded-lg shadow-dark px-6 py-5 flex justify-between items-center">
+  <div
+    class="test-task-execution-detail h-full flex flex-col gap-4 p-4"
+    :class="isDarkTheme ? 'test-task-execution-detail--dark' : 'test-task-execution-detail--light'"
+  >
+    <div class="execution-surface execution-surface--hero rounded-lg px-6 py-5 flex justify-between items-center">
       <div class="flex items-center gap-2">
-        <h2 class="text-xl font-medium text-gray-100">
+        <h2 class="execution-title text-xl font-medium">
           测试任务执行详情
         </h2>
         <a-tag v-if="executionData" color="blue">ID: {{ executionData.id }}</a-tag>
@@ -251,92 +248,87 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- 内容区域 -->
-    <div class="flex-1 bg-gray-800/85 rounded-lg shadow-dark overflow-hidden">
+    <div class="execution-surface execution-surface--body flex-1 rounded-lg overflow-hidden">
       <a-spin :loading="loading" class="h-full">
         <div v-if="executionData" class="p-6">
-          <!-- 基本信息卡片 -->
-          <div class="bg-gray-900/30 rounded-lg p-6 mb-6">
-            <h3 class="text-lg font-medium mb-4 text-gray-200">基本信息</h3>
+          <div class="section-card rounded-lg p-6 mb-6">
+            <h3 class="section-title text-lg font-medium mb-4">基本信息</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="flex items-center gap-2">
-                <span class="text-gray-400 w-24">任务名称：</span>
-                <span class="text-gray-200">{{ executionData.task_suite_name }}</span>
+                <span class="info-label w-24">任务名称：</span>
+                <span class="info-value">{{ executionData.task_suite_name }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-gray-400 w-24">执行状态：</span>
+                <span class="info-label w-24">执行状态：</span>
                 <a-tag :color="getStatusColor(executionData.status)">
                   {{ getStatusText(executionData.status) }}
                 </a-tag>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-gray-400 w-24">执行环境：</span>
-                <span class="text-gray-200">{{ executionData.environment_name || '-' }}</span>
+                <span class="info-label w-24">执行环境：</span>
+                <span class="info-value">{{ executionData.environment_name || '-' }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-gray-400 w-24">执行人：</span>
-                <span class="text-gray-200">{{ executionData.executed_by_name || '-' }}</span>
+                <span class="info-label w-24">执行人：</span>
+                <span class="info-value">{{ executionData.executed_by_name || '-' }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-gray-400 w-24">开始时间：</span>
-                <span class="text-gray-200">{{ formatDate(executionData.start_time) }}</span>
+                <span class="info-label w-24">开始时间：</span>
+                <span class="info-value">{{ formatDate(executionData.start_time) }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-gray-400 w-24">结束时间：</span>
-                <span class="text-gray-200">{{ formatDate(executionData.end_time) }}</span>
+                <span class="info-label w-24">结束时间：</span>
+                <span class="info-value">{{ formatDate(executionData.end_time) }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-gray-400 w-24">执行时长：</span>
-                <span class="text-gray-200">{{ formatDuration(executionData.duration) }}</span>
+                <span class="info-label w-24">执行时长：</span>
+                <span class="info-value">{{ formatDuration(executionData.duration) }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-gray-400 w-24">创建时间：</span>
-                <span class="text-gray-200">{{ formatDate(executionData.created_at) }}</span>
+                <span class="info-label w-24">创建时间：</span>
+                <span class="info-value">{{ formatDate(executionData.created_at) }}</span>
               </div>
             </div>
           </div>
 
-          <!-- 执行结果卡片 -->
-          <div class="bg-gray-900/30 rounded-lg p-6">
-            <h3 class="text-lg font-medium mb-4 text-gray-200">执行结果</h3>
-            
-            <!-- 成功率进度条 -->
+          <div class="section-card rounded-lg p-6">
+            <h3 class="section-title text-lg font-medium mb-4">执行结果</h3>
+
             <div class="mb-6">
               <div class="flex justify-between items-center mb-2">
-                <span class="text-gray-400">成功率</span>
+                <span class="info-label">成功率</span>
               </div>
               <a-progress
                 :percent="executionData.success_rate ? Number(executionData.success_rate) : 0"
                 :color="executionData.success_rate && Number(executionData.success_rate) >= 1 ? '#10b981' : '#f59e0b'"
-                :track-color="'rgba(30, 41, 59, 0.5)'"
+                :track-color="progressTrackColor"
                 :stroke-width="12"
               />
             </div>
-            
-            <!-- 用例执行统计 -->
+
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div class="bg-gray-800/50 rounded-lg p-4 flex flex-col items-center justify-center">
-                <span class="text-gray-400 text-sm">总用例数</span>
-                <span class="text-gray-100 text-2xl font-semibold">{{ executionData.total_count }}</span>
+              <div class="stat-card stat-card--neutral rounded-lg p-4 flex flex-col items-center justify-center">
+                <span class="stat-label text-sm">总用例数</span>
+                <span class="stat-value text-2xl font-semibold">{{ executionData.total_count }}</span>
               </div>
-              <div class="bg-green-900/20 rounded-lg p-4 flex flex-col items-center justify-center">
+              <div class="stat-card stat-card--success rounded-lg p-4 flex flex-col items-center justify-center">
                 <span class="text-green-400 text-sm">成功</span>
                 <span class="text-green-300 text-2xl font-semibold">{{ executionData.success_count }}</span>
               </div>
-              <div class="bg-amber-900/20 rounded-lg p-4 flex flex-col items-center justify-center">
+              <div class="stat-card stat-card--warning rounded-lg p-4 flex flex-col items-center justify-center">
                 <span class="text-amber-400 text-sm">失败</span>
                 <span class="text-amber-300 text-2xl font-semibold">{{ executionData.fail_count }}</span>
               </div>
-              <div class="bg-red-900/20 rounded-lg p-4 flex flex-col items-center justify-center">
+              <div class="stat-card stat-card--danger rounded-lg p-4 flex flex-col items-center justify-center">
                 <span class="text-red-400 text-sm">错误</span>
                 <span class="text-red-300 text-2xl font-semibold">{{ executionData.error_count }}</span>
               </div>
             </div>
           </div>
         </div>
-        
+
         <div v-else-if="!loading" class="h-full flex items-center justify-center">
-          <div class="text-gray-400 text-lg">未找到执行记录数据</div>
+          <div class="empty-text text-lg">未找到执行记录数据</div>
         </div>
       </a-spin>
     </div>
@@ -345,7 +337,30 @@ onUnmounted(() => {
 
 <style scoped>
 @reference "tailwindcss";
-/* 自定义滚动条 */
+.test-task-execution-detail {
+  --tte-surface-bg: rgba(255, 255, 255, 0.94);
+  --tte-surface-hero-bg: linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96));
+  --tte-section-bg: rgba(248, 250, 252, 0.94);
+  --tte-border: rgba(148, 163, 184, 0.18);
+  --tte-text: var(--color-text-1);
+  --tte-muted: var(--color-text-2);
+  --tte-subtle: var(--color-text-3);
+  --tte-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+  --tte-neutral-card: rgba(241, 245, 249, 0.92);
+}
+
+.test-task-execution-detail--dark {
+  --tte-surface-bg: rgba(31, 41, 55, 0.74);
+  --tte-surface-hero-bg: rgba(31, 41, 55, 0.85);
+  --tte-section-bg: rgba(17, 24, 39, 0.42);
+  --tte-border: rgba(71, 85, 105, 0.32);
+  --tte-text: rgb(241, 245, 249);
+  --tte-muted: rgb(203, 213, 225);
+  --tte-subtle: rgb(148, 163, 184);
+  --tte-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+  --tte-neutral-card: rgba(30, 41, 59, 0.6);
+}
+
 .custom-scrollbar {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
@@ -355,7 +370,11 @@ onUnmounted(() => {
 }
 
 :deep(.arco-progress-text) {
-  color: #f1f5f9 !important;
+  color: var(--tte-text) !important;
+}
+
+:deep(.arco-progress-text) {
+  color: var(--tte-text) !important;
 }
 
 :deep(.arco-spin) {
@@ -367,7 +386,54 @@ onUnmounted(() => {
   height: 100%;
 }
 
-/* 自动刷新按钮样式 */
+.execution-surface {
+  background: var(--tte-surface-bg);
+  border: 1px solid var(--tte-border);
+  box-shadow: var(--tte-shadow);
+}
+
+.execution-surface--hero {
+  background: var(--tte-surface-hero-bg);
+}
+
+.section-card {
+  background: var(--tte-section-bg);
+  border: 1px solid var(--tte-border);
+}
+
+.execution-title,
+.section-title,
+.info-value,
+.stat-value {
+  color: var(--tte-text);
+}
+
+.info-label,
+.stat-label,
+.empty-text {
+  color: var(--tte-subtle);
+}
+
+.stat-card--neutral {
+  background: var(--tte-neutral-card);
+  border: 1px solid var(--tte-border);
+}
+
+.stat-card--success {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.18);
+}
+
+.stat-card--warning {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+}
+
+.stat-card--danger {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+}
+
 .auto-refresh-button {
   transition: all 0.3s ease !important;
   
@@ -380,7 +446,6 @@ onUnmounted(() => {
   }
 }
 
-/* 自动刷新激活状态 */
 .auto-refresh-button[type="primary"] {
   @apply !bg-green-500/20 !text-green-400 !border-green-500/30;
   box-shadow: 0 1px 3px rgba(34, 197, 94, 0.1) !important;
@@ -391,12 +456,13 @@ onUnmounted(() => {
   }
 }
 
-/* 自动刷新非激活状态 */
 .auto-refresh-button[type="outline"] {
-  @apply !text-gray-400 !border-gray-500/30;
+  @apply !border-gray-500/30;
+  color: var(--tte-subtle) !important;
   
   &:hover {
-    @apply !text-gray-300 !border-gray-500/40 !bg-gray-700/30;
+    @apply !border-gray-500/40 !bg-gray-700/30;
+    color: var(--tte-muted) !important;
   }
 }
 </style>

@@ -98,33 +98,38 @@ defineExpose({ getParams })
 <style lang="postcss" scoped>
 @reference "tailwindcss";
 :deep(.arco-input-wrapper) {
-  @apply bg-gray-900/60 border-gray-700;
+  background: var(--tcf-control-bg) !important;
+  border-color: var(--tcf-control-border) !important;
 
   input {
-    @apply text-gray-200 bg-transparent;
+    color: var(--tcf-text) !important;
+    background: transparent !important;
     &::placeholder {
-      @apply text-gray-500;
+      color: var(--tcf-text-subtle) !important;
     }
   }
 }
 
 :deep(.arco-checkbox) {
-  @apply text-gray-400;
+  color: var(--tcf-text-subtle) !important;
 }
 
 :deep(.arco-btn-outline) {
-  @apply border-gray-600 text-gray-300;
+  border-color: var(--tcf-control-border) !important;
+  color: var(--tcf-text-muted) !important;
 
   &:hover {
-    @apply border-blue-500 text-blue-500;
+    border-color: rgba(59, 130, 246, 0.4) !important;
+    color: rgb(59, 130, 246) !important;
   }
 }
 
 :deep(.arco-btn-text) {
-  @apply text-gray-400;
+  color: var(--tcf-text-subtle) !important;
 
   &:hover {
-    @apply text-red-500 bg-red-500/10;
+    color: rgb(239, 68, 68) !important;
+    background: rgba(239, 68, 68, 0.1) !important;
   }
 }
 </style>

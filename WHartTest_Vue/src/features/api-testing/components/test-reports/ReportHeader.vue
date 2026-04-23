@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700/50 sticky top-0 z-10">
+  <div class="report-header-shell sticky top-0 z-10">
     <div class="px-6 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
@@ -8,10 +8,10 @@
             返回
           </a-button>
           <div>
-            <h2 class="text-xl font-medium text-gray-100">{{ report?.name }}</h2>
+            <h2 class="report-title text-xl font-medium">{{ report?.name }}</h2>
             <div class="flex items-center gap-2 mt-1">
-              <icon-code class="text-gray-400" />
-              <span class="text-gray-400">{{ report?.testcase_name }}</span>
+              <icon-code class="report-subtle-text" />
+              <span class="report-subtle-text">{{ report?.testcase_name }}</span>
             </div>
           </div>
         </div>
@@ -20,7 +20,7 @@
             <a-tag :color="getStatusColor(report?.status)" size="medium">
               {{ getStatusText(report?.status) }}
             </a-tag>
-            <span class="text-xs text-gray-400 mt-1">执行时长: {{ formatDuration(report?.duration) }}</span>
+            <span class="report-subtle-text text-xs mt-1">执行时长: {{ formatDuration(report?.duration) }}</span>
           </div>
           <a-button type="outline" status="success" @click="$emit('export')">
             <template #icon><icon-download /></template>
@@ -68,15 +68,35 @@ const getStatusText = (status?: string) => {
 
 <style scoped>
 @reference "tailwindcss";
+.report-header-shell {
+  background: var(--api-report-header-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--api-report-shell-border);
+}
+
+.report-title {
+  color: var(--api-report-text);
+}
+
+.report-subtle-text {
+  color: var(--api-report-text-subtle);
+}
+
 .custom-back-button {
-  @apply !bg-gray-700/50 !border-gray-600 !text-gray-300;
+  background: var(--api-report-inline-bg) !important;
+  border-color: var(--api-report-inline-border) !important;
+  color: var(--api-report-text-muted) !important;
   
   &:hover {
-    @apply !bg-gray-700 !border-gray-500 !text-gray-200;
+    background: var(--api-report-card-hover) !important;
+    border-color: rgba(var(--theme-accent-rgb), 0.2) !important;
+    color: var(--api-report-text) !important;
   }
   
   &:active {
-    @apply !bg-gray-800 !border-gray-600 !text-gray-300;
+    background: var(--api-report-card-bg) !important;
+    border-color: var(--api-report-inline-border) !important;
+    color: var(--api-report-text-muted) !important;
   }
 }
 </style> 

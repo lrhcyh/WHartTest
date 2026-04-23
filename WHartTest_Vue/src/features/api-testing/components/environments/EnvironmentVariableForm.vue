@@ -38,12 +38,12 @@ const handleSubmit = () => {
 </script>
 
 <template>
-  <div class="p-5 border border-dashed border-gray-700/50 rounded-lg space-y-4 hover:border-gray-600/50 transition-colors">
+  <div class="variable-form-shell p-5 rounded-lg space-y-4 transition-colors">
     <div class="flex items-center gap-2">
       <div class="w-6 h-6 rounded bg-purple-500/10 flex items-center justify-center">
         <icon-plus class="text-purple-400 text-sm" />
       </div>
-      <span class="text-sm font-medium text-gray-300">添加新变量</span>
+      <span class="text-sm font-medium variable-form-title">添加新变量</span>
     </div>
     
     <div class="space-y-3">
@@ -52,7 +52,7 @@ const handleSubmit = () => {
         @update:model-value="val => updateField('name', val)"
         placeholder="变量名"
         allow-clear
-        class="!bg-gray-900/60"
+        class="variable-field-control"
       >
         <template #prefix>
           <icon-code class="text-purple-400" />
@@ -63,7 +63,7 @@ const handleSubmit = () => {
         @update:model-value="val => updateField('value', val)"
         placeholder="变量值"
         allow-clear
-        class="!bg-gray-900/60"
+        class="variable-field-control"
       >
         <template #prefix>
           <icon-edit class="text-purple-400" />
@@ -75,7 +75,7 @@ const handleSubmit = () => {
         :model-value="modelValue.type"
         @update:model-value="val => updateField('type', val)"
         placeholder="选择变量类型"
-        class="!bg-gray-900/60"
+        class="variable-field-control"
       >
         <a-option
           v-for="item in VARIABLE_TYPES"
@@ -91,7 +91,7 @@ const handleSubmit = () => {
         @update:model-value="val => updateField('description', val)"
         placeholder="变量描述（选填）"
         allow-clear
-        class="!bg-gray-900/60"
+        class="variable-field-control"
       >
         <template #prefix>
           <icon-info-circle class="text-purple-400" />
@@ -99,7 +99,7 @@ const handleSubmit = () => {
       </a-input>
 
       <!-- 敏感变量开关 -->
-      <div class="flex items-center gap-3 p-3 bg-gray-900/40 rounded-lg">
+      <div class="variable-toggle-card flex items-center gap-3 p-3 rounded-lg">
         <a-switch
           :model-value="modelValue.is_sensitive"
           @update:model-value="val => updateField('is_sensitive', val)"
@@ -107,7 +107,7 @@ const handleSubmit = () => {
         />
         <div class="flex items-center gap-2">
           <icon-lock class="text-purple-400" />
-          <span class="text-gray-300">敏感变量</span>
+          <span class="variable-form-title">敏感变量</span>
         </div>
       </div>
     </div>
@@ -124,3 +124,47 @@ const handleSubmit = () => {
     </div>
   </div>
 </template> 
+
+<style lang="postcss" scoped>
+.variable-form-shell {
+  border: 1px dashed var(--env-header-border);
+  background: color-mix(in srgb, var(--env-shell-bg) 80%, var(--theme-page-bg) 20%);
+}
+
+.variable-form-shell:hover {
+  border-color: var(--env-block-border);
+}
+
+.variable-form-title {
+  color: var(--env-text);
+}
+
+.variable-toggle-card {
+  background: color-mix(in srgb, var(--env-block-bg) 86%, var(--theme-page-bg) 14%);
+  border: 1px solid var(--env-block-border);
+}
+
+:deep(.variable-field-control .arco-input-wrapper),
+:deep(.variable-field-control .arco-select-view) {
+  background: var(--env-input-bg) !important;
+  border-color: var(--env-input-border) !important;
+
+  &:hover,
+  &:focus-within {
+    border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+    background: var(--env-input-hover-bg) !important;
+  }
+}
+
+:deep(.variable-field-control .arco-input),
+:deep(.variable-field-control .arco-select-view-value) {
+  color: var(--env-text) !important;
+}
+
+:deep(.variable-field-control .arco-input::placeholder),
+:deep(.variable-field-control .arco-select-view-placeholder),
+:deep(.variable-field-control .arco-input-prefix),
+:deep(.variable-field-control .arco-select-view-suffix) {
+  color: var(--env-text-subtle) !important;
+}
+</style>

@@ -53,7 +53,7 @@ const getMethodColor = (method: string) => {
 
 <template>
   <!-- 独立的卡片样式容器 -->
-  <div class="api-tabs-card mx-0.5 mb-2 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+  <div class="api-tabs-card mb-2 rounded-lg shadow-lg overflow-hidden">
     <div class="px-2 py-2">
       <div class="flex items-center gap-2 overflow-x-auto scrollbar-thin">
         <!-- 页签列表 -->
@@ -62,8 +62,8 @@ const getMethodColor = (method: string) => {
           :key="tab.id"
           class="group flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer min-w-max transition-all border"
           :class="tab.id === activeTabId
-            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-            : 'bg-gray-700/30 border-gray-700 text-gray-300 hover:bg-gray-700/50 hover:border-gray-600'"
+            ? 'tab-chip tab-chip--active'
+            : 'tab-chip tab-chip--inactive'"
           @click="handleTabClick(tab.id)"
         >
           <!-- 请求方法标签 -->
@@ -107,7 +107,7 @@ const getMethodColor = (method: string) => {
         </div>
         
         <!-- 提示文本（当没有页签时显示） -->
-        <div v-if="tabs.length === 0" class="text-gray-500 text-sm py-1 px-3">
+        <div v-if="tabs.length === 0" class="tabs-empty-hint text-sm py-1 px-3">
           请从左侧选择或创建接口开始调试
         </div>
       </div>
@@ -116,6 +116,54 @@ const getMethodColor = (method: string) => {
 </template>
 
 <style lang="postcss" scoped>
+.api-tabs-card {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.tab-chip--active {
+  background: rgba(var(--primary-6), 0.12);
+  border-color: rgba(var(--primary-6), 0.32);
+  color: rgb(var(--primary-6));
+}
+
+.tab-chip--inactive {
+  background: rgba(248, 250, 252, 0.96);
+  border-color: rgba(148, 163, 184, 0.18);
+  color: var(--color-text-2);
+}
+
+.tab-chip--inactive:hover {
+  background: rgba(241, 245, 249, 1);
+  border-color: rgba(148, 163, 184, 0.32);
+}
+
+.tabs-empty-hint {
+  color: var(--color-text-3);
+}
+
+:global(body.api-testing-theme) .api-tabs-card {
+  background: rgb(31, 41, 55);
+  border-color: rgba(55, 65, 81, 0.92);
+  box-shadow: 0 14px 28px rgba(2, 6, 23, 0.28);
+}
+
+:global(body.api-testing-theme) .tab-chip--inactive {
+  background: rgba(55, 65, 81, 0.3);
+  border-color: rgb(55, 65, 81);
+  color: rgb(209, 213, 219);
+}
+
+:global(body.api-testing-theme) .tab-chip--inactive:hover {
+  background: rgba(55, 65, 81, 0.5);
+  border-color: rgb(75, 85, 99);
+}
+
+:global(body.api-testing-theme) .tabs-empty-hint {
+  color: rgb(107, 114, 128);
+}
+
 /* 自定义滚动条样式 */
 .scrollbar-thin {
   scrollbar-width: thin;

@@ -4,6 +4,7 @@ import type { FileItem } from '@arco-design/web-vue'
 import { IconDelete, IconPlus, IconUpload } from '@arco-design/web-vue/es/icon'
 import type { KeyValuePair } from '../../services/interfaceService'
 import MonacoEditor from '@guolao/vue-monaco-editor'
+import { useThemeStore } from '@/store/themeStore'
 
 interface Props {
   body?: {
@@ -14,6 +15,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const emit = defineEmits(['update:body'])
+const themeStore = useThemeStore()
 
 // 请求体类型
 type BodyType = 'none' | 'form-data' | 'x-www-form-urlencoded' | 'raw' | 'binary'
@@ -215,9 +217,12 @@ defineExpose({
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div class="h-full flex flex-col" :class="themeStore.isBlack ? 'api-body-config--dark' : 'api-body-config--light'">
     <!-- 顶部类型选择 -->
-    <div class="flex-shrink-0 bg-gray-800 border-b border-gray-700">
+    <div
+      class="flex-shrink-0 border-b"
+      :class="themeStore.isBlack ? 'bg-gray-800 border-gray-700' : 'bg-[var(--color-fill-2)] border-[var(--color-border-2)]'"
+    >
       <a-radio-group v-model="bodyType" type="button" class="p-4 w-full">
         <a-radio value="none">none</a-radio>
         <a-radio value="form-data">form-data</a-radio>
@@ -313,14 +318,19 @@ defineExpose({
               <a-radio value="xml">XML</a-radio>
             </a-radio-group>
           </div>
-          <div class="flex-1">
-            <MonacoEditor
-              v-model:value="rawContent"
-              :language="rawLanguage"
-              theme="vs-dark"
-              class="min-h-[100px]"
-              @change="emit('update:body', getBody())"
-            />
+          <div class="flex-1 min-h-0">
+            <div
+              class="editor-shell h-full overflow-hidden rounded-lg border"
+              :class="themeStore.isBlack ? 'bg-gray-900/60 border-gray-700' : 'bg-white border-[var(--color-border-2)] shadow-sm'"
+            >
+              <MonacoEditor
+                v-model:value="rawContent"
+                :language="rawLanguage"
+                :theme="themeStore.isBlack ? 'vs-dark' : 'vs'"
+                class="h-full min-h-[100px]"
+                @change="emit('update:body', getBody())"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -335,13 +345,16 @@ defineExpose({
             @change="handleFileSelect"
           >
             <template #upload-button>
-              <div class="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center">
-                <icon-upload class="text-3xl text-gray-500 mb-2" />
-                <p class="text-gray-400">点击或拖拽文件到此处上传</p>
+              <div
+                class="border-2 border-dashed rounded-lg p-8 text-center"
+                :class="themeStore.isBlack ? 'border-gray-600' : 'border-[var(--color-border-2)] bg-[var(--color-fill-1)]'"
+              >
+                <icon-upload class="text-3xl mb-2" :class="themeStore.isBlack ? 'text-gray-500' : 'text-[var(--color-text-3)]'" />
+                <p :class="themeStore.isBlack ? 'text-gray-400' : 'text-[var(--color-text-2)]'">点击或拖拽文件到此处上传</p>
               </div>
             </template>
           </a-upload>
-          <div v-if="binaryFile" class="text-gray-400 mt-4 text-center">
+          <div v-if="binaryFile" class="mt-4 text-center" :class="themeStore.isBlack ? 'text-gray-400' : 'text-[var(--color-text-2)]'">
             已选择文件: {{ binaryFile.name }} ({{ (binaryFile.size / 1024).toFixed(2) }} KB)
           </div>
         </div>
@@ -352,7 +365,7 @@ defineExpose({
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
-:deep(.arco-radio-group-button) {
+.api-body-config--dark :deep(.arco-radio-group-button) {
   @apply bg-gray-900/60 border-gray-700;
   
   .arco-radio-button {
@@ -364,7 +377,25 @@ defineExpose({
   }
 }
 
-:deep(.arco-input-wrapper) {
+.api-body-config--light :deep(.arco-radio-group-button) {
+  background-color: #eef2f7;
+  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+
+  .arco-radio-button {
+    color: var(--color-text-2);
+    border-color: rgba(15, 23, 42, 0.08);
+    background-color: transparent;
+
+    &.arco-radio-button-checked {
+      color: rgb(var(--primary-6));
+      background-color: #fff;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+  }
+}
+
+.api-body-config--dark :deep(.arco-input-wrapper) {
   @apply bg-gray-900/60 border-gray-700;
   
   input {
@@ -375,11 +406,35 @@ defineExpose({
   }
 }
 
-:deep(.arco-checkbox) {
+.api-body-config--light :deep(.arco-input-wrapper) {
+  background-color: var(--color-bg-1);
+  border-color: var(--color-border-2);
+
+  input {
+    color: var(--color-text-1);
+    background: transparent;
+
+    &::placeholder {
+      color: var(--color-text-3);
+    }
+  }
+}
+
+.api-body-config--dark :deep(.arco-checkbox) {
   @apply text-gray-400;
+}
+
+.api-body-config--light :deep(.arco-checkbox) {
+  color: var(--color-text-3);
 }
 
 :deep(.arco-upload) {
   @apply rounded p-4;
+}
+
+.editor-shell :deep(.monaco-editor),
+.editor-shell :deep(.monaco-editor-background),
+.editor-shell :deep(.monaco-editor .margin) {
+  border-radius: 8px;
 }
 </style>

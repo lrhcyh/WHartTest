@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, nextTick, computed } from 'vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import {
   getDatabaseConfigs,
   createDatabaseConfig,
@@ -25,6 +26,8 @@ import {
 } from '@arco-design/web-vue/es/icon'
 
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.isBlack)
 const databaseConfigs = ref<DatabaseConfig[]>([])
 const loading = ref(false)
 const showCreateModal = ref(false)
@@ -542,9 +545,9 @@ defineExpose({
 </script>
 
 <template>
-  <div class="h-full overflow-hidden flex flex-col">
+  <div class="database-config-panel h-full overflow-hidden flex flex-col" :class="isDarkTheme ? 'database-config--dark' : 'database-config--light'">
     <!-- 说明信息卡片 -->
-    <div class="p-4 text-sm text-gray-400 space-y-2 bg-gray-900/30 mb-4 rounded-lg border border-gray-700 flex-shrink-0 info-card">
+    <div class="info-card p-4 text-sm space-y-2 mb-4 rounded-lg flex-shrink-0">
       <div class="flex items-start gap-2">
         <icon-info-circle class="text-blue-400 mt-0.5 flex-shrink-0" />
         <div>数据库配置用于存储项目中使用的数据库连接信息</div>
@@ -561,17 +564,17 @@ defineExpose({
 
     <!-- 数据库配置列表标题 -->
     <div class="flex items-center gap-2 mb-4 flex-shrink-0">
-      <icon-storage class="text-gray-400" />
-      <span class="text-gray-300 font-medium">数据库配置列表</span>
+      <icon-storage class="panel-title-icon" />
+      <span class="panel-title-text font-medium">数据库配置列表</span>
       
       <a-button 
         size="mini" 
         type="text" 
-        class="ml-auto"
+        class="ml-auto panel-action-btn"
         @click="handleCreate"
       >
         <template #icon>
-          <icon-plus class="text-gray-400" />
+          <icon-plus class="panel-action-icon" />
         </template>
         添加数据库配置
       </a-button>
@@ -585,7 +588,7 @@ defineExpose({
           <div
             v-for="(config, index) in databaseConfigs || []" 
             :key="config.id"
-            class="p-3 bg-gray-900/60 rounded-lg border border-gray-700 hover:border-purple-500 transition-all duration-300 config-card"
+            class="config-card p-3 rounded-lg border transition-all duration-300"
             :class="{ 'opacity-60': !config.is_active }"
             :data-index="index"
             ref="configCardRef"
@@ -594,7 +597,7 @@ defineExpose({
             <div class="flex items-center gap-3 w-full">
               <!-- 图标 -->
               <div 
-                class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0"
+                class="config-icon-shell w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                 :data-index="index"
                 ref="iconContainerRef"
               >
@@ -603,7 +606,7 @@ defineExpose({
               
               <!-- 配置信息 -->
               <div 
-                class="flex-1 min-w-0 px-4 py-2 bg-gray-800/50 rounded text-sm text-gray-300 overflow-visible"
+                class="config-value-shell flex-1 min-w-0 px-4 py-2 rounded text-sm overflow-visible"
                 :data-index="index"
                 ref="valueContainerRef"
               >
@@ -611,7 +614,7 @@ defineExpose({
                 <div class="grid grid-cols-5 gap-0 w-full custom-grid">
                   <!-- 第一列：名称 -->
                   <div class="overflow-visible whitespace-nowrap col-name">
-                    <span class="font-semibold text-purple-400 inline-block">{{ config.name }}</span>
+                    <span class="config-name font-semibold inline-block">{{ config.name }}</span>
                   </div>
                   
                   <!-- 第二列：类型 (减小宽度) -->
@@ -621,23 +624,23 @@ defineExpose({
                   
                   <!-- 第三列：主机 (增加宽度) -->
                   <div class="overflow-hidden whitespace-nowrap text-ellipsis col-host justify-center">
-                    <span class="text-gray-500 text-xs font-medium mr-1">主机: </span>
-                    <span class="whitespace-nowrap text-white font-medium">{{ config.host }}:{{ config.port }}</span>
+                    <span class="config-meta-label text-xs font-medium mr-1">主机: </span>
+                    <span class="config-meta-value whitespace-nowrap font-medium">{{ config.host }}:{{ config.port }}</span>
                   </div>
                   
                   <!-- 第四列：数据库 -->
                   <div class="overflow-hidden whitespace-nowrap text-ellipsis justify-center">
-                    <span class="text-gray-500 text-xs font-medium mr-1">数据库: </span>
-                    <span class="whitespace-nowrap text-white font-medium">{{ config.database }}</span>
+                    <span class="config-meta-label text-xs font-medium mr-1">数据库: </span>
+                    <span class="config-meta-value whitespace-nowrap font-medium">{{ config.database }}</span>
                   </div>
                   
                   <!-- 第五列：用户名 + 状态 -->
                   <div class="flex items-center overflow-visible whitespace-nowrap justify-between">
                     <div class="overflow-visible">
-                      <span class="text-gray-500 text-xs font-medium mr-1">用户名: </span>
-                      <span class="text-white font-medium">{{ config.username }}</span>
+                      <span class="config-meta-label text-xs font-medium mr-1">用户名: </span>
+                      <span class="config-meta-value font-medium">{{ config.username }}</span>
                     </div>
-                    <span v-if="!config.is_active" class="text-xs text-red-400 bg-red-400/10 px-1.5 py-0.5 rounded ml-1 flex-shrink-0">已禁用</span>
+                    <span v-if="!config.is_active" class="config-disabled-tag text-xs px-1.5 py-0.5 rounded ml-1 flex-shrink-0">已禁用</span>
                   </div>
                 </div>
               </div>
@@ -684,9 +687,9 @@ defineExpose({
             </div>
             
             <!-- 详细信息 -->
-            <div v-if="config.description" class="mt-2 text-xs text-gray-400 px-2 py-1 border-l-2 border-gray-700 pl-3">
-              <span class="text-gray-500">描述:</span>
-              <span class="ml-2">{{ config.description }}</span>
+            <div v-if="config.description" class="config-description mt-2 text-xs px-2 py-1 pl-3">
+              <span class="config-meta-label">描述:</span>
+              <span class="config-meta-value ml-2">{{ config.description }}</span>
             </div>
           </div>
           
@@ -696,12 +699,12 @@ defineExpose({
             class="text-center py-10 px-4 flex flex-col items-center justify-center h-full flex-1"
           >
             <div class="mb-4">
-              <div class="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto">
+              <div class="empty-state-icon-shell w-16 h-16 rounded-full flex items-center justify-center mx-auto">
                 <icon-storage class="text-purple-500 text-2xl" />
               </div>
             </div>
-            <div class="text-base text-gray-300 mb-2 text-center">暂无数据库配置</div>
-            <div class="text-sm text-gray-400 mb-6 max-w-md mx-auto text-center">
+            <div class="empty-state-title text-base mb-2 text-center">暂无数据库配置</div>
+            <div class="empty-state-description text-sm mb-6 max-w-md mx-auto text-center">
               您可以添加数据库配置，在测试用例中使用这些数据库连接
             </div>
             <a-button type="outline" @click="handleCreate">
@@ -868,18 +871,95 @@ defineExpose({
 </template>
 
 <style lang="postcss" scoped>
+.database-config-panel {
+  --db-text: var(--color-text-1);
+  --db-text-muted: var(--color-text-2);
+  --db-text-subtle: var(--color-text-3);
+  --db-card-bg: rgba(255, 255, 255, 0.88);
+  --db-card-border: rgba(148, 163, 184, 0.18);
+  --db-card-hover-border: rgba(147, 51, 234, 0.45);
+  --db-info-bg: linear-gradient(135deg, rgba(250, 245, 255, 0.96), rgba(248, 250, 252, 0.96));
+  --db-info-border: rgba(148, 163, 184, 0.18);
+  --db-value-bg: rgba(248, 250, 252, 0.94);
+  --db-value-border: rgba(148, 163, 184, 0.16);
+  --db-value-hover-bg: rgba(241, 245, 249, 0.98);
+  --db-name-text: rgb(147, 51, 234);
+  --db-type-bg: rgba(237, 233, 254, 0.85);
+  --db-type-text: rgba(109, 40, 217, 0.92);
+  --db-description-border: rgba(148, 163, 184, 0.22);
+  --db-button-hover-bg: rgba(124, 58, 237, 0.05);
+  --db-empty-shadow: 0 0 15px rgba(147, 51, 234, 0.12);
+  --db-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  --db-shadow-hover: 0 12px 26px rgba(15, 23, 42, 0.1);
+}
+
+.database-config--dark {
+  --db-text: rgba(229, 231, 235, 0.94);
+  --db-text-muted: rgba(209, 213, 219, 0.92);
+  --db-text-subtle: rgba(156, 163, 175, 0.96);
+  --db-card-bg: rgba(17, 24, 39, 0.6);
+  --db-card-border: rgba(55, 65, 81, 1);
+  --db-card-hover-border: rgba(147, 51, 234, 0.6);
+  --db-info-bg: linear-gradient(to right, rgba(30, 41, 59, 0.7), rgba(30, 41, 59, 0.5));
+  --db-info-border: rgba(55, 65, 81, 1);
+  --db-value-bg: rgba(31, 41, 55, 0.5);
+  --db-value-border: rgba(75, 85, 99, 0.3);
+  --db-value-hover-bg: rgba(31, 41, 55, 0.82);
+  --db-name-text: rgb(192, 132, 252);
+  --db-type-bg: rgba(55, 65, 81, 0.8);
+  --db-type-text: rgb(156, 163, 175);
+  --db-description-border: rgba(55, 65, 81, 1);
+  --db-button-hover-bg: rgba(124, 58, 237, 0.08);
+  --db-empty-shadow: 0 0 15px rgba(147, 51, 234, 0.2);
+  --db-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --db-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
 .info-card {
   font-size: 0.875rem;
+  background: var(--db-info-bg);
+  border: 1px solid var(--db-info-border);
+  color: var(--db-text-muted);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.panel-title-icon,
+.panel-action-icon,
+.config-meta-label,
+.empty-state-description,
+.config-description {
+  color: var(--db-text-subtle);
+}
+
+.panel-title-text,
+.empty-state-title,
+.config-meta-value {
+  color: var(--db-text);
+}
+
+.config-name {
+  color: var(--db-name-text);
+}
+
+.config-icon-shell,
+.empty-state-icon-shell {
+  background: rgba(147, 51, 234, 0.1);
+}
+
+.config-description {
+  border-left: 2px solid var(--db-description-border);
 }
 
 .config-card {
+  background: var(--db-card-bg);
+  border-color: var(--db-card-border);
+  box-shadow: var(--db-shadow);
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   
   &:hover {
-    border-color: rgba(147, 51, 234, 0.5);
+    border-color: var(--db-card-hover-border);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--db-shadow-hover);
   }
   
   /* 调整列宽度比例和间距 */
@@ -922,13 +1002,15 @@ defineExpose({
     }
     
     /* 配置信息容器可伸缩 */
-    > .flex-1.min-w-0 {
+    > .config-value-shell {
       flex: 1 1 auto;
       min-width: 0;
       transition: all 0.2s ease;
       padding: 8px 12px;
       border-radius: 4px;
-      background-color: rgba(31, 41, 55, 0.5);
+      background-color: var(--db-value-bg);
+      border: 1px solid var(--db-value-border);
+      color: var(--db-text-muted);
       position: relative;
       overflow: visible;
       box-sizing: border-box;
@@ -974,29 +1056,26 @@ defineExpose({
         }
         
         /* 名称列样式 */
-        .font-semibold.text-purple-400 {
-          color: rgb(192, 132, 252);
+        .config-name {
           font-weight: 600;
           white-space: nowrap;
           overflow: visible;
         }
         
         /* 标签文本样式 */
-        .text-gray-500.text-xs {
-          color: rgba(156, 163, 175, 0.8);
+        .config-meta-label {
           margin-right: 0.75rem;
           white-space: nowrap;
         }
         
         /* 值文本样式 */
-        .text-white {
-          color: rgba(255, 255, 255, 0.9);
+        .config-meta-value {
           font-weight: 500;
         }
       }
       
       &:hover {
-        background-color: rgba(31, 41, 55, 0.8);
+        background-color: var(--db-value-hover-bg);
       }
     }
     
@@ -1006,6 +1085,11 @@ defineExpose({
       white-space: nowrap;
     }
   }
+}
+
+.config-disabled-tag {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
 }
 
 /* 自定义滚动条样式 */
@@ -1130,7 +1214,7 @@ defineExpose({
 
 /* 按钮悬停效果 */
 :deep(.arco-btn-text:not([status="danger"]):hover) {
-  background-color: rgba(124, 58, 237, 0.05);
+  background-color: var(--db-button-hover-bg);
   color: #a855f7;
 }
 
@@ -1158,8 +1242,8 @@ defineExpose({
 :deep(.type-tag) {
   font-size: 11px;
   text-transform: uppercase;
-  color: rgb(156, 163, 175);
-  background-color: rgba(55, 65, 81, 0.8);
+  color: var(--db-type-text);
+  background-color: var(--db-type-bg);
   padding: 3px 6px;
   line-height: 1;
   border-radius: 4px;

@@ -40,6 +40,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAppI18n } from '@/composables/useAppI18n'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import '../styles/arco-overrides.css'
 
 import InterfacesPanel from '../components/interfaces/InterfacesPanel.vue'
@@ -54,21 +55,33 @@ import CardTabs from '../components/shared/CardTabs.vue'
 const route = useRoute()
 const { locale, isEnglish, tl } = useAppI18n()
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
 const projectId = computed(() => projectStore.currentProjectId)
 const activeTab = ref('interfaces')
 const API_TESTING_THEME_CLASS = 'api-testing-theme'
+const isDarkTheme = computed(() => themeStore.isBlack)
 
-const syncApiTestingThemeClass = (enabled: boolean) => {
-  document.body.classList.toggle(API_TESTING_THEME_CLASS, enabled)
+const syncApiTestingThemeClass = () => {
+  if (typeof document === 'undefined' || !document.body) {
+    return
+  }
+
+  document.body.classList.toggle(API_TESTING_THEME_CLASS, isDarkTheme.value)
 }
 
 onMounted(() => {
-  syncApiTestingThemeClass(true)
+  syncApiTestingThemeClass()
 })
 
 onBeforeUnmount(() => {
-  syncApiTestingThemeClass(false)
+  if (typeof document !== 'undefined' && document.body) {
+    document.body.classList.remove(API_TESTING_THEME_CLASS)
+  }
 })
+
+watch(isDarkTheme, () => {
+  syncApiTestingThemeClass()
+}, { immediate: true })
 
 // Support tab switching via query param (e.g. /api-testing?tab=testcases)
 watch(() => route.query.tab, (newTab) => {
@@ -102,7 +115,7 @@ const tabItems = computed(() => isEnglish.value ? [
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: rgb(17, 24, 39);
+  background-color: var(--color-bg-2);
   border-radius: 8px;
 }
 

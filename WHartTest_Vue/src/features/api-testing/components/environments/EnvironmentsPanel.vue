@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import {
   getEnvironments, 
   createEnvironment, 
@@ -30,6 +31,7 @@ import {
 } from '@arco-design/web-vue/es/icon'
 
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
 const loading = ref(false)
 const formLoading = ref(false)
 const environments = ref<Environment[]>([])
@@ -40,6 +42,7 @@ const showGlobalHeaders = ref(false)
 const showDatabaseConfig = ref(false)
 const globalHeadersPanel = ref<{ handleCreate: () => void } | null>(null)
 const databaseConfigPanel = ref<{ handleCreate: () => void } | null>(null)
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 interface FormData {
   id?: number
@@ -487,7 +490,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-4 h-full flex gap-4 overflow-hidden">
+  <div class="api-environments-panel p-4 h-full flex gap-4 overflow-hidden" :class="isDarkTheme ? 'api-environments--dark' : 'api-environments--light'">
     <!-- 环境列表面板 -->
     <div class="w-90 flex-shrink-0 h-full overflow-hidden">
       <EnvironmentList
@@ -506,7 +509,7 @@ onMounted(() => {
     </div>
 
     <!-- 右侧内容区域 - 使用单一卡片设计 -->
-    <div class="flex-1 min-w-0 overflow-hidden right-content bg-[#1D2433] rounded-lg border border-gray-800">
+    <div class="flex-1 min-w-0 overflow-hidden right-content env-main-shell rounded-lg">
       <!-- 列表状态 -->
       <div v-if="activeTab === 'list'" class="h-full flex flex-col">
         <div class="content-header">
@@ -515,7 +518,7 @@ onMounted(() => {
               <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <IconStorage class="text-blue-500 text-xl" />
               </div>
-              <h2 class="text-xl font-medium text-gray-100">环境管理</h2>
+              <h2 class="text-xl font-medium section-heading">环境管理</h2>
             </div>
             <div class="flex gap-2">
               <a-button type="outline" size="small" @click="switchToCreate">
@@ -537,12 +540,12 @@ onMounted(() => {
         <div class="content-body flex items-center justify-center">
           <div class="text-center">
             <div class="mb-6">
-              <div class="w-20 h-20 rounded-full bg-gray-800/80 flex items-center justify-center mx-auto">
-                <IconStorage class="text-gray-500 text-3xl" />
+              <div class="w-20 h-20 rounded-full empty-state-icon-shell flex items-center justify-center mx-auto">
+                <IconStorage class="empty-state-icon text-3xl" />
               </div>
             </div>
-            <div class="mb-3 text-xl text-gray-300">请选择一个环境</div>
-            <div class="max-w-md mx-auto text-gray-400 mb-6">
+            <div class="mb-3 text-xl empty-state-title">请选择一个环境</div>
+            <div class="max-w-md mx-auto empty-state-description mb-6">
               从左侧列表选择一个环境进行查看和编辑，或者使用右上角的按钮进行创建或管理全局请求头
             </div>
           </div>
@@ -554,7 +557,7 @@ onMounted(() => {
         <div class="content-header">
           <div class="flex items-center justify-between w-full">
             <div class="flex items-center gap-3">
-              <h2 class="text-xl font-medium text-gray-100">创建新环境</h2>
+              <h2 class="text-xl font-medium section-heading">创建新环境</h2>
             </div>
             <div class="flex items-center gap-2">
               <a-button type="primary" size="small" @click="handleCreate">
@@ -585,7 +588,7 @@ onMounted(() => {
         <div class="content-header">
           <div class="flex items-center justify-between w-full">
             <div class="flex items-center gap-3">
-              <h2 class="text-xl font-medium text-gray-100">{{ editForm.name }}</h2>
+              <h2 class="text-xl font-medium section-heading">{{ editForm.name }}</h2>
             </div>
             <div class="flex items-center gap-2">
               <a-button type="primary" size="small" @click="handleEditSubmit">
@@ -621,13 +624,13 @@ onMounted(() => {
               </div>
               <div>
                 <div class="flex items-center gap-2">
-                  <h2 class="text-xl font-medium text-gray-100">{{ selectedEnvironment.name }}</h2>
+                  <h2 class="text-xl font-medium section-heading">{{ selectedEnvironment.name }}</h2>
                   <a-tag
                     :color="selectedEnvironment.is_active ? 'green' : 'red'"
                     size="small"
                   >{{ selectedEnvironment.is_active ? '启用' : '禁用' }}</a-tag>
                 </div>
-                <div class="text-gray-400 text-sm truncate max-w-md">{{ selectedEnvironment.base_url }}</div>
+                <div class="section-subtitle text-sm truncate max-w-md">{{ selectedEnvironment.base_url }}</div>
               </div>
             </div>
             <div class="flex gap-2">
@@ -663,10 +666,10 @@ onMounted(() => {
               <!-- 所属项目 -->
               <div class="space-y-2">
                 <div class="flex items-center gap-2">
-                  <icon-storage class="text-gray-400" />
-                  <span class="text-gray-300 font-medium">所属项目</span>
+                  <icon-storage class="detail-section-icon" />
+                  <span class="detail-section-title font-medium">所属项目</span>
                 </div>
-                <div class="p-3 bg-gray-800/50 rounded-lg text-gray-300 break-all">
+                <div class="detail-block p-3 rounded-lg break-all">
                   {{ selectedEnvironment.project_info?.name || selectedEnvironment.project_name }}
                 </div>
               </div>
@@ -674,10 +677,10 @@ onMounted(() => {
               <!-- 父环境 -->
               <div class="space-y-2" v-if="selectedEnvironment.parent_info">
                 <div class="flex items-center gap-2">
-                  <icon-storage class="text-gray-400" />
-                  <span class="text-gray-300 font-medium">父环境</span>
+                  <icon-storage class="detail-section-icon" />
+                  <span class="detail-section-title font-medium">父环境</span>
                 </div>
-                <div class="p-3 bg-gray-800/50 rounded-lg text-gray-300 break-all">
+                <div class="detail-block p-3 rounded-lg break-all">
                   {{ selectedEnvironment.parent_info.name }}
                 </div>
               </div>
@@ -685,10 +688,10 @@ onMounted(() => {
               <!-- 基础URL -->
               <div class="space-y-2">
                 <div class="flex items-center gap-2">
-                  <icon-link class="text-gray-400" />
-                  <span class="text-gray-300 font-medium">基础 URL</span>
+                  <icon-link class="detail-section-icon" />
+                  <span class="detail-section-title font-medium">基础 URL</span>
                 </div>
-                <div class="p-3 bg-gray-800/50 rounded-lg text-gray-300 break-all">
+                <div class="detail-block p-3 rounded-lg break-all">
                   {{ selectedEnvironment.base_url }}
                 </div>
               </div>
@@ -696,10 +699,10 @@ onMounted(() => {
               <!-- 验证SSL -->
               <div class="space-y-2">
                 <div class="flex items-center gap-2">
-                  <icon-link class="text-gray-400" />
-                  <span class="text-gray-300 font-medium">验证SSL</span>
+                  <icon-link class="detail-section-icon" />
+                  <span class="detail-section-title font-medium">验证SSL</span>
                 </div>
-                <div class="p-3 bg-gray-800/50 rounded-lg text-gray-300 break-all">
+                <div class="detail-block p-3 rounded-lg break-all">
                   {{ selectedEnvironment.verify_ssl !== false ? '是' : '否' }}
                 </div>
               </div>
@@ -707,20 +710,20 @@ onMounted(() => {
               <!-- 关联数据库配置 - 使用新的数据结构 -->
               <div class="space-y-2" v-if="selectedEnvironment.database_config_info">
                 <div class="flex items-center gap-2">
-                  <icon-storage class="text-gray-400" />
-                  <span class="text-gray-300 font-medium">关联数据库</span>
+                  <icon-storage class="detail-section-icon" />
+                  <span class="detail-section-title font-medium">关联数据库</span>
                 </div>
-                <div class="p-3 bg-gray-800/50 rounded-lg text-gray-300 space-y-2">
+                <div class="detail-block p-3 rounded-lg space-y-2">
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-gray-400">名称：</span>
+                    <span class="detail-subtle">名称：</span>
                     <span class="break-all">{{ selectedEnvironment.database_config_info.name }}</span>
                   </div>
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-gray-400">类型：</span>
+                    <span class="detail-subtle">类型：</span>
                     <span>{{ selectedEnvironment.database_config_info.db_type }}</span>
                   </div>
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-gray-400">主机：</span>
+                    <span class="detail-subtle">主机：</span>
                     <span>{{ selectedEnvironment.database_config_info.host }}</span>
                   </div>
                 </div>
@@ -729,10 +732,10 @@ onMounted(() => {
               <!-- 保留旧的数据库配置显示方式作为备选，防止旧接口数据结构导致显示问题 -->
               <div class="space-y-2" v-else-if="selectedEnvironment.database_config">
                 <div class="flex items-center gap-2">
-                  <icon-storage class="text-gray-400" />
-                  <span class="text-gray-300 font-medium">关联数据库</span>
+                  <icon-storage class="detail-section-icon" />
+                  <span class="detail-section-title font-medium">关联数据库</span>
                 </div>
-                <div class="p-3 bg-gray-800/50 rounded-lg text-gray-300 break-all">
+                <div class="detail-block p-3 rounded-lg break-all">
                   <span class="flex items-center gap-2">
                     <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-500/10">
                       <icon-storage class="text-purple-400 text-sm" />
@@ -745,30 +748,30 @@ onMounted(() => {
               <!-- 描述 -->
               <div class="space-y-2" v-if="selectedEnvironment.description">
                 <div class="flex items-center gap-2">
-                  <icon-file class="text-gray-400" />
-                  <span class="text-gray-300 font-medium">描述</span>
+                  <icon-file class="detail-section-icon" />
+                  <span class="detail-section-title font-medium">描述</span>
                 </div>
-                <div class="p-3 bg-gray-800/50 rounded-lg text-gray-300 whitespace-pre-wrap">
+                <div class="detail-block p-3 rounded-lg whitespace-pre-wrap">
                   {{ selectedEnvironment.description }}
                 </div>
               </div>
               <!-- 创建信息 -->
               <div class="space-y-2">
                 <div class="flex items-center gap-2">
-                  <icon-info-circle class="text-gray-400" />
-                  <span class="text-gray-300 font-medium">创建信息</span>
+                  <icon-info-circle class="detail-section-icon" />
+                  <span class="detail-section-title font-medium">创建信息</span>
                 </div>
-                <div class="p-3 bg-gray-800/50 rounded-lg text-gray-300 space-y-2">
+                <div class="detail-block p-3 rounded-lg space-y-2">
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-gray-400">创建人：</span>
+                    <span class="detail-subtle">创建人：</span>
                     <span class="break-all">{{ selectedEnvironment.created_by_name }}</span>
                   </div>
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-gray-400">创建时间：</span>
+                    <span class="detail-subtle">创建时间：</span>
                     <span>{{ new Date(selectedEnvironment.created_at).toLocaleString('zh-CN') }}</span>
                   </div>
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-gray-400">更新时间：</span>
+                    <span class="detail-subtle">更新时间：</span>
                     <span>{{ new Date(selectedEnvironment.updated_at).toLocaleString('zh-CN') }}</span>
                   </div>
                 </div>
@@ -779,28 +782,28 @@ onMounted(() => {
             <div class="space-y-4 mt-8">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <icon-storage class="text-gray-400" />
-                  <span class="text-gray-300 font-medium">环境变量</span>
+                  <icon-storage class="detail-section-icon" />
+                  <span class="detail-section-title font-medium">环境变量</span>
                 </div>
               </div>
               <div class="space-y-4">
                 <div
                   v-for="(variable, index) in selectedEnvironment.variables"
                   :key="index"
-                  class="flex items-start gap-3 p-3 bg-gray-900/60 rounded-lg"
+                  class="detail-variable-card flex items-start gap-3 p-3 rounded-lg"
                 >
                   <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
                     <icon-storage class="text-purple-400" />
                   </div>
                   <div class="flex-1 min-w-0 overflow-hidden">
                     <div class="flex items-center gap-2 mb-2 flex-wrap">
-                      <span class="text-sm font-medium text-gray-300">{{ variable.name }}</span>
-                      <span class="text-xs text-gray-500">·</span>
-                      <span class="text-xs text-gray-400 truncate">{{ variable.description || '暂无描述' }}</span>
+                      <span class="text-sm font-medium detail-section-title">{{ variable.name }}</span>
+                      <span class="text-xs detail-subtle">·</span>
+                      <span class="text-xs detail-subtle truncate">{{ variable.description || '暂无描述' }}</span>
                     </div>
                     <div class="space-y-1 overflow-hidden">
-                      <div class="text-xs text-gray-400">变量值</div>
-                      <div class="text-sm text-gray-300 break-all p-2 bg-gray-800/50 rounded">{{ variable.value }}</div>
+                      <div class="text-xs detail-subtle">变量值</div>
+                      <div class="detail-inline-value text-sm break-all p-2 rounded">{{ variable.value }}</div>
                     </div>
                   </div>
                 </div>
@@ -808,7 +811,7 @@ onMounted(() => {
                 <!-- 无变量时的提示 -->
                 <div
                   v-if="!selectedEnvironment.variables?.length"
-                  class="text-center py-8 text-gray-400"
+                  class="text-center py-8 empty-state-description"
                 >
                   暂无环境变量
                 </div>
@@ -827,8 +830,8 @@ onMounted(() => {
                 <IconSettings class="text-teal-500 text-xl" />
               </div>
               <div>
-                <h2 class="text-xl font-medium text-gray-100">全局请求头</h2>
-                <div class="text-gray-400 text-sm">项目级别的请求头设置</div>
+                <h2 class="text-xl font-medium section-heading">全局请求头</h2>
+                <div class="section-subtitle text-sm">项目级别的请求头设置</div>
               </div>
             </div>
             <div class="flex gap-2">
@@ -857,8 +860,8 @@ onMounted(() => {
                 <IconStorage class="text-purple-500 text-xl" />
               </div>
               <div>
-                <h2 class="text-xl font-medium text-gray-100">数据库配置</h2>
-                <div class="text-gray-400 text-sm">数据库配置设置</div>
+                <h2 class="text-xl font-medium section-heading">数据库配置</h2>
+                <div class="section-subtitle text-sm">数据库配置设置</div>
               </div>
             </div>
             <div class="flex gap-2">
@@ -882,6 +885,41 @@ onMounted(() => {
 </template>
 
 <style lang="postcss" scoped>
+.api-environments-panel {
+  --env-shell-bg: color-mix(in srgb, var(--theme-card-bg) 92%, var(--theme-page-bg) 8%);
+  --env-shell-border: rgba(148, 163, 184, 0.16);
+  --env-shell-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --env-block-bg: rgba(255, 255, 255, 0.76);
+  --env-block-border: rgba(148, 163, 184, 0.14);
+  --env-inline-bg: rgba(255, 255, 255, 0.92);
+  --env-inline-border: rgba(148, 163, 184, 0.14);
+  --env-header-border: rgba(148, 163, 184, 0.16);
+  --env-table-header-bg: color-mix(in srgb, var(--theme-card-bg) 76%, var(--theme-page-bg) 24%);
+  --env-table-hover-bg: rgba(15, 23, 42, 0.05);
+  --env-input-bg: #ffffff;
+  --env-input-border: rgba(148, 163, 184, 0.18);
+  --env-input-hover-bg: color-mix(in srgb, var(--theme-card-bg) 88%, var(--theme-page-bg) 12%);
+  --env-text: var(--theme-text);
+  --env-text-muted: var(--theme-text-secondary);
+  --env-text-subtle: var(--theme-text-tertiary);
+}
+
+.api-environments--dark {
+  --env-shell-bg: rgba(29, 36, 51, 0.92);
+  --env-shell-border: rgba(55, 65, 81, 0.72);
+  --env-shell-shadow: 0 18px 34px rgba(2, 6, 23, 0.28);
+  --env-block-bg: rgba(30, 41, 59, 0.56);
+  --env-block-border: rgba(75, 85, 99, 0.32);
+  --env-inline-bg: rgba(17, 24, 39, 0.78);
+  --env-inline-border: rgba(75, 85, 99, 0.3);
+  --env-header-border: rgba(55, 65, 81, 0.5);
+  --env-table-header-bg: rgba(31, 41, 55, 0.5);
+  --env-table-hover-bg: rgba(31, 41, 55, 0.3);
+  --env-input-bg: rgba(17, 24, 39, 1);
+  --env-input-border: rgba(55, 65, 81, 0.7);
+  --env-input-hover-bg: rgba(17, 24, 39, 0.94);
+}
+
 /* 滚动条样式 */
 :deep(.arco-scrollbar),
 .custom-scrollbar {
@@ -899,10 +937,16 @@ onMounted(() => {
   flex-direction: column;
 }
 
+.env-main-shell {
+  background: var(--env-shell-bg);
+  border: 1px solid var(--env-shell-border);
+  box-shadow: var(--env-shell-shadow);
+}
+
 /* 内容头部样式 */
 .content-header {
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+  border-bottom: 1px solid var(--env-header-border);
 }
 
 /* 内容主体样式 */
@@ -923,6 +967,42 @@ onMounted(() => {
   padding: 0;
 }
 
+.section-heading,
+.detail-section-title,
+.empty-state-title {
+  color: var(--env-text);
+}
+
+.section-subtitle,
+.detail-subtle,
+.empty-state-description,
+.detail-section-icon,
+.empty-state-icon {
+  color: var(--env-text-subtle);
+}
+
+.detail-block {
+  background: var(--env-block-bg);
+  border: 1px solid var(--env-block-border);
+  color: var(--env-text-muted);
+}
+
+.detail-variable-card {
+  background: color-mix(in srgb, var(--env-block-bg) 88%, var(--theme-page-bg) 12%);
+  border: 1px solid var(--env-block-border);
+}
+
+.detail-inline-value {
+  background: var(--env-inline-bg);
+  border: 1px solid var(--env-inline-border);
+  color: var(--env-text-muted);
+}
+
+.empty-state-icon-shell {
+  background: var(--env-inline-bg);
+  box-shadow: 0 0 15px rgba(30, 41, 59, 0.12);
+}
+
 /* 图标容器样式 */
 .w-10.h-10.rounded-lg {
   transition: all 0.3s ease;
@@ -939,13 +1019,12 @@ h2.text-xl {
 }
 
 /* 圆形图标背景 */
-.rounded-full.bg-gray-800\/80 {
-  box-shadow: 0 0 15px rgba(30, 41, 59, 0.4);
+.rounded-full {
   transition: all 0.3s ease;
   
   &:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(30, 41, 59, 0.6);
+    box-shadow: 0 0 20px rgba(30, 41, 59, 0.18);
   }
 }
 
@@ -965,38 +1044,54 @@ h2.text-xl {
 
   .arco-table-th {
     height: 2.75rem;
-    color: rgba(209, 213, 219, 1);
+    color: var(--env-text);
     font-weight: 500;
-    background-color: rgba(31, 41, 55, 0.5);
-    border-bottom: 1px solid rgba(75, 85, 99, 0.4) !important;
+    background-color: var(--env-table-header-bg);
+    border-bottom: 1px solid var(--env-header-border) !important;
   }
 
   .arco-table-td {
     background-color: transparent;
-    color: rgba(209, 213, 219, 1);
-    border-bottom: 1px solid rgba(75, 85, 99, 0.2) !important;
+    color: var(--env-text-muted);
+    border-bottom: 1px solid var(--env-block-border) !important;
   }
 
   .arco-table-tr:hover .arco-table-td {
-    background-color: rgba(31, 41, 55, 0.3) !important;
+    background-color: var(--env-table-hover-bg) !important;
   }
 }
 
 /* 表单样式 */
 :deep(.arco-form-item-label) {
-  color: rgba(209, 213, 219, 1);
+  color: var(--env-text);
 }
 
 :deep(.arco-input-wrapper),
-:deep(.arco-textarea-wrapper) {
-  background-color: rgba(17, 24, 39, 1);
-  border: 1px solid rgba(55, 65, 81, 0.7);
+:deep(.arco-textarea-wrapper),
+:deep(.arco-select-view) {
+  background-color: var(--env-input-bg);
+  border: 1px solid var(--env-input-border);
+
+  &:hover,
+  &:focus-within {
+    border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+    background-color: var(--env-input-hover-bg);
+  }
 }
 
 :deep(.arco-input),
 :deep(.arco-textarea) {
-  color: rgba(209, 213, 219, 1);
-  background-color: rgba(17, 24, 39, 1);
+  color: var(--env-text);
+  background-color: transparent;
+}
+
+:deep(.arco-input::placeholder),
+:deep(.arco-textarea::placeholder),
+:deep(.arco-select-view-placeholder),
+:deep(.arco-input-prefix),
+:deep(.arco-input-suffix),
+:deep(.arco-select-view-suffix) {
+  color: var(--env-text-subtle);
 }
 
 :deep(.arco-switch) {

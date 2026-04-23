@@ -5,7 +5,10 @@ import { testcaseService } from '../../services/testcaseService'
 import { testReportService } from '../../services/testReportService'
 import type { CreateTestCaseData, TestCaseStep } from '../../services/testcaseService'
 import type { ApiTestReportDetail } from '../../types/testcase'
+import type { ApiModule } from '../../types/module'
+import { moduleService } from '../../services/moduleService'
 import { useProjectStore } from '@/store/projectStore'
+import { useThemeStore } from '@/store/themeStore'
 import TestCaseHeader from './TestCaseHeader.vue'
 import TestCaseStepList from './TestCaseStepList.vue'
 import TestCaseStepDetail from './TestCaseStepDetail.vue'
@@ -23,6 +26,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(['cancel', 'success', 'update:testCaseId'])
 
 const projectStore = useProjectStore()
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.isBlack)
 
 const currentTestCaseId = ref<number | undefined>(props.testCaseId)
 
@@ -32,6 +37,21 @@ const testCaseId = computed(() => {
 
 const loading = ref(false)
 const activeStep = ref<TestCaseStep | null>(null)
+
+// 模块列表
+const modules = ref<ApiModule[]>([])
+
+const fetchModules = async () => {
+  if (!projectStore.currentProjectId) return
+  try {
+    const res = await moduleService.tree(projectStore.currentProjectId)
+    if (res.success && res.data) {
+      modules.value = Array.isArray(res.data) ? res.data : (res.data as any).results || []
+    }
+  } catch (error) {
+    console.error('获取模块列表失败:', error)
+  }
+}
 
 // 报告相关
 const showReport = ref(false)
@@ -65,6 +85,18 @@ interface TestCaseStepForHeader {
 }
 
 const steps = ref<TestCaseStep[]>([])
+
+const activeStepRenderKey = computed(() => {
+  if (!activeStep.value) {
+    return 'empty-step'
+  }
+
+  if (activeStep.value.id) {
+    return `step-${activeStep.value.id}`
+  }
+
+  return `draft-step-${activeStep.value.order || 0}`
+})
 
 const stepsForHeader = computed<TestCaseStepForHeader[]>(() => {
   return steps.value.map(step => ({
@@ -139,6 +171,7 @@ const fetchTestCaseDetail = async () => {
 
 onMounted(() => {
   fetchTestCaseDetail()
+  fetchModules()
 })
 
 const handleAddStep = () => {
@@ -234,6 +267,27 @@ const handleStepDelete = (step: TestCaseStep) => {
     if (activeStep.value === step) {
       activeStep.value = null
     }
+  }
+}
+
+const handleTestCaseRefresh = (testCase: { steps?: TestCaseStep[] }) => {
+  const refreshedSteps = testCase.steps || []
+  updateSteps(refreshedSteps)
+
+  if (!activeStep.value) {
+    return
+  }
+
+  const matchedStep = refreshedSteps.find((step) => {
+    if (activeStep.value?.id) {
+      return step.id === activeStep.value.id
+    }
+
+    return step.order === activeStep.value?.order
+  })
+
+  if (matchedStep) {
+    handleStepSelect(matchedStep)
   }
 }
 
@@ -419,7 +473,7 @@ const handleShowReport = async (tcId: number) => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col gap-4 p-4 overflow-hidden">
+  <div class="testcase-form-page h-full flex flex-col gap-4 p-4 overflow-hidden" :class="isDarkTheme ? 'testcase-form-page--dark' : 'testcase-form-page--light'">
     <!-- 顶部：基础信息 -->
     <div class="flex-shrink-0 form-card p-4">
       <test-case-header
@@ -487,10 +541,13 @@ const handleShowReport = async (tcId: number) => {
         <!-- 步骤详情 -->
         <test-case-step-detail
           v-if="activeStep && !showReport"
+          :key="activeStepRenderKey"
           :model-value="activeStep"
+          :modules="modules"
           :readonly="readonly"
           :test-case-id="testCaseId"
           @update:model-value="updateStepData"
+          @refresh-test-case="handleTestCaseRefresh"
         />
 
         <!-- 报告详情 -->
@@ -510,12 +567,49 @@ const handleShowReport = async (tcId: number) => {
 </template>
 
 <style scoped>
-.form-card {
-  background-color: rgba(31, 41, 55, 0.5);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+.testcase-form-page {
+  min-height: 0;
+  --tcf-card-bg: #ffffff;
+  --tcf-card-border: rgba(203, 213, 225, 0.9);
+  --tcf-card-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  --tcf-section-bg: #f8fafc;
+  --tcf-section-hover: #f1f5f9;
+  --tcf-control-bg: #ffffff;
+  --tcf-control-border: rgba(148, 163, 184, 0.36);
+  --tcf-control-hover: #f8fafc;
+  --tcf-text: #0f172a;
+  --tcf-text-muted: #475569;
+  --tcf-text-subtle: #64748b;
+  --tcf-panel-border: rgba(203, 213, 225, 0.96);
+  --tcf-resize-bg: rgba(148, 163, 184, 0.24);
+  --tcf-resize-hover: rgba(59, 130, 246, 0.28);
 }
+
+.testcase-form-page--dark {
+  --tcf-card-bg: rgba(31, 41, 55, 0.5);
+  --tcf-card-border: rgba(148, 163, 184, 0.12);
+  --tcf-card-shadow: 0 18px 32px rgba(2, 6, 23, 0.28);
+  --tcf-section-bg: rgba(31, 41, 55, 0.74);
+  --tcf-section-hover: rgba(51, 65, 85, 0.5);
+  --tcf-control-bg: rgba(15, 23, 42, 0.6);
+  --tcf-control-border: rgba(75, 85, 99, 0.45);
+  --tcf-control-hover: rgba(31, 41, 55, 0.88);
+  --tcf-text: rgb(241, 245, 249);
+  --tcf-text-muted: rgb(203, 213, 225);
+  --tcf-text-subtle: rgb(148, 163, 184);
+  --tcf-panel-border: rgba(75, 85, 99, 0.4);
+  --tcf-resize-bg: rgba(75, 85, 99, 0.5);
+  --tcf-resize-hover: rgba(59, 130, 246, 0.4);
+}
+
+.form-card {
+  background: var(--tcf-card-bg);
+  border: 1px solid var(--tcf-card-border);
+  border-radius: 0.5rem;
+  box-shadow: var(--tcf-card-shadow);
+}
+
 .empty-text {
-  color: rgb(107, 114, 128);
+  color: var(--tcf-text-subtle);
 }
 </style>

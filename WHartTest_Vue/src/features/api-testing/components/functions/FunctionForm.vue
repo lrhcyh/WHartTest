@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import type { Function } from '../../services/functionService'
 import { testFunction } from '../../services/functionService'
 import MonacoEditor from '@guolao/vue-monaco-editor'
+import { useThemeStore } from '@/store/themeStore'
 
 const props = defineProps<{
   mode: 'create' | 'edit'
@@ -16,6 +17,8 @@ const emit = defineEmits<{
   (e: 'submit', values: Partial<Function>): void
 }>()
 
+const themeStore = useThemeStore()
+
 const form = ref({
   name: props.initialValues?.name || '',
   code: props.initialValues?.code || '',
@@ -25,6 +28,7 @@ const form = ref({
 const testArgs = ref('{}')
 const testLoading = ref(false)
 const testResult = ref('')
+const editorTheme = computed(() => (themeStore.isBlack ? 'vs-dark' : 'vs'))
 
 const codeEditorOptions = {
   minimap: { enabled: true },
@@ -87,15 +91,15 @@ const handleTest = async () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col bg-gray-900 rounded-lg overflow-hidden">
+  <div class="function-form-shell h-full flex flex-col rounded-lg overflow-hidden">
     <!-- 头部区域 -->
-    <div class="px-6 py-4 border-b border-gray-800">
+    <div class="form-header px-6 py-4 border-b">
       <div class="flex justify-between items-center">
-        <h2 class="text-xl font-semibold text-gray-100">
+        <h2 class="text-xl font-semibold form-title">
           {{ mode === 'create' ? '新建函数' : '编辑函数' }}
         </h2>
         <div class="flex gap-2">
-          <a-button @click="emit('cancel')" class="!bg-gray-800 !border-gray-700 !text-gray-300">
+          <a-button @click="emit('cancel')" class="secondary-button">
             取消
           </a-button>
           <a-button
@@ -120,34 +124,36 @@ const handleTest = async () => {
               <a-input
                 v-model="form.name"
                 placeholder="请输入函数名称"
-                class="!bg-gray-800/60 !border-gray-700"
+                class="field-control"
               />
             </a-form-item>
             <a-form-item field="description" label="函数描述" class="!mb-0">
               <a-input
                 v-model="form.description"
                 placeholder="请输入函数描述"
-                class="!bg-gray-800/60 !border-gray-700"
+                class="field-control"
               />
             </a-form-item>
           </div>
 
           <!-- 代码编辑器 -->
           <div class="mb-6">
-            <div class="text-gray-300 mb-2 text-sm">函数代码</div>
-            <MonacoEditor
-              v-model:value="form.code"
-              language="python"
-              theme="vs-dark"
-              :options="codeEditorOptions"
-              style="height: 400px; width: 100%; border: 1px solid rgb(55, 65, 81); border-radius: 0.25rem;"
-            />
+            <div class="section-title mb-2 text-sm">函数代码</div>
+            <div class="editor-shell">
+              <MonacoEditor
+                v-model:value="form.code"
+                language="python"
+                :theme="editorTheme"
+                :options="codeEditorOptions"
+                style="height: 400px; width: 100%;"
+              />
+            </div>
           </div>
 
           <!-- 测试区域 -->
-          <div class="bg-gray-800/40 rounded-lg p-4">
+          <div class="test-shell rounded-lg p-4">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-base font-medium text-gray-200">函数测试</h3>
+              <h3 class="text-base font-medium section-title">函数测试</h3>
               <a-button
                 type="primary"
                 size="small"
@@ -160,22 +166,22 @@ const handleTest = async () => {
             </div>
             
             <div class="mb-4">
-              <div class="text-sm text-gray-400 mb-2">测试参数 (JSON格式)</div>
+              <div class="text-sm helper-text mb-2">测试参数 (JSON格式)</div>
               <a-textarea
                 v-model="testArgs"
                 placeholder='{"arg1": "value1"}'
                 :auto-size="{ minRows: 3, maxRows: 6 }"
-                class="!bg-gray-800/60 !border-gray-700 !font-mono !text-sm"
+                class="field-control !font-mono !text-sm"
               />
             </div>
 
             <div v-if="testResult">
-              <div class="text-sm text-gray-400 mb-2">测试结果</div>
+              <div class="text-sm helper-text mb-2">测试结果</div>
               <a-textarea
                 v-model="testResult"
                 :style="{ height: '150px' }"
                 readonly
-                class="!bg-gray-800/60 !border-gray-700"
+                class="field-control"
               />
             </div>
           </div>
@@ -187,9 +193,50 @@ const handleTest = async () => {
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+:root {
+  color-scheme: light dark;
+}
+
+.function-form-shell {
+  background: var(--func-shell-bg);
+  border: 1px solid var(--func-shell-border);
+  box-shadow: var(--func-shell-shadow);
+}
+
+.form-header {
+  border-bottom-color: var(--func-shell-border);
+}
+
+.form-title,
+.section-title {
+  color: var(--func-text);
+}
+
+.helper-text {
+  color: var(--func-text-subtle);
+}
+
+.secondary-button {
+  background: color-mix(in srgb, var(--func-card-bg) 88%, var(--theme-page-bg) 12%) !important;
+  border-color: var(--func-shell-border) !important;
+  color: var(--func-text-muted) !important;
+}
+
+.editor-shell {
+  border: 1px solid var(--func-editor-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--func-editor-bg);
+}
+
+.test-shell {
+  background: color-mix(in srgb, var(--func-card-bg) 86%, var(--theme-page-bg) 14%);
+  border: 1px solid var(--func-card-border);
+}
+
 :deep(.arco-form-item-label) {
   > label {
-    @apply text-gray-300;
+    color: var(--func-text);
   }
 }
 
@@ -197,12 +244,24 @@ const handleTest = async () => {
   @apply h-full;
 }
 
-:deep(.arco-textarea),
-:deep(.arco-input) {
-  @apply text-gray-200;
+:deep(.field-control .arco-input-wrapper),
+:deep(.field-control .arco-textarea-wrapper) {
+  background: var(--func-input-bg) !important;
+  border-color: var(--func-input-border) !important;
+
+  &:hover,
+  &:focus-within {
+    border-color: rgba(var(--theme-accent-rgb), 0.42) !important;
+    background: var(--func-input-hover-bg) !important;
+  }
+}
+
+:deep(.field-control .arco-textarea),
+:deep(.field-control .arco-input) {
+  color: var(--func-text) !important;
   
   &::placeholder {
-    @apply text-gray-500;
+    color: var(--func-text-subtle) !important;
   }
 }
 
@@ -221,10 +280,11 @@ const handleTest = async () => {
   }
   
   &::-webkit-scrollbar-thumb {
-    @apply bg-gray-700 rounded-full;
+    background: var(--func-editor-scrollbar);
+    border-radius: 9999px;
     
     &:hover {
-      @apply bg-gray-600;
+      filter: brightness(1.08);
     }
   }
 }

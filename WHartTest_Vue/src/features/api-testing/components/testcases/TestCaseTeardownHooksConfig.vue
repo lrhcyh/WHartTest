@@ -101,33 +101,58 @@ defineExpose({ getHooks })
 <style lang="postcss" scoped>
 @reference "tailwindcss";
 :deep(.arco-select-view) {
-  @apply bg-gray-900/60 border-gray-700;
+  background: var(--tcf-control-bg) !important;
+  border-color: var(--tcf-control-border) !important;
 
   input {
-    @apply text-gray-200 bg-transparent;
+    color: var(--tcf-text) !important;
+    background: transparent !important;
     &::placeholder {
-      @apply text-gray-500;
+      color: var(--tcf-text-subtle) !important;
     }
   }
 }
 
-:deep(.arco-select-dropdown) {
-  @apply bg-gray-800 border-gray-700;
+:global(.arco-select-dropdown) {
+  background: #ffffff !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 10px !important;
 
   .arco-select-option {
-    @apply text-gray-300;
+    color: #334155 !important;
 
     &:hover {
-      @apply bg-gray-700;
+      background: #f8fafc !important;
     }
 
-    &.arco-select-option-active {
-      @apply bg-blue-500/20 text-blue-500;
+    &.arco-select-option-active,
+    &.arco-select-option-selected {
+      background: rgba(59, 130, 246, 0.12) !important;
+      color: #2563eb !important;
     }
+  }
+}
+
+:global(body.api-testing-theme .arco-select-dropdown) {
+  background: rgb(31, 41, 55) !important;
+  border-color: rgba(75, 85, 99, 0.4) !important;
+}
+
+:global(body.api-testing-theme .arco-select-dropdown .arco-select-option) {
+  color: rgb(203, 213, 225) !important;
+
+  &:hover {
+    background: rgba(51, 65, 85, 0.9) !important;
   }
 }
 
 :deep(.arco-tag) {
-  @apply bg-blue-500/20 border-blue-500/50 text-blue-500;
+  background: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.28) !important;
+  color: #2563eb !important;
+}
+
+.selected-label {
+  color: var(--tcf-text-subtle);
 }
 </style>

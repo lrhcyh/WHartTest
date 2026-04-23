@@ -1222,10 +1222,12 @@ const handleImageError = (_event: Event) => {
 
 <style scoped>
 .testcase-form-container {
-  background-color: #fff;
+  background-color: var(--theme-card-bg);
+  color: var(--theme-page-text);
+  border: 1px solid var(--theme-card-border);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.2), 0 0 10px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--theme-card-shadow);
   height: 100%;
   box-sizing: border-box;
   display: flex;
@@ -1268,8 +1270,8 @@ const handleImageError = (_event: Event) => {
 /* 导航指示器样式 */
 .nav-indicator {
   cursor: default !important;
-  background-color: #f2f3f5 !important;
-  color: #1d2129 !important;
+  background-color: var(--theme-surface-soft) !important;
+  color: var(--theme-text) !important;
   font-weight: 500;
   min-width: 70px;
   text-align: center;
