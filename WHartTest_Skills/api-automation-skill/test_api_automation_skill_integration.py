@@ -1,5 +1,4 @@
 import importlib.util
-import os
 import time
 import unittest
 import uuid
@@ -498,6 +497,4 @@ class ApiAutomationSkillIntegrationTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    os.environ.setdefault('WHARTTEST_BACKEND_URL', BASE_URL)
-    os.environ.setdefault('WHARTTEST_API_KEY', API_KEY)
     unittest.main(verbosity=2)

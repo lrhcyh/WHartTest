@@ -397,7 +397,7 @@ python api_automation_tools.py --action rollback_sync_history --project_id 1 --s
 
 | 问题 | 处理建议 |
 |---|---|
-| `401 Unauthorized` / `403 Forbidden` | 检查 `WHARTTEST_API_KEY` 是否正确，确认当前用户对项目有权限 |
+| `401 Unauthorized` / `403 Forbidden` | 检查文件内默认 `API Key` 或命令行传入的 `--api_key` 是否正确，确认当前用户对项目有权限 |
 | `404 Not Found` | 检查 `project_id` 和各类资源 ID 是否正确，确认资源属于当前项目 |
 | `JSON 解析失败` | 检查 `--payload` / `--params` 是否为合法 JSON，复杂结构建议用 `@文件` |
 | 数据库连接失败 | 优先用 `test_database_connection` 或 `test_saved_database_connection` 验证 |

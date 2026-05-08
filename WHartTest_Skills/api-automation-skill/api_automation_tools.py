@@ -2,7 +2,6 @@
 import argparse
 import io
 import json
-import os
 import sys
 from pathlib import Path
 from urllib import error, parse, request
@@ -10,15 +9,8 @@ from urllib import error, parse, request
 if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-try:
-    from dotenv import load_dotenv
-
-    load_dotenv(Path(__file__).parent / '.env')
-except ImportError:
-    pass
-
-BASE_URL = os.getenv('WHARTTEST_BACKEND_URL', 'http://127.0.0.1:8000').rstrip('/')
-API_KEY = os.getenv('WHARTTEST_API_KEY', 'wharttest-default-mcp-key-2025')
+BASE_URL = 'http://127.0.0.1:8000'
+API_KEY = 'wharttest-default-mcp-key-2025'
 HEADERS = {
     'accept': 'application/json',
     'Content-Type': 'application/json',
@@ -129,6 +121,13 @@ def _decode_response_body(raw_body):
         return json.loads(text)
     except ValueError:
         return text
+
+
+def _configure_request_settings(base_url, api_key):
+    global API_KEY, BASE_URL
+    BASE_URL = base_url.rstrip('/')
+    API_KEY = api_key
+    HEADERS['X-API-Key'] = API_KEY
 
 
 def _request(method, url, payload=None, params=None):
@@ -322,6 +321,8 @@ def main():
     parser = argparse.ArgumentParser(description='WHartTest 接口自动化 Skill 工具')
     parser.add_argument('--action', required=True, choices=sorted(ACTIONS), help='要执行的动作')
     parser.add_argument('--project_id', type=int, required=True, help='项目 ID')
+    parser.add_argument('--base_url', default=BASE_URL, help='后端服务地址')
+    parser.add_argument('--api_key', default=API_KEY, help='接口认证 API Key')
     parser.add_argument('--payload', help='请求体 JSON，支持 @文件路径')
     parser.add_argument('--params', help='查询参数 JSON，支持 @文件路径')
 
@@ -331,6 +332,7 @@ def main():
     args = parser.parse_args()
 
     try:
+        _configure_request_settings(args.base_url, args.api_key)
         args.payload_obj = _load_json(args.payload, {})
         args.params_obj = _load_json(args.params, {})
         result = ACTIONS[args.action](args)

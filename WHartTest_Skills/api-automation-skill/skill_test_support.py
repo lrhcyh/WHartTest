@@ -1,5 +1,4 @@
 import json
-import os
 import subprocess
 import sys
 import uuid
@@ -8,8 +7,8 @@ from urllib import error, parse, request
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 SKILL_PATH = Path(__file__).resolve().with_name('api_automation_tools.py')
-BASE_URL = os.getenv('WHARTTEST_BACKEND_URL', 'http://127.0.0.1:8000').rstrip('/')
-API_KEY = os.getenv('WHARTTEST_API_KEY', 'wharttest-default-mcp-key-2025')
+BASE_URL = 'http://127.0.0.1:8000'
+API_KEY = 'wharttest-default-mcp-key-2025'
 DEFAULT_HEADERS = {
     'accept': 'application/json',
     'Content-Type': 'application/json',
@@ -86,6 +85,10 @@ class SkillCLI:
             action,
             '--project_id',
             str(self.project_id),
+            '--base_url',
+            self.base_url,
+            '--api_key',
+            self.api_key,
         ]
         if payload is not None:
             command.extend(['--payload', json.dumps(payload, ensure_ascii=False)])
@@ -95,13 +98,9 @@ class SkillCLI:
             if value is not None:
                 command.extend([f'--{key}', str(value)])
 
-        env = os.environ.copy()
-        env['WHARTTEST_BACKEND_URL'] = self.base_url
-        env['WHARTTEST_API_KEY'] = self.api_key
         completed = subprocess.run(
             command,
             cwd=ROOT_DIR,
-            env=env,
             capture_output=True,
             text=True,
             timeout=120,
