@@ -264,7 +264,9 @@ const text = computed(() => (
         testFailedWithReason: (reason: string) => `Test failed: ${reason}`,
         unknownError: 'Unknown error',
         providerOpenAICompatible: 'OpenAI Compatible',
+        providerDeepSeek: 'DeepSeek',
         providerQwen: 'Qwen',
+        deepseekApiHint: 'DeepSeek is recommended with the official /v1 endpoint and the dedicated DeepSeek provider',
       }
     : {
         addConfig: '新增 LLM 配置',
@@ -312,13 +314,18 @@ const text = computed(() => (
         testFailedWithReason: (reason: string) => `测试失败: ${reason}`,
         unknownError: '未知错误',
         providerOpenAICompatible: 'OpenAI 兼容',
+        providerDeepSeek: 'DeepSeek',
         providerQwen: 'Qwen/通义千问',
+        deepseekApiHint: 'DeepSeek 建议使用官方 /v1 地址，并选择专用 DeepSeek 供应商',
       }
 ));
 
 const localizeProviderLabel = (value: string, fallback?: string) => {
   if (value === 'openai_compatible') {
     return text.value.providerOpenAICompatible;
+  }
+  if (value === 'deepseek') {
+    return text.value.providerDeepSeek;
   }
   if (value === 'qwen') {
     return text.value.providerQwen;
@@ -330,6 +337,7 @@ const formRef = ref<FormInstance | null>(null);
 const modelOptions = ref<string[]>([]);
 const providerChoices = ref<Array<{ label: string; value: string }>>([
   { label: 'openai_compatible', value: 'openai_compatible' },
+  { label: 'deepseek', value: 'deepseek' },
   { label: 'qwen', value: 'qwen' },
 ]);
 const providerOptions = computed(() => providerChoices.value.map((item) => ({
@@ -338,6 +346,7 @@ const providerOptions = computed(() => providerChoices.value.map((item) => ({
 })));
 const loadingModels = ref(false);
 const testingModel = ref(false);
+const DEEPSEEK_DEFAULT_API_URL = 'https://api.deepseek.com/v1';
 const QWEN_DEFAULT_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
 const defaultFormData: CreateLlmConfigRequest = {
   config_name: '',
@@ -372,9 +381,11 @@ const formRules = computed<Record<string, FieldRule[]>>(() => ({
 }));
 
 const apiUrlPlaceholder = computed(() => (
-  formData.value.provider === 'qwen'
-    ? QWEN_DEFAULT_API_URL
-    : 'https://api.openai.com/v1'
+  formData.value.provider === 'deepseek'
+    ? DEEPSEEK_DEFAULT_API_URL
+    : formData.value.provider === 'qwen'
+      ? QWEN_DEFAULT_API_URL
+      : 'https://api.openai.com/v1'
 ));
 
 const apiKeyPlaceholder = computed(() => (
@@ -382,9 +393,11 @@ const apiKeyPlaceholder = computed(() => (
 ));
 
 const apiHintText = computed(() => (
-  formData.value.provider === 'qwen'
-    ? text.value.qwenApiHint
-    : text.value.openaiApiHint
+  formData.value.provider === 'deepseek'
+    ? text.value.deepseekApiHint
+    : formData.value.provider === 'qwen'
+      ? text.value.qwenApiHint
+      : text.value.openaiApiHint
 ));
 
 const invalidateAsyncState = () => {
@@ -422,6 +435,9 @@ const loadProviderOptions = async () => {
 };
 
 const handleProviderChange = (provider?: string) => {
+  if (provider === 'deepseek' && !formData.value.api_url) {
+    formData.value.api_url = DEEPSEEK_DEFAULT_API_URL;
+  }
   if (provider === 'qwen' && !formData.value.api_url) {
     formData.value.api_url = QWEN_DEFAULT_API_URL;
   }

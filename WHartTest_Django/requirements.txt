@@ -52,6 +52,10 @@ langchain==1.2.3
 # https://github.com/langchain-ai/langchain/blob/master/libs/partners/openai/LICENSE
 langchain-openai==1.1.7
 
+# LangChain DeepSeek集成 - MIT许可证
+# https://github.com/langchain-ai/langchain/tree/main/libs/partners/deepseek
+langchain-deepseek==1.0.1
+
 # LangChain Qwen集成 - MIT许可证
 # https://github.com/langchain-ai/langchain-qwq/blob/main/LICENSE
 langchain-qwq==0.3.4
