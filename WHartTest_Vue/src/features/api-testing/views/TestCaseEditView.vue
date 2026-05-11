@@ -5,7 +5,7 @@
       :project-id="projectId"
       :test-case-id="Number(id)"
       mode="edit"
-      @cancel="router.push('/api-testing')"
+      @cancel="goBackToTestCases"
     />
     <div v-else class="flex items-center justify-center h-full text-gray-500">
       请先选择项目
@@ -15,17 +15,26 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useProjectStore } from '@/store/projectStore'
 import { useThemeStore } from '@/store/themeStore'
 import TestCaseForm from '../components/testcases/TestCaseForm.vue'
 
 const props = defineProps<{ id: string | number }>()
 const router = useRouter()
+const route = useRoute()
 const projectStore = useProjectStore()
 const themeStore = useThemeStore()
 const projectId = computed(() => projectStore.currentProjectId)
 const isDarkTheme = computed(() => themeStore.isBlack)
+
+const getReturnQuery = () => ({
+  tab: typeof route.query.tab === 'string' ? route.query.tab : 'testcases'
+})
+
+const goBackToTestCases = () => {
+  router.push({ path: '/api-testing', query: getReturnQuery() })
+}
 </script>
 
 <style scoped>

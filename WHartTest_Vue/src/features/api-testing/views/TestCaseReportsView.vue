@@ -3,7 +3,7 @@
     <TestCaseReports
       :testcase-id="Number(id)"
       @back="handleBack"
-      @view-report="(report) => router.push({ name: 'ApiTestReportDetail', params: { id: report.id } })"
+      @view-report="handleViewReport"
     />
   </div>
 </template>
@@ -21,6 +21,18 @@ const isDarkTheme = computed(() => themeStore.isBlack)
 
 const handleBack = () => {
   router.push({ path: '/api-testing', query: { tab: 'testcases' } })
+}
+
+const handleViewReport = (report: { id: number }) => {
+  router.push({
+    name: 'ApiTestReportDetail',
+    params: { id: report.id },
+    query: {
+      tab: 'testcases',
+      returnTo: 'testcaseReports',
+      testcaseId: String(props.id)
+    }
+  })
 }
 </script>
 

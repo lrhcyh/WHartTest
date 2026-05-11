@@ -2,7 +2,7 @@
   <div class="api-testing-container test-report-detail-view" :class="isDarkTheme ? 'test-report-detail-view--dark' : 'test-report-detail-view--light'">
     <a-spin :loading="loading" class="h-full">
       <div v-if="report" class="h-full overflow-auto p-4">
-        <ReportHeader :report="(report as any)" :loading="loading" @back="router.push('/api-testing')" @export="handleExportReport" />
+        <ReportHeader :report="(report as any)" :loading="loading" @back="handleBack" @export="handleExportReport" />
         <BasicInfo :report="(report as any)" />
         <StatusCards :report="(report as any)" :total-steps="totalSteps" :fail-rate="failRate" :error-rate="errorRate" />
         <ExecutionSteps :report="(report as any)" />
@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 import { useProjectStore } from '@/store/projectStore'
@@ -30,6 +30,7 @@ import ExecutionSteps from '../components/test-reports/ExecutionSteps.vue'
 
 const props = defineProps<{ id: string | number }>()
 const router = useRouter()
+const route = useRoute()
 const { isEnglish } = useAppI18n()
 const projectStore = useProjectStore()
 const themeStore = useThemeStore()
@@ -52,6 +53,25 @@ const pageText = computed(() => isEnglish.value
 
 const handleExportReport = () => {
   Message.info('导出功能开发中...')
+}
+
+const handleBack = () => {
+  const returnTo = typeof route.query.returnTo === 'string' ? route.query.returnTo : 'reports'
+
+  if (returnTo === 'testcaseReports') {
+    const testcaseId = Number(route.query.testcaseId)
+    if (Number.isInteger(testcaseId) && testcaseId > 0) {
+      router.push({ name: 'ApiTestCaseReports', params: { id: testcaseId } })
+      return
+    }
+  }
+
+  router.push({
+    path: '/api-testing',
+    query: {
+      tab: typeof route.query.tab === 'string' ? route.query.tab : 'reports'
+    }
+  })
 }
 
 onMounted(async () => {

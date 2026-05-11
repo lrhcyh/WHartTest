@@ -22,6 +22,8 @@ const isDarkTheme = computed(() => themeStore.isBlack)
 
 const emit = defineEmits(['run'])
 
+const TEST_CASES_TAB_QUERY = { tab: 'testcases' } as const
+
 interface QueryParams {
   name?: string
   description?: string
@@ -124,11 +126,15 @@ const updateFilterParams = (data: Pick<QueryParams, 'priority' | 'group' | 'tags
 }
 
 const handleCreate = () => {
-  router.push({ name: 'ApiTestCaseCreate' })
+  router.push({ name: 'ApiTestCaseCreate', query: TEST_CASES_TAB_QUERY })
 }
 
 const handleEdit = (testcase: ApiTestCase) => {
-  router.push({ name: 'ApiTestCaseEdit', params: { id: testcase.id } })
+  router.push({
+    name: 'ApiTestCaseEdit',
+    params: { id: testcase.id },
+    query: TEST_CASES_TAB_QUERY
+  })
 }
 
 const handleRun = async (testcase: ApiTestCase) => {
@@ -158,7 +164,11 @@ const handleRun = async (testcase: ApiTestCase) => {
 }
 
 const handleReport = (testcase: ApiTestCase) => {
-  router.push({ name: 'ApiTestCaseReports', params: { id: testcase.id } })
+  router.push({
+    name: 'ApiTestCaseReports',
+    params: { id: testcase.id },
+    query: TEST_CASES_TAB_QUERY
+  })
 }
 
 const referencedInterfacesVisible = ref(false)

@@ -186,6 +186,7 @@ const loading = ref(false)
 const searchQuery = ref('')
 const filterStatus = ref('')
 const isDarkTheme = computed(() => themeStore.isBlack)
+const REPORTS_TAB_QUERY = { tab: 'reports', returnTo: 'reports' } as const
 
 // 获取当前项目ID
 const currentProjectId = computed(() => {
@@ -273,7 +274,11 @@ const onPageSizeChange = (size: number) => {
 }
 
 const viewReport = (id: number) => {
-  router.push({ name: 'ApiTestReportDetail', params: { id } })
+  router.push({
+    name: 'ApiTestReportDetail',
+    params: { id },
+    query: REPORTS_TAB_QUERY
+  })
 }
 
 // 监听当前项目ID的变化，在变化时重新获取测试报告列表
