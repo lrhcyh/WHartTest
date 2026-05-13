@@ -151,17 +151,7 @@ class Command(BaseCommand):
             demo_project = Project.objects.create(
                 name=demo_project_name,
                 description=(
-                    "这是系统自动生成的演示项目，帮助您快速了解WHartTest的功能。\n\n"
-                    "此项目包含：\n"
-                    "• 示例测试用例模块和用例\n"
-                    "• MCP工具集成示例\n"
-                    "• 测试执行演示\n\n"
-                    "您可以：\n"
-                    "1. 查看和编辑示例用例\n"
-                    "2. 尝试执行测试用例\n"
-                    "3. 学习如何使用MCP工具\n"
-                    "4. 在此基础上创建自己的项目\n\n"
-                    "提示：您可以随时删除此演示项目。"
+                    "WHartTest"
                 ),
                 creator=admin_user
             )
