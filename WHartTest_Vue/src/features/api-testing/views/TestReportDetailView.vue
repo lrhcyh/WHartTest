@@ -1,11 +1,13 @@
 <template>
   <div class="api-testing-container test-report-detail-view" :class="isDarkTheme ? 'test-report-detail-view--dark' : 'test-report-detail-view--light'">
     <a-spin :loading="loading" class="h-full">
-      <div v-if="report" class="h-full overflow-auto p-4">
-        <ReportHeader :report="(report as any)" :loading="loading" @back="handleBack" @export="handleExportReport" />
-        <BasicInfo :report="(report as any)" />
-        <StatusCards :report="(report as any)" :total-steps="totalSteps" :fail-rate="failRate" :error-rate="errorRate" />
-        <ExecutionSteps :report="(report as any)" />
+      <div v-if="report" class="report-detail-scroll h-full overflow-auto">
+        <div class="report-detail-stack p-4">
+          <ReportHeader :report="(report as any)" :loading="loading" @back="handleBack" @export="handleExportReport" />
+          <BasicInfo :report="(report as any)" />
+          <StatusCards :report="(report as any)" :total-steps="totalSteps" :fail-rate="failRate" :error-rate="errorRate" />
+          <ExecutionSteps :report="(report as any)" />
+        </div>
       </div>
       <div v-else-if="!loading" class="empty-text flex items-center justify-center h-full">
         {{ pageText.notFound }}
@@ -129,5 +131,21 @@ onMounted(async () => {
 
 .empty-text {
   color: var(--api-report-text-subtle);
+}
+
+.report-detail-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.report-detail-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.report-detail-stack {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  gap: 16px;
 }
 </style>

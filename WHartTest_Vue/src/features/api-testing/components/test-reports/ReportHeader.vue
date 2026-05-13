@@ -69,9 +69,12 @@ const getStatusText = (status?: string) => {
 <style scoped>
 @reference "tailwindcss";
 .report-header-shell {
-  background: var(--api-report-header-bg);
+  position: sticky;
+  isolation: isolate;
+  background: color-mix(in srgb, var(--api-report-header-bg) 94%, var(--theme-page-bg) 6%);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--api-report-shell-border);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
 }
 
 .report-title {
