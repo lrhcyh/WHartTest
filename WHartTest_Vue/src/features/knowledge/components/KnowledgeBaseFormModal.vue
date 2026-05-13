@@ -73,7 +73,7 @@
         </a-col>
       </a-row>
 
-      <a-form-item v-if="!isEdit" :label="text.status" field="is_active">
+      <a-form-item :label="text.status" field="is_active">
         <a-switch
           v-model="formData.is_active"
           :checked-text="text.enabled"
@@ -215,6 +215,7 @@ watch(() => props.visible, async (visible) => {
           : props.knowledgeBase.project,
         chunk_size: props.knowledgeBase.chunk_size,
         chunk_overlap: props.knowledgeBase.chunk_overlap,
+        is_active: props.knowledgeBase.is_active,
       });
     } else {
       if (projectStore.currentProjectId) {
@@ -264,6 +265,7 @@ const handleSubmit = async () => {
         project: formData.project,
         chunk_size: formData.chunk_size,
         chunk_overlap: formData.chunk_overlap,
+        is_active: formData.is_active,
       };
       await KnowledgeService.updateKnowledgeBase(props.knowledgeBase.id, updateData);
     } else {
