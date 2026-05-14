@@ -700,3 +700,22 @@ DOCX_EDITOR_BASE_URL = os.environ.get("DOCX_EDITOR_BASE_URL", "").rstrip("/")
 DOCX_EDITOR_PUBLIC_BASE_URL = os.environ.get("DOCX_EDITOR_PUBLIC_BASE_URL", "").rstrip("/")
 # 主项目调用 docx-editor 集成接口时使用的服务密钥。
 DOCX_EDITOR_SERVICE_KEY = os.environ.get("DOCX_EDITOR_SERVICE_KEY", "").strip()
+
+# Skill 商店配置
+# 默认商店源 base URL，必须以 / 结尾，前端按相对路径拼 manifest.json 和 zip 包
+SKILL_STORE_DEFAULT_SOURCE = os.environ.get(
+    "SKILL_STORE_DEFAULT_SOURCE",
+    "https://gitee.com/duanxiangchun/didactic-octo-spork/raw/main/WHartTest_Skills/",
+)
+SKILL_STORE_DEFAULT_SOURCE_NAME = os.environ.get(
+    "SKILL_STORE_DEFAULT_SOURCE_NAME",
+    "WHartTest 官方 Skill 中心",
+)
+# 是否允许用户配置自定义源
+SKILL_STORE_ALLOW_CUSTOM_SOURCE = os.environ.get(
+    "SKILL_STORE_ALLOW_CUSTOM_SOURCE", "true"
+).lower() == "true"
+# 通过 zip URL 下载 Skill 的单包体积上限（字节，默认 10MB）
+SKILL_STORE_MAX_ZIP_SIZE = int(os.environ.get("SKILL_STORE_MAX_ZIP_SIZE", str(10 * 1024 * 1024)))
+# 通过 zip URL 下载的超时时间（秒）
+SKILL_STORE_DOWNLOAD_TIMEOUT = int(os.environ.get("SKILL_STORE_DOWNLOAD_TIMEOUT", "60"))

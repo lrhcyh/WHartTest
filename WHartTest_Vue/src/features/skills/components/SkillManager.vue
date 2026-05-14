@@ -4,6 +4,10 @@
     <div class="header-bar">
       <h3>{{ text.title }}</h3>
       <a-space>
+        <a-button type="primary" status="success" @click="showStoreModal = true">
+          <template #icon><icon-storage /></template>
+          {{ text.skillStore }}
+        </a-button>
         <a-button @click="showGitImportModal = true">
           <template #icon><icon-github /></template>
           {{ text.importFromGit }}
@@ -140,6 +144,14 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
+    <!-- Skill 商店弹窗 -->
+    <SkillStoreModal
+      v-model:visible="showStoreModal"
+      :project-id="props.projectId"
+      :installed-skills="skills"
+      @skills-changed="fetchSkills"
+    />
   </div>
 </template>
 
@@ -147,6 +159,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import { SkillService } from '../services/skillService'
+import SkillStoreModal from './SkillStoreModal.vue'
 import type { SkillListItem } from '../types'
 import { useAppI18n } from '@/composables/useAppI18n'
 
@@ -158,6 +171,7 @@ const text = computed(() => (
   isEnglish.value
     ? {
         title: 'Skills Management',
+        skillStore: 'Skill Hub',
         importFromGit: 'Import from Git',
         uploadSkill: 'Upload Skill',
         emptyState: 'No Skills yet. Click the button above to upload',
@@ -189,6 +203,7 @@ const text = computed(() => (
       }
     : {
         title: 'Skills 管理',
+        skillStore: 'Skill 中心',
         importFromGit: '从 Git 导入',
         uploadSkill: '上传 Skill',
         emptyState: '暂无 Skills，点击上方按钮上传',
@@ -229,6 +244,7 @@ const selectedFile = ref<File | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const currentSkillContent = ref<{ name: string; description: string; content: string } | null>(null)
 const showGitImportModal = ref(false)
+const showStoreModal = ref(false)
 const gitUrl = ref('')
 const gitBranch = ref('')
 const importing = ref(false)
