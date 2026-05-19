@@ -119,7 +119,7 @@ const handleSubmit = () => {
         @click="handleSubmit"
       >
         <template #icon><icon-plus /></template>
-        添加变量
+        保存变量
       </a-button>
     </div>
   </div>

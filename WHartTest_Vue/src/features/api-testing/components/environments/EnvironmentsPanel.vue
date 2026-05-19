@@ -562,7 +562,7 @@ onMounted(() => {
             <div class="flex items-center gap-2">
               <a-button type="primary" size="small" @click="handleCreate">
                 <template #icon><IconPlus /></template>
-                创建环境
+                保存环境
               </a-button>
               <a-button type="outline" size="small" @click="activeTab = 'list'">
                 返回
