@@ -66,12 +66,12 @@ const fetchHistories = async () => {
 
     const responseData = response.data
 
-    if ((responseData as any).results) {
+    if (Array.isArray((responseData as any)?.results)) {
       histories.value = (responseData as any).results
-      total.value = (responseData as any).count || 0
-    } else if (responseData.histories) {
-      histories.value = responseData.histories
-      total.value = responseData.total || 0
+      total.value = Number((responseData as any).count || histories.value.length)
+    } else if (Array.isArray((responseData as any)?.histories)) {
+      histories.value = (responseData as any).histories
+      total.value = Number((responseData as any).total || histories.value.length)
     } else {
       histories.value = []
       total.value = 0

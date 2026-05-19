@@ -70,6 +70,31 @@ function _pid(): number {
   return useProjectStore().currentProjectId ?? 0;
 }
 
+function _wrapList(res: any): { data: { results: any[]; count: number }; status: 'success'; message: string } {
+  if (!res.success) {
+    const err: any = new Error(res.error || res.message || '操作失败');
+    err.errors = res.errors;
+    throw err;
+  }
+
+  const payload = res.data;
+  let results: any[];
+  let count: number;
+
+  if (Array.isArray(payload)) {
+    results = payload;
+    count = res.total ?? payload.length;
+  } else if (payload && typeof payload === 'object' && Array.isArray(payload.results)) {
+    results = payload.results;
+    count = payload.count ?? res.total ?? results.length;
+  } else {
+    results = [];
+    count = res.total ?? 0;
+  }
+
+  return { data: { results, count }, status: 'success', message: '' };
+}
+
 // Type aliases for component imports
 export type SyncConfig = ApiGlobalSyncConfig & Record<string, any>;
 export type SyncHistory = ApiSyncHistory & Record<string, any>;
@@ -81,8 +106,8 @@ export type TestStep = { id: number; name: string; order: number; interface_info
 export const syncApi = {
   // --- Global Sync Config (shown as "SyncConfig" in SyncConfigPanel) ---
   getConfigs: async (projectId: number) => {
-    const res = await syncService.listGlobalConfigs(projectId);
-    const configs = res.data ?? [];
+    const res = _wrapList(await syncService.listGlobalConfigs(projectId));
+    const configs = res.data.results;
     const activeConfig = configs.find((c: any) => c.is_active);
     return { data: { configs, active_config_id: activeConfig?.id ?? null } };
   },
@@ -108,8 +133,7 @@ export const syncApi = {
   getHistories: async (params: Record<string, any> = {}): Promise<any> => {
     const pid = params.project_id ? Number(params.project_id) : _pid();
     delete params.project_id;
-    const res = await syncService.listHistories(pid, params);
-    return { data: { results: res.data ?? [], count: res.total ?? 0 } };
+    return _wrapList(await syncService.listHistories(pid, params));
   },
   getHistoryDetail: async (id: number): Promise<any> => {
     const pid = _pid();
@@ -122,8 +146,7 @@ export const syncApi = {
 
   // --- API Sync Configs (per-interface configs) ---
   getApiConfigs: async (projectId: number) => {
-    const res = await syncService.listConfigs(projectId);
-    return { data: { results: res.data ?? [], count: res.total ?? 0 } };
+    return _wrapList(await syncService.listConfigs(projectId));
   },
   getConfigDetail: async (id: number) => {
     const pid = _pid();

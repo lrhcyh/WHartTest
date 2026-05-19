@@ -42,6 +42,12 @@ const fieldOptions = [
   { label: '提取变量', value: 'extract' }
 ]
 
+const panelTabs = [
+  { key: 'config', title: '配置管理' },
+  { key: 'api-config', title: '接口同步配置' },
+  { key: 'history', title: '同步历史' }
+] as const
+
 const columns: TableColumnData[] = [
   {
     title: '序号',
@@ -221,11 +227,18 @@ onMounted(() => {
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center">
           <h1 class="text-2xl font-semibold panel-title">同步配置</h1>
-          <a-tabs type="text" v-model:activeKey="activeTab" class="ml-8">
-            <a-tab-pane key="config" title="配置管理" />
-            <a-tab-pane key="api-config" title="接口同步配置" />
-            <a-tab-pane key="history" title="同步历史" />
-          </a-tabs>
+          <div class="sync-tab-nav ml-8" role="tablist" aria-label="同步配置面板切换">
+            <button
+              v-for="tab in panelTabs"
+              :key="tab.key"
+              type="button"
+              class="sync-tab-nav__item"
+              :class="{ 'sync-tab-nav__item--active': activeTab === tab.key }"
+              @click="activeTab = tab.key"
+            >
+              {{ tab.title }}
+            </button>
+          </div>
         </div>
         <div v-if="activeTab === 'config'" class="flex gap-2">
           <a-button 
@@ -637,34 +650,33 @@ onMounted(() => {
   color: var(--theme-accent-hover);
 }
 
-:deep(.arco-tabs) {
-  @apply flex items-center;
+.sync-tab-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-:deep(.arco-tabs-nav) {
-  @apply border-0 min-h-0 h-auto m-0;
-}
-
-:deep(.arco-tabs-nav-tab) {
-  @apply bg-transparent min-h-0 h-auto m-0;
-}
-
-:deep(.arco-tabs-nav-tab-list) {
-  @apply bg-transparent border-0 min-h-0 h-auto m-0;
-}
-
-:deep(.arco-tabs-tab) {
+.sync-tab-nav__item {
+  border: none;
+  background: transparent;
   color: var(--sync-text-subtle);
   padding: 0 0.75rem;
-  height: auto;
+  min-height: 28px;
   line-height: 1;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
-:deep(.arco-tabs-tab-active) {
+.sync-tab-nav__item:hover {
+  color: var(--sync-text);
+  background: rgba(var(--theme-accent-rgb), 0.08);
+}
+
+.sync-tab-nav__item--active {
   color: var(--theme-accent);
-}
-
-:deep(.arco-tabs-content) {
-  @apply bg-transparent border-0;
+  background: rgba(var(--theme-accent-rgb), 0.12);
+  font-weight: 500;
 }
 </style> 
