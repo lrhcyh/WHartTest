@@ -612,7 +612,7 @@ const testRerankerService = async () => {
       Message.error(localizeBackendMessage(result.message, text.value.rerankerTestFailed));
     }
   } catch (error: any) {
-    Message.error(error?.message || text.value.rerankerConnectFailed);
+    Message.error(localizeBackendMessage(error?.message, text.value.rerankerConnectFailed));
   } finally {
     testingReranker.value = false;
   }

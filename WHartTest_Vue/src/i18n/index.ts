@@ -877,6 +877,11 @@ const LEGACY_EXACT_EN_MAP: Record<string, string> = {
   '保存排序失败': 'Failed to save order',
   '嵌入模型测试成功！服务运行正常': 'Embedding test passed! Service is running normally',
   'Reranker 服务测试成功！': 'Reranker test passed!',
+  'Reranker 服务测试成功！服务运行正常': 'Reranker test passed! Service is running normally',
+  'Reranker 服务测试成功！ 服务运行正常': 'Reranker test passed! Service is running normally',
+  'Reranker 测试失败': 'Reranker test failed',
+  '无法连接到 Reranker 服务': 'Unable to connect to reranker service',
+  '服务运行正常': 'Service is running normally',
   '开始专项分析': 'Starting specialized analysis',
   '初始化': 'Initializing',
   '分析模块一致性': 'Analyzing module consistency',
@@ -1193,6 +1198,16 @@ const LEGACY_EXACT_EN_MAP: Record<string, string> = {
   '优化': 'Optimize',
   '优化待审核': 'Re-review',
   '不可用': 'N/A',
+
+  // ── 需求文档状态 ──
+  '已上传': 'Uploaded',
+  '处理中': 'Processing',
+  '模块拆分中': 'Splitting modules',
+  '用户调整中': 'User reviewing',
+  '待评审': 'Ready for review',
+  '评审中': 'Reviewing',
+  '评审完成': 'Review completed',
+  '处理失败': 'Failed',
   ...API_TESTING_LEGACY_EXACT_EN_MAP,
 };
 
@@ -1205,6 +1220,20 @@ const LEGACY_EXACT_ZH_MAP = Object.entries(LEGACY_EXACT_EN_MAP).reduce<Record<st
 }, {
   ...API_TESTING_LEGACY_EXACT_ZH_OVERRIDES,
 });
+
+const REQUIREMENT_ANALYSIS_STEP_EN_MAP: Record<string, string> = {
+  '完整性': 'Completeness',
+  '一致性': 'Consistency',
+  '可测性': 'Testability',
+  '可行性': 'Feasibility',
+  '清晰度': 'Clarity',
+  '逻辑': 'Logic',
+};
+
+const REQUIREMENT_ANALYSIS_STEP_ZH_MAP = Object.entries(REQUIREMENT_ANALYSIS_STEP_EN_MAP).reduce<Record<string, string>>((result, [zh, en]) => {
+  result[en] = zh;
+  return result;
+}, {});
 
 const LEGACY_REGEX_EN_MAP: Array<[RegExp, (...groups: string[]) => string]> = [
   [/^已选择\s*(\d+)\s*张图片$/, (count) => `${count} image(s) selected`],
@@ -1246,6 +1275,17 @@ const LEGACY_REGEX_EN_MAP: Array<[RegExp, (...groups: string[]) => string]> = [
   // SplitOptionsModal — dynamic format recommendation
   [/^(.+)格式文档建议使用字数拆分$/, (fmt) => `${fmt} format documents are recommended to use word count splitting`],
   [/^文件不存在[:：]\s*([\s\S]+)$/u, (path) => `File not found: ${path}`],
+  [/^(完整性|一致性|可测性|可行性|清晰度|逻辑)分析完成$/u, (name) => `${REQUIREMENT_ANALYSIS_STEP_EN_MAP[name] ?? name} analysis completed`],
+  [/^(完整性|一致性|可测性|可行性|清晰度|逻辑)分析完成，评分[:：]\s*([^,，]+)(?:[，,]\s*问题数[:：]\s*(.+))?$/u, (name, score, issues) => issues
+    ? `${REQUIREMENT_ANALYSIS_STEP_EN_MAP[name] ?? name} analysis completed, score: ${score}, issues: ${issues}`
+    : `${REQUIREMENT_ANALYSIS_STEP_EN_MAP[name] ?? name} analysis completed, score: ${score}`],
+  [/^(完整性|一致性|可测性|可行性|清晰度|逻辑)分析完成，一致性评分[:：]\s*(.+)$/u, (name, score) => `${REQUIREMENT_ANALYSIS_STEP_EN_MAP[name] ?? name} analysis completed, consistency score: ${score}`],
+  [/^文档分析完成，总体评分[:：]\s*(.+)$/u, (score) => `Document analysis completed, overall score: ${score}`],
+  [/^全局分析完成，总体评分[:：]\s*(.+)$/u, (score) => `Global analysis completed, overall score: ${score}`],
+  [/^评审完成[:：]\s*(.+)[，,]\s*总体评分[:：]\s*(.+)$/u, (title, score) => `Review completed: ${title}, overall score: ${score}`],
+  [/^Reranker 服务测试成功！\s*服务运行正常$/u, () => 'Reranker test passed! Service is running normally'],
+  [/^Reranker 测试失败[:：]\s*(.+)$/u, (detail) => `Reranker test failed: ${detail}`],
+  [/^无法连接到 Reranker 服务[:：]\s*(.+)$/u, (detail) => `Unable to connect to reranker service: ${detail}`],
   // SpecializedReportView — heading level label
   [/^(.+)级别$/, (level) => `${level} level`],
   // Image preview with count
@@ -1255,6 +1295,17 @@ const LEGACY_REGEX_EN_MAP: Array<[RegExp, (...groups: string[]) => string]> = [
 ];
 
 const LEGACY_REGEX_ZH_MAP: Array<[RegExp, (...groups: string[]) => string]> = [
+  [/^(Completeness|Consistency|Testability|Feasibility|Clarity|Logic) analysis completed$/u, (name) => `${REQUIREMENT_ANALYSIS_STEP_ZH_MAP[name] ?? name}分析完成`],
+  [/^(Completeness|Consistency|Testability|Feasibility|Clarity|Logic) analysis completed, score:\s*([^,，]+)(?:,\s*issues:\s*(.+))?$/u, (name, score, issues) => issues
+    ? `${REQUIREMENT_ANALYSIS_STEP_ZH_MAP[name] ?? name}分析完成，评分: ${score}, 问题数: ${issues}`
+    : `${REQUIREMENT_ANALYSIS_STEP_ZH_MAP[name] ?? name}分析完成，评分: ${score}`],
+  [/^(Completeness|Consistency|Testability|Feasibility|Clarity|Logic) analysis completed, consistency score:\s*(.+)$/u, (name, score) => `${REQUIREMENT_ANALYSIS_STEP_ZH_MAP[name] ?? name}分析完成，一致性评分: ${score}`],
+  [/^Document analysis completed, overall score:\s*(.+)$/u, (score) => `文档分析完成，总体评分: ${score}`],
+  [/^Global analysis completed, overall score:\s*(.+)$/u, (score) => `全局分析完成，总体评分: ${score}`],
+  [/^Review completed:\s*(.+),\s*overall score:\s*(.+)$/u, (title, score) => `评审完成: ${title}, 总体评分: ${score}`],
+  [/^Reranker test passed!\s*Service is running normally$/u, () => 'Reranker 服务测试成功！服务运行正常'],
+  [/^Reranker test failed:\s*(.+)$/u, (detail) => `Reranker 测试失败: ${detail}`],
+  [/^Unable to connect to reranker service:\s*(.+)$/u, (detail) => `无法连接到 Reranker 服务: ${detail}`],
   ...API_TESTING_LEGACY_REGEX_ZH_MAP,
 ];
 
