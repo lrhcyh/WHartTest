@@ -371,6 +371,16 @@ const canPreviewHtml = computed(() => {
   return Boolean(htmlPreviewContent.value);
 });
 
+const formattedToolMessageContent = computed(() => {
+  if (props.message.messageType !== 'tool') return '';
+  return formatToolMessage(props.message.content);
+});
+
+const isJsonToolMessage = computed(() => {
+  if (props.message.messageType !== 'tool') return false;
+  return formattedToolMessageContent.value.trimStart().startsWith('```json');
+});
+
 const toolFileAttachments = computed(() => {
   if (props.message.messageType !== 'tool') return [];
   if (Array.isArray(props.message.fileAttachments) && props.message.fileAttachments.length > 0) {
@@ -485,10 +495,13 @@ const shouldCollapse = computed(() => {
     return true;
   }
 
-  const content = props.message.content;
-  const lines = content.split('\n').length;
-  // 紧凑JSON可能只有1行但格式化后很长，同时检查字符长度
-  return lines > 4 || content.length > 200;
+  // JSON 工具结果即使原始内容是单行，也要按格式化后的代码块默认折叠
+  if (isJsonToolMessage.value) {
+    return true;
+  }
+
+  const lines = (formattedToolMessageContent.value || props.message.content).split('\n').length;
+  return lines > 4;
 });
 
 const canPreviewDiagram = computed(() => {
@@ -686,7 +699,7 @@ const formattedContent = computed(() => {
 
     // 如果是工具消息，尝试格式化JSON
     if (props.message.messageType === 'tool') {
-      processedContent = formatToolMessage(processedContent);
+      processedContent = formattedToolMessageContent.value;
     }
 
     // 对于AI消息，处理Markdown渲染
