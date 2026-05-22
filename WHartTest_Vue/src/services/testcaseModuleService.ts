@@ -271,7 +271,7 @@ export const updateTestCaseModule = async (
 
   try {
     const basePath = getApiBasePath(projectId);
-    const response = await axios.put<ApiResponse<TestCaseModule>>(`${basePath}${moduleId}/`, data, {
+    const response = await axios.patch<ApiResponse<TestCaseModule>>(`${basePath}${moduleId}/`, data, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',

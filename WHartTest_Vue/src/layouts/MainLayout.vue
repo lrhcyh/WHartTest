@@ -42,6 +42,21 @@
             />
           </a-select>
         </div>
+        <!-- 顶部视图切换器 - 仅在用例管理页面展示 -->
+        <div class="header-view-switch" v-if="isTestCaseManagementPage">
+          <a-radio-group type="button" v-model="testCaseActiveView" size="medium" class="view-selector-group">
+            <a-radio value="list">
+              <template #default>
+                <icon-list /> 列表视图
+              </template>
+            </a-radio>
+            <a-radio value="mindmap">
+              <template #default>
+                <icon-relation /> 思维导图
+              </template>
+            </a-radio>
+          </a-radio-group>
+        </div>
       </div>
       <div class="user-info">
         <AppLocaleToggle />
@@ -254,7 +269,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, watch } from 'vue';
+import { ref, computed, nextTick, onMounted, watch, provide } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/authStore';
 import { useProjectStore } from '@/store/projectStore';
@@ -278,6 +293,8 @@ import {
   SubMenu as ASubMenu,
   Select as ASelect,
   Popover as APopover,
+  Radio as ARadio,
+  RadioGroup as ARadioGroup,
   Message
 } from '@arco-design/web-vue';
 import {
@@ -303,6 +320,8 @@ import {
   IconSchedule,
   IconSunFill,
   IconMoonFill,
+  IconList,
+  IconRelation,
 } from '@arco-design/web-vue/es/icon';
 import '@arco-design/web-vue/dist/arco.css'; // 引入 Arco Design 样式
 
@@ -314,6 +333,13 @@ const AOption = ASelect.Option;
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+const testCaseActiveView = ref<'list' | 'mindmap'>('list');
+provide('testCaseActiveView', testCaseActiveView);
+
+const isTestCaseManagementPage = computed(() => {
+  return router.currentRoute.value.name === 'TestCaseManagement';
+});
 const projectStore = useProjectStore();
 const themeStore = useThemeStore();
 const environmentStore = useEnvironmentStore();
@@ -1125,5 +1151,17 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
+}
+
+.header-view-switch {
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.view-selector-group {
+  background-color: var(--theme-surface-soft) !important;
+  border-radius: 6px;
+  padding: 2px;
 }
 </style>
