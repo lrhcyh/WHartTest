@@ -27,6 +27,9 @@ export const moduleService = {
 
   tree: (projectId: number) =>
     request<ApiModule[]>({ url: `${base(projectId)}/tree/`, method: 'GET' }),
+
+  move: (projectId: number, id: number, data: { target_id: number | null; drop_position: number }) =>
+    request<ApiModule>({ url: `${base(projectId)}/${id}/move/`, method: 'POST', data }),
 };
 
 // ---------------------------------------------------------------------------
@@ -88,6 +91,10 @@ export async function updateModule(id: number, data: any) {
 
 export async function deleteModule(id: number) {
   return _wrapOne(await moduleService.delete(_pid(), id));
+}
+
+export async function moveModule(id: number, data: { target_id: number | null; drop_position: number }) {
+  return _wrapOne(await moduleService.move(_pid(), id, data));
 }
 
 export type { ApiModule };

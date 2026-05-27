@@ -37,11 +37,12 @@ class UiModule(models.Model):
     )
     created_at = models.DateTimeField(_('创建时间'), auto_now_add=True)
     updated_at = models.DateTimeField(_('更新时间'), auto_now=True)
+    order = models.IntegerField(_('排序'), default=0)
 
     class Meta:
         verbose_name = _('UI 模块')
         verbose_name_plural = _('UI 模块')
-        ordering = ['project', 'level', 'name']
+        ordering = ['project', 'level', 'order', 'id']
         unique_together = ('project', 'parent', 'name')
         db_table = 'ui_module'
 
@@ -56,8 +57,36 @@ class UiModule(models.Model):
         self.level = (self.parent.level + 1) if self.parent else 1
 
     def save(self, *args, **kwargs):
+        old_level = None
+        if self.pk:
+            try:
+                old_level = UiModule.objects.get(pk=self.pk).level
+            except UiModule.DoesNotExist:
+                pass
         self.clean()
         super().save(*args, **kwargs)
+        if old_level is not None and old_level != self.level:
+            self.update_descendants_level()
+
+    def get_all_descendant_ids(self):
+        """获取当前模块及其所有子模块的ID列表（递归）"""
+        ids = [self.id]
+        for child in self.children.all():
+            ids.extend(child.get_all_descendant_ids())
+        return ids
+
+    def get_max_depth(self):
+        """获取当前模块子树的最大深度（包括当前模块自己，深度最小为1）"""
+        children = self.children.all()
+        if not children:
+            return 1
+        return 1 + max(child.get_max_depth() for child in children)
+
+    def update_descendants_level(self):
+        """递归更新所有子模块的级别"""
+        for child in self.children.all():
+            child.save()
+
 
 
 class UiPage(models.Model):

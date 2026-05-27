@@ -16,8 +16,8 @@ class UiModuleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UiModule
-        fields = ['id', 'project', 'name', 'parent', 'level', 'children', 'creator', 'creator_name', 'created_at', 'updated_at']
-        read_only_fields = ['level', 'creator', 'created_at', 'updated_at']
+        fields = ['id', 'project', 'name', 'parent', 'level', 'order', 'children', 'creator', 'creator_name', 'created_at', 'updated_at']
+        read_only_fields = ['level', 'creator', 'created_at', 'updated_at', 'order']
 
     def get_children(self, obj):
         children = obj.children.all()
