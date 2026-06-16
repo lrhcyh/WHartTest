@@ -29,6 +29,8 @@ class StepConfig:
     input_value: str = ''
     description: str = ''
     wait_time: float = 0
+    is_iframe: bool = False
+    iframe_locator: str = ''
     
     # 步骤详情(公共步骤)
     details: list['StepConfig'] = field(default_factory=list)
@@ -285,7 +287,19 @@ class PlaywrightExecutor:
             return False, f"元素定位器为空，请在元素管理中配置定位表达式（步骤: {step.description or step.step_id}）", None
         
         locator_start = time.time()
-        locator = self._get_locator(page, step.locator_type, step.locator_value)
+        target = page
+        if step.is_iframe and step.iframe_locator:
+            logger.info(f"切换至 iframe 上下文, 表达式: {step.iframe_locator}")
+            iframe_selectors = [step.iframe_locator]
+            if ">>>" in step.iframe_locator:
+                iframe_selectors = [s.strip() for s in step.iframe_locator.split(">>>") if s.strip()]
+            elif ">>" in step.iframe_locator:
+                iframe_selectors = [s.strip() for s in step.iframe_locator.split(">>") if s.strip()]
+
+            for selector in iframe_selectors:
+                target = target.frame_locator(selector)
+
+        locator = self._get_locator(target, step.locator_type, step.locator_value)
         
         # 先等待元素可见（更短的超时时间加快检测）
         try:
@@ -295,7 +309,10 @@ class PlaywrightExecutor:
             pass
         
         locator_time = time.time() - locator_start
-        logger.debug(f"步骤 {step.step_id}: 定位元素 [{step.locator_type}={step.locator_value}] 耗时 {locator_time:.2f}s")
+        logger.debug(
+            f"步骤 {step.step_id}: 定位元素 [{step.locator_type}={step.locator_value}] "
+            f"耗时 {locator_time:.2f}s (iframe={step.is_iframe})"
+        )
         
         element_operations = {
             'click': lambda: locator.click(),

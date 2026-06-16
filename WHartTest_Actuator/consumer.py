@@ -681,6 +681,8 @@ class TaskConsumer:
                 input_value=input_value,  # 输入值
                 description=detail.get('element_name', ''),  # 元素名称作为描述
                 wait_time=detail.get('wait_time', 0),
+                is_iframe=detail.get('is_iframe', False),
+                iframe_locator=detail.get('iframe_locator') or '',
             ))
         
         # 页面URL处理：支持相对路径与 base_url 拼接
