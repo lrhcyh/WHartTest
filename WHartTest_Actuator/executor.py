@@ -91,6 +91,7 @@ class PlaywrightExecutor:
         self._page: Optional[Page] = None
         self._stop_requested = False
         self._current_trace_path: Optional[str] = None
+        self._page_errors: list[str] = []
         
         Path(self.user_data_dir).mkdir(parents=True, exist_ok=True)
         Path(self.screenshot_dir).mkdir(parents=True, exist_ok=True)
@@ -195,7 +196,25 @@ class PlaywrightExecutor:
     def stop(self):
         """请求停止执行"""
         self._stop_requested = True
-    
+
+    def _setup_page_listeners(self, page: Page):
+        """注册页面基础事件监听（自动处理弹窗、记录控制台 JS 错误）"""
+        async def handle_dialog(dialog):
+            logger.warning(f"检测到浏览器弹窗 [{dialog.type}]: '{dialog.message}'，已自动 accept。")
+            try:
+                await dialog.accept()
+            except Exception as e:
+                logger.error(f"处理浏览器弹窗异常: {e}")
+
+        def handle_pageerror(exception):
+            logger.error(f"页面 JS 抛出未捕获异常: {exception}")
+            if not hasattr(self, '_page_errors'):
+                self._page_errors = []
+            self._page_errors.append(str(exception))
+
+        page.on("dialog", handle_dialog)
+        page.on("pageerror", handle_pageerror)
+
     def _get_locator(self, page: Page, locator_type: str, locator_value: str):
         """根据定位类型获取元素定位器"""
         locator_map = {
@@ -370,6 +389,8 @@ class PlaywrightExecutor:
             # 使用带 trace 的浏览器会话
             async with self.browser_session_with_trace(trace_name) as page:
                 logger.info(f"开始执行用例: {config.case_name}")
+                self._page_errors = []
+                self._setup_page_listeners(page)
 
                 # 浏览器启动后，立即导航到环境配置的 base_url
                 base_url = ''
@@ -470,6 +491,8 @@ class PlaywrightExecutor:
                 duration = time.time() - start_time
                 status = 'success' if failed_steps == 0 else 'failed'
                 message = f"用例执行{'成功' if status == 'success' else '失败'}: 通过 {passed_steps}/{total_steps}"
+                if self._page_errors:
+                    message += f" (捕获 {len(self._page_errors)} 个页面 JS 错误: {'; '.join(self._page_errors[:3])})"
                 logger.info(f"✅ {message}" if status == 'success' else f"❌ {message}")
                 
                 # 获取 trace 文件路径（会在 browser_session_with_trace 结束时设置）
@@ -519,6 +542,8 @@ class PlaywrightExecutor:
         try:
             async with self.browser_session() as page:
                 logger.info(f"开始执行页面步骤: {config.page_name}")
+                self._page_errors = []
+                self._setup_page_listeners(page)
                 
                 # 导航到页面
                 if config.page_url:
@@ -619,6 +644,8 @@ class PlaywrightExecutor:
 
             page = await context.new_page()
             page.set_default_timeout(self.action_timeout)
+            self._page_errors = []
+            self._setup_page_listeners(page)
 
             logger.info(f"[并发] 开始执行用例: {config.case_name}")
 
@@ -716,6 +743,8 @@ class PlaywrightExecutor:
             duration = time.time() - start_time
             status = 'success' if failed_steps == 0 else 'failed'
             message = f"用例执行{'成功' if status == 'success' else '失败'}: 通过 {passed_steps}/{total_steps}"
+            if self._page_errors:
+                message += f" (捕获 {len(self._page_errors)} 个页面 JS 错误: {'; '.join(self._page_errors[:3])})"
 
             # 保存 Trace
             if trace_enabled:
