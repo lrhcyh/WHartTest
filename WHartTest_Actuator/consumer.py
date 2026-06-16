@@ -683,6 +683,7 @@ class TaskConsumer:
                 wait_time=detail.get('wait_time', 0),
                 is_iframe=detail.get('is_iframe', False),
                 iframe_locator=detail.get('iframe_locator') or '',
+                locator_index=detail.get('locator_index'),
             ))
         
         # 页面URL处理：支持相对路径与 base_url 拼接

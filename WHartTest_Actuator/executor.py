@@ -31,6 +31,7 @@ class StepConfig:
     wait_time: float = 0
     is_iframe: bool = False
     iframe_locator: str = ''
+    locator_index: Optional[int] = None
     
     # 步骤详情(公共步骤)
     details: list['StepConfig'] = field(default_factory=list)
@@ -300,6 +301,9 @@ class PlaywrightExecutor:
                 target = target.frame_locator(selector)
 
         locator = self._get_locator(target, step.locator_type, step.locator_value)
+        if step.locator_index is not None:
+            logger.info(f"步骤 {step.step_id}: 使用元素下标 {step.locator_index}")
+            locator = locator.nth(step.locator_index)
         
         # 先等待元素可见（更短的超时时间加快检测）
         try:

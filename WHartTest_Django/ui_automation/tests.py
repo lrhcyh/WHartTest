@@ -33,6 +33,7 @@ class UiPageStepsExecuteDataTests(TestCase):
             name='Submit Button',
             locator_type='css',
             locator_value='button[type="submit"]',
+            locator_index=2,
             is_iframe=True,
             iframe_locator='iframe.login-frame',
             creator=self.user,
@@ -55,5 +56,6 @@ class UiPageStepsExecuteDataTests(TestCase):
         response = UiPageStepsExecuteSerializer(self.page_step).data
         self.assertEqual(len(response['step_details']), 1)
         detail = response['step_details'][0]
+        self.assertEqual(detail['locator_index'], 2)
         self.assertTrue(detail['is_iframe'])
         self.assertEqual(detail['iframe_locator'], 'iframe.login-frame')
