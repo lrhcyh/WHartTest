@@ -32,6 +32,12 @@ class StepConfig:
     is_iframe: bool = False
     iframe_locator: str = ''
     locator_index: Optional[int] = None
+    locator_type_2: Optional[str] = None
+    locator_value_2: Optional[str] = None
+    locator_index_2: Optional[int] = None
+    locator_type_3: Optional[str] = None
+    locator_value_3: Optional[str] = None
+    locator_index_3: Optional[int] = None
     
     # 步骤详情(公共步骤)
     details: list['StepConfig'] = field(default_factory=list)
@@ -300,21 +306,50 @@ class PlaywrightExecutor:
             for selector in iframe_selectors:
                 target = target.frame_locator(selector)
 
-        locator = self._get_locator(target, step.locator_type, step.locator_value)
-        if step.locator_index is not None:
-            logger.info(f"步骤 {step.step_id}: 使用元素下标 {step.locator_index}")
-            locator = locator.nth(step.locator_index)
-        
-        # 先等待元素可见（更短的超时时间加快检测）
-        try:
-            await locator.wait_for(state="visible", timeout=5000)
-        except Exception:
-            # 5秒内没有可见，继续尝试操作（可能是 hidden 元素）
-            pass
-        
+        locators_to_try = [
+            (step.locator_type, step.locator_value, step.locator_index),
+        ]
+        if step.locator_type_2 and step.locator_value_2:
+            locators_to_try.append((step.locator_type_2, step.locator_value_2, step.locator_index_2))
+        if step.locator_type_3 and step.locator_value_3:
+            locators_to_try.append((step.locator_type_3, step.locator_value_3, step.locator_index_3))
+
+        locator = None
+        locator_type_used = step.locator_type
+        locator_value_used = step.locator_value
+
+        for idx, (locator_type, locator_value, locator_index) in enumerate(locators_to_try, start=1):
+            if not locator_value or not locator_value.strip():
+                continue
+
+            logger.info(
+                f"步骤 {step.step_id}: 尝试定位器 {idx} [{locator_type}={locator_value}]"
+                + (f" 下标 {locator_index}" if locator_index is not None else "")
+            )
+            candidate = self._get_locator(target, locator_type, locator_value)
+            if locator_index is not None:
+                candidate = candidate.nth(locator_index)
+
+            try:
+                await candidate.wait_for(state="visible", timeout=5000 if idx == 1 else 2000)
+                locator = candidate
+                locator_type_used = locator_type
+                locator_value_used = locator_value
+                logger.info(f"步骤 {step.step_id}: 定位器 {idx} [{locator_type}={locator_value}] 可见并被成功选中")
+                break
+            except Exception as exc:
+                logger.warning(f"步骤 {step.step_id}: 定位器 {idx} [{locator_type}={locator_value}] 尝试失败或不可见: {exc}")
+                if idx == len(locators_to_try):
+                    locator = candidate
+                    locator_type_used = locator_type
+                    locator_value_used = locator_value
+
+        if locator is None:
+            return False, f"所有定位器都失效（包含备用定位器，步骤: {step.description or step.step_id}）", None
+
         locator_time = time.time() - locator_start
         logger.debug(
-            f"步骤 {step.step_id}: 定位元素 [{step.locator_type}={step.locator_value}] "
+            f"步骤 {step.step_id}: 定位元素 [{locator_type_used}={locator_value_used}] "
             f"耗时 {locator_time:.2f}s (iframe={step.is_iframe})"
         )
         

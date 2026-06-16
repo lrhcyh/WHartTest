@@ -34,6 +34,11 @@ class UiPageStepsExecuteDataTests(TestCase):
             locator_type='css',
             locator_value='button[type="submit"]',
             locator_index=2,
+            locator_type_2='xpath',
+            locator_value_2='//button[@type="submit"]',
+            locator_index_2=1,
+            locator_type_3='text',
+            locator_value_3='Submit',
             is_iframe=True,
             iframe_locator='iframe.login-frame',
             creator=self.user,
@@ -57,5 +62,10 @@ class UiPageStepsExecuteDataTests(TestCase):
         self.assertEqual(len(response['step_details']), 1)
         detail = response['step_details'][0]
         self.assertEqual(detail['locator_index'], 2)
+        self.assertEqual(detail['locator_type_2'], 'xpath')
+        self.assertEqual(detail['locator_value_2'], '//button[@type="submit"]')
+        self.assertEqual(detail['locator_index_2'], 1)
+        self.assertEqual(detail['locator_type_3'], 'text')
+        self.assertEqual(detail['locator_value_3'], 'Submit')
         self.assertTrue(detail['is_iframe'])
         self.assertEqual(detail['iframe_locator'], 'iframe.login-frame')
