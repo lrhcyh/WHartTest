@@ -778,6 +778,7 @@ const fetchTestCasesForMindmap = async (silent = false) => {
       page: 1,
       pageSize: 10000, // 足够大以拉取树子集下的全部用例
       module_id: selectedModuleId.value || undefined, // 如果选择了模块，拉取当前模块下的用例
+      include_steps: true,
     });
     if (response.success && response.data) {
       mindmapTestCases.value = response.data;

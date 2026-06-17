@@ -79,8 +79,12 @@ class TestCaseViewSet(viewsets.ModelViewSet):
     filterset_class = TestCaseFilter  # 使用自定义的 FilterSet
     search_fields = ["name", "precondition"]
 
+    def _should_include_steps(self):
+        value = self.request.query_params.get("include_steps")
+        return str(value).lower() in {"1", "true", "yes"}
+
     def get_serializer_class(self):
-        if self.action == "list":
+        if self.action == "list" and not self._should_include_steps():
             return TestCaseListSerializer
         return TestCaseSerializer
 
@@ -107,7 +111,7 @@ class TestCaseViewSet(viewsets.ModelViewSet):
             qs = TestCase.objects.filter(project=project).select_related(
                 "creator", "module"
             )
-            if self.action != "list":
+            if self.action != "list" or self._should_include_steps():
                 qs = qs.prefetch_related("steps")
             return qs
         return TestCase.objects.none()

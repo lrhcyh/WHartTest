@@ -112,6 +112,7 @@ export interface PaginationParams {
   review_status_in?: ReviewStatus[]; // 多个审核状态筛选
   test_type?: string; // 单个测试类型筛选
   test_type_in?: string[]; // 多个测试类型筛选
+  include_steps?: boolean; // 是否返回步骤详情，思维导图需要
 }
 
 // 测试用例列表响应接口
@@ -191,6 +192,7 @@ export const getTestCaseList = async (projectId: number, params?: PaginationPara
         test_type: params.test_type, // 传递 test_type（单个）
         // 多个测试类型筛选，用逗号连接
         test_type_in: params.test_type_in?.join(','),
+        include_steps: params.include_steps ? 'true' : undefined,
       } : undefined,
       headers: {
         'Authorization': `Bearer ${accessToken}`,
