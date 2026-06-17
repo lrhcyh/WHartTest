@@ -1425,13 +1425,14 @@ class AgentLoopStreamAPIView(View):
                     try:
                         from langgraph_integration.views import auto_summarize_session_title
                         logger.info(f"AgentLoopStreamAPI: Triggering title auto-summarization for session {session_id}")
-                        new_title = await auto_summarize_session_title(
-                            llm,
-                            chat_session,
-                            user_message,
+                        import asyncio
+                        asyncio.create_task(
+                            auto_summarize_session_title(
+                                llm,
+                                chat_session,
+                                user_message,
+                            )
                         )
-                        if new_title:
-                            logger.info(f"AgentLoopStreamAPI: Successfully auto-summarized session title to: {new_title}")
                     except Exception as summarize_err:
                         logger.error(f"AgentLoopStreamAPI: Failed to auto-summarize title: {summarize_err}", exc_info=True)
 

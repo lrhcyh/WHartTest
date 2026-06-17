@@ -1580,10 +1580,13 @@ class ChatAPIView(APIView):
                 # AI 自动总结会话标题
                 if chat_session.title.startswith("新对话"):
                     try:
-                        await auto_summarize_session_title(
-                            llm,
-                            chat_session,
-                            user_message_content,
+                        import asyncio
+                        asyncio.create_task(
+                            auto_summarize_session_title(
+                                llm,
+                                chat_session,
+                                user_message_content,
+                            )
                         )
                     except Exception as summarize_err:
                         logger.error(f"ChatAPIView: Failed to auto-summarize title: {summarize_err}")
