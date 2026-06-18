@@ -199,6 +199,7 @@ export async function sendChatMessage(
  */
 export interface AgentLoopNonStreamResponse {
   session_id: string;
+  session_title?: string;
   content: string;
   total_steps: number;
   tool_results: Array<{ summary: string; step: number; tool_output?: unknown; tool_name?: string }>;

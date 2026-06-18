@@ -210,17 +210,10 @@ const themeColorMap: Record<string, {
   stepText: string;
 }> = {
   classic: { primary: '#165dff', secondary: '#e8f3ff', text: '#165dff', caseFill: '#ffffff', caseText: '#1d2129', stepFill: '#f2f3f5', stepBorder: '#e5e6eb', stepText: '#86909c' },
-  default: { primary: '#549688', secondary: '#eef6f5', text: '#549688', caseFill: '#ffffff', caseText: '#2d3748', stepFill: '#f0f4f3', stepBorder: '#d1e2df', stepText: '#5a6a67' },
   freshGreen: { primary: '#00b42a', secondary: '#e8ffea', text: '#00b42a', caseFill: '#ffffff', caseText: '#1d2129', stepFill: '#f0faf1', stepBorder: '#d3f4d6', stepText: '#4e7a53' },
-  blueSky: { primary: '#00b2ff', secondary: '#e6f7ff', text: '#00b2ff', caseFill: '#ffffff', caseText: '#1d2129', stepFill: '#f0f9ff', stepBorder: '#d4efff', stepText: '#4b7b9f' },
-  mint: { primary: '#00c572', secondary: '#e6faf0', text: '#00c572', caseFill: '#ffffff', caseText: '#1d2129', stepFill: '#f0fbf6', stepBorder: '#d2f7e4', stepText: '#428c68' },
-  gold: { primary: '#ff9c1a', secondary: '#fff7e6', text: '#ff9c1a', caseFill: '#ffffff', caseText: '#1d2129', stepFill: '#fffbf2', stepBorder: '#ffecc4', stepText: '#8c683b' },
-  grape: { primary: '#9f40ff', secondary: '#f3e6ff', text: '#9f40ff', caseFill: '#ffffff', caseText: '#1d2129', stepFill: '#faf5ff', stepBorder: '#eed9ff', stepText: '#74509f' },
-  pink: { primary: '#ff4d6a', secondary: '#ffe6eb', text: '#ff4d6a', caseFill: '#ffffff', caseText: '#1d2129', stepFill: '#fff5f7', stepBorder: '#ffd0da', stepText: '#a64d5e' },
   morandi: { primary: '#8a9ba8', secondary: '#e1e8ed', text: '#5c7080', caseFill: '#ffffff', caseText: '#1d2129', stepFill: '#f5f8fa', stepBorder: '#d8e1e8', stepText: '#657b83' },
   blackGold: { primary: '#d4b26f', secondary: '#262626', text: '#d4b26f', caseFill: '#1f1f1f', caseText: '#e0d6c3', stepFill: '#1a1a1a', stepBorder: '#3d3525', stepText: '#8c826e' },
-  dark: { primary: '#306cff', secondary: '#232733', text: '#a5c2ff', caseFill: '#181b22', caseText: '#e5e6eb', stepFill: '#12141a', stepBorder: '#2e3340', stepText: '#86909c' },
-  avocado: { primary: '#7a9667', secondary: '#edf1eb', text: '#5c734b', caseFill: '#ffffff', caseText: '#1d2129', stepFill: '#f4f6f2', stepBorder: '#d1dad0', stepText: '#5c6e54' }
+  dark: { primary: '#306cff', secondary: '#232733', text: '#a5c2ff', caseFill: '#181b22', caseText: '#e5e6eb', stepFill: '#12141a', stepBorder: '#2e3340', stepText: '#86909c' }
 };
 
 // 批量注册所有脑图自定义主题
@@ -236,31 +229,6 @@ const registerAllThemes = () => {
       lineColor: '#00b42a',
       second: { borderColor: '#00b42a' }
     },
-    blueSky: {
-      backgroundColor: '#f0faff',
-      lineColor: '#00b2ff',
-      second: { borderColor: '#00b2ff' }
-    },
-    mint: {
-      backgroundColor: '#f2fcf7',
-      lineColor: '#00c572',
-      second: { borderColor: '#00c572' }
-    },
-    gold: {
-      backgroundColor: '#fffcf0',
-      lineColor: '#ff9c1a',
-      second: { borderColor: '#ff9c1a' }
-    },
-    grape: {
-      backgroundColor: '#faf5ff',
-      lineColor: '#9f40ff',
-      second: { borderColor: '#9f40ff' }
-    },
-    pink: {
-      backgroundColor: '#fff5f6',
-      lineColor: '#ff4d6a',
-      second: { borderColor: '#ff4d6a' }
-    },
     morandi: {
       backgroundColor: '#f3f4f6',
       lineColor: '#8a9ba8',
@@ -275,11 +243,6 @@ const registerAllThemes = () => {
       backgroundColor: '#1d2129',
       lineColor: '#3c4858',
       second: { borderColor: '#3c4858' }
-    },
-    avocado: {
-      backgroundColor: '#f6f8f5',
-      lineColor: '#7a9667',
-      second: { borderColor: '#7a9667' }
     }
   };
 
@@ -336,17 +299,10 @@ const activeTheme = ref(themeStore.theme === 'black' ? 'dark' : 'classic');
 
 const themeOptions = [
   { value: 'classic', label: '经典蓝 (Classic)' },
-  { value: 'default', label: '深水蓝 (Default)' },
   { value: 'freshGreen', label: '清新绿 (Fresh Green)' },
-  { value: 'blueSky', label: '天蓝色 (Blue Sky)' },
-  { value: 'mint', label: '薄荷绿 (Mint)' },
-  { value: 'gold', label: '沙滩金 (Gold)' },
-  { value: 'grape', label: '优雅紫 (Grape)' },
-  { value: 'pink', label: '蜜桃粉 (Pink)' },
   { value: 'morandi', label: '莫兰迪 (Morandi)' },
   { value: 'blackGold', label: '黑金色 (Black Gold)' },
-  { value: 'dark', label: '暗黑风 (Dark)' },
-  { value: 'avocado', label: '牛油果 (Avocado)' }
+  { value: 'dark', label: '暗黑风 (Dark)' }
 ];
 
 const activeThemeLabel = computed(() => {
@@ -698,6 +654,10 @@ const getTypeBadgeLabel = (nodeData: any) => {
   return null;
 };
 
+const isExternalTypeBadgeNode = (nodeData: any) => {
+  return false;
+};
+
 const buildTypeBadgeStyle = (nodeData: any) => {
   const themeCfg = themeColorMap[activeTheme.value] || themeColorMap.classic;
   const isDark = activeTheme.value === 'dark' || activeTheme.value === 'blackGold';
@@ -802,18 +762,35 @@ const buildTypeBadgeStyle = (nodeData: any) => {
   };
 };
 
-const createNodeTypeBadge = (node: any) => {
-  const nodeData = getNodePayload(node);
-  const badgeLabel = getTypeBadgeLabel(nodeData);
-  if (!badgeLabel) return null;
-
-  const badgeStyle = buildTypeBadgeStyle(nodeData);
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = [
+const createBadgeContent = (
+  badgeLabel: string,
+  badgeStyle: { background: string; color: string; border: string },
+  {
+    pointerEvents = 'auto',
+    safePaddingY = 0,
+    gapAfter = 0
+  }: { pointerEvents?: string; safePaddingY?: number; gapAfter?: number } = {}
+) => {
+  const badgeHeight = 20;
+  const outerHeight = badgeHeight + safePaddingY * 2;
+  const badgeWidthPadding = 16;
+  const shell = document.createElement('div');
+  shell.style.cssText = [
     'display:flex',
     'align-items:center',
+    `height:${outerHeight}px`,
+    `padding:${safePaddingY}px ${gapAfter}px ${safePaddingY}px 0`,
+    'box-sizing:border-box',
+    'overflow:visible',
+    `pointer-events:${pointerEvents}`
+  ].join(';');
+
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = [
+    'display:inline-flex',
+    'align-items:center',
     'justify-content:center',
-    `height:${20}px`,
+    `height:${badgeHeight}px`,
     'padding:0 8px',
     `border:1px solid ${badgeStyle.border}`,
     'border-radius:4px',
@@ -821,32 +798,51 @@ const createNodeTypeBadge = (node: any) => {
     `color:${badgeStyle.color}`,
     'font-size:11px',
     'font-weight:600',
-    'line-height:1',
+    `line-height:${badgeHeight}px`,
     'box-sizing:border-box',
     'user-select:none',
-    'white-space:nowrap'
+    'white-space:nowrap',
+    `pointer-events:${pointerEvents}`
   ].join(';');
 
   const text = document.createElement('span');
   text.textContent = badgeLabel;
   text.style.cssText = [
-    'display:flex',
-    'align-items:center',
-    'height:100%',
-    'line-height:1',
+    'display:block',
+    `line-height:${badgeHeight}px`,
+    'transform:translateY(0.5px)',
     'white-space:nowrap'
   ].join(';');
   wrapper.appendChild(text);
+  shell.appendChild(wrapper);
 
   const isChinese = /[\u4e00-\u9fa5]/.test(badgeLabel);
   const charWidth = isChinese ? 12 : 7;
-  const width = Math.ceil(badgeLabel.length * charWidth) + 16;
+  const badgeWidth = Math.ceil(badgeLabel.length * charWidth) + badgeWidthPadding;
 
   return {
-    el: wrapper,
-    width,
-    height: 20
+    el: shell,
+    width: badgeWidth + gapAfter,
+    height: outerHeight
   };
+};
+
+const createNodeTypeBadge = (node: any) => {
+  const nodeData = getNodePayload(node);
+  const badgeLabel = getTypeBadgeLabel(nodeData);
+  if (!badgeLabel || isExternalTypeBadgeNode(nodeData)) return null;
+
+  const badgeStyle = buildTypeBadgeStyle(nodeData);
+  return createBadgeContent(badgeLabel, badgeStyle, { safePaddingY: 1, gapAfter: 6 });
+};
+
+const createExternalNodeTypeBadge = (node: any) => {
+  const nodeData = getNodePayload(node);
+  const badgeLabel = getTypeBadgeLabel(nodeData);
+  if (!badgeLabel || !isExternalTypeBadgeNode(nodeData)) return null;
+
+  const badgeStyle = buildTypeBadgeStyle(nodeData);
+  return createBadgeContent(badgeLabel, badgeStyle, { pointerEvents: 'none', safePaddingY: 1 });
 };
 
 const formatModuleText = (name: string) => name;
@@ -1701,11 +1697,11 @@ const buildMindmapTree = (expandStates?: Record<string, boolean>): any => {
         rawId: mod.id,
         expand: expandStates && expandStates[moduleUid] !== undefined ? expandStates[moduleUid] : true,
         customStyles: {
-          fillColor: themeCfg.secondary,
+          fillColor: 'transparent',
           color: themeCfg.text,
           fontWeight: 'bold',
-          borderColor: themeCfg.primary,
-          borderWidth: '1px'
+          borderColor: 'transparent',
+          borderWidth: '0px'
         }
       },
       children: [...subModuleNodes, ...caseNodes]
@@ -1824,13 +1820,13 @@ const buildMindmapTree = (expandStates?: Record<string, boolean>): any => {
     };
   });
 
-  const isBlackGold = activeTheme.value === 'blackGold';
   const rootStyles = {
-    fillColor: isBlackGold ? '#1d1d1f' : themeCfg.primary,
-    color: isBlackGold ? themeCfg.primary : '#ffffff',
+    fillColor: 'transparent',
+    color: themeCfg.text,
     fontSize: '16px',
     fontWeight: 'bold',
-    ...(isBlackGold ? { borderColor: themeCfg.primary, borderWidth: '1px' } : {})
+    borderColor: 'transparent',
+    borderWidth: '0px'
   };
   const rootUid = props.selectedModuleId ? `module-${props.selectedModuleId}` : 'root';
 
@@ -1876,6 +1872,17 @@ const initMindmap = () => {
       isShowCreateChildBtnIcon: true,
       createNodePrefixContent: (node: any) => {
         return createNodeTypeBadge(node);
+      },
+      addCustomContentToNode: {
+        create: (node: any) => {
+          return createExternalNodeTypeBadge(node);
+        },
+        handle: ({ content, element, node }: any) => {
+          const badgeGap = 8;
+          element
+            .x(-(content.width + badgeGap))
+            .y(Math.round((node.height - content.height) / 2));
+        }
       },
       customQuickCreateChildBtnClick: (node: any) => {
         handleDirectChildCreate(node);
