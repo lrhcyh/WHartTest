@@ -221,10 +221,6 @@
               <template #icon><icon-safe /></template>
               <a href="#" @click="checkProjectAndNavigate($event, '/permissions')">{{ permissionsMenuLabel }}</a>
             </a-menu-item>
-            <a-menu-item key="operation-logs" v-if="hasOperationLogsPermission">
-              <template #icon><icon-history /></template>
-              <a href="#" @click="checkProjectAndNavigate($event, '/operation-logs')">{{ operationLogsMenuLabel }}</a>
-            </a-menu-item>
             <a-menu-item key="llm-configs" v-if="hasLlmConfigsPermission">
               <template #icon><icon-tool /></template>
               <a href="#" @click="checkProjectAndNavigate($event, '/llm-configs')">{{ modelsMenuLabel }}</a>
@@ -240,6 +236,10 @@
             <a-menu-item key="skills" v-if="hasSkillsPermission">
               <template #icon><icon-apps /></template>
               <a href="#" @click="checkProjectAndNavigate($event, '/skills')">{{ skillsMenuLabel }}</a>
+            </a-menu-item>
+            <a-menu-item key="operation-logs" v-if="hasOperationLogsPermission">
+              <template #icon><icon-history /></template>
+              <a href="#" @click="checkProjectAndNavigate($event, '/operation-logs')">{{ operationLogsMenuLabel }}</a>
             </a-menu-item>
           </a-sub-menu>
         </a-menu>
@@ -370,7 +370,7 @@ const systemMenuLabel = computed(() => (locale.value === 'en-US' ? 'Admin' : tl(
 const usersMenuLabel = computed(() => (locale.value === 'en-US' ? 'Users' : tl('用户管理')));
 const organizationsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Teams' : tl('组织管理')));
 const permissionsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Access' : tl('权限管理')));
-const operationLogsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Operation Logs' : tl('操作日志')));
+const operationLogsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Logs' : tl('操作日志')));
 const modelsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Models' : tl('LLM配置')));
 const mcpMenuLabel = computed(() => (locale.value === 'en-US' ? 'MCP' : tl('MCP配置')));
 const skillsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Skills' : tl('Skills管理')));
