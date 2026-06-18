@@ -524,20 +524,48 @@ const formatJson = (jsonStr: string) => {
   }
 };
 
-// 复制到剪切板
-const copyToClipboard = (text: string) => {
+// 复制到剪切板（兼容 HTTP / 非安全上下文部署）
+const copyToClipboard = async (text: string) => {
   if (!text) {
     Message.warning(tl('无内容可复制'));
     return;
   }
+
   const targetText = formatJson(text);
-  navigator.clipboard.writeText(targetText)
-    .then(() => {
+
+  try {
+    // Clipboard API 仅在 HTTPS、localhost 等安全上下文可用。
+    // 服务器如果通过 HTTP 访问，navigator.clipboard 可能为 undefined。
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(targetText);
       Message.success(tl('复制成功！已写入系统剪切板'));
-    })
-    .catch(() => {
+      return;
+    }
+
+    // 回退方案：兼容 HTTP 部署环境
+    const textArea = document.createElement('textarea');
+    textArea.value = targetText;
+    textArea.setAttribute('readonly', 'readonly');
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    textArea.style.top = '-9999px';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+
+    if (successful) {
+      Message.success(tl('复制成功！已写入系统剪切板'));
+    } else {
       Message.error(tl('复制失败，请手动选择复制'));
-    });
+    }
+  } catch (error) {
+    console.error('复制失败:', error);
+    Message.error(tl('复制失败，请手动选择复制'));
+  }
 };
 
 // 各种标签色彩辅助器
