@@ -221,6 +221,10 @@
               <template #icon><icon-safe /></template>
               <a href="#" @click="checkProjectAndNavigate($event, '/permissions')">{{ permissionsMenuLabel }}</a>
             </a-menu-item>
+            <a-menu-item key="operation-logs" v-if="hasOperationLogsPermission">
+              <template #icon><icon-history /></template>
+              <a href="#" @click="checkProjectAndNavigate($event, '/operation-logs')">{{ operationLogsMenuLabel }}</a>
+            </a-menu-item>
             <a-menu-item key="llm-configs" v-if="hasLlmConfigsPermission">
               <template #icon><icon-tool /></template>
               <a href="#" @click="checkProjectAndNavigate($event, '/llm-configs')">{{ modelsMenuLabel }}</a>
@@ -366,6 +370,7 @@ const systemMenuLabel = computed(() => (locale.value === 'en-US' ? 'Admin' : tl(
 const usersMenuLabel = computed(() => (locale.value === 'en-US' ? 'Users' : tl('用户管理')));
 const organizationsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Teams' : tl('组织管理')));
 const permissionsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Access' : tl('权限管理')));
+const operationLogsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Operation Logs' : tl('操作日志')));
 const modelsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Models' : tl('LLM配置')));
 const mcpMenuLabel = computed(() => (locale.value === 'en-US' ? 'MCP' : tl('MCP配置')));
 const skillsMenuLabel = computed(() => (locale.value === 'en-US' ? 'Skills' : tl('Skills管理')));
@@ -420,6 +425,7 @@ const activeMenu = computed(() => {
   if (path.startsWith('/users')) return 'users';
   if (path.startsWith('/organizations')) return 'organizations';
   if (path.startsWith('/permissions')) return 'permissions';
+  if (path.startsWith('/operation-logs')) return 'operation-logs';
   if (path.startsWith('/llm-configs')) return 'llm-configs';
   if (path.startsWith('/langgraph-chat')) return 'langgraph-chat';
   if (path.startsWith('/task-center')) return 'task-center';
@@ -495,6 +501,10 @@ const hasPermissionsPermission = computed(() => {
   return authStore.hasPermission('auth.view_permission');
 });
 
+const hasOperationLogsPermission = computed(() => {
+  return authStore.currentUser?.is_staff || authStore.hasPermission('operation_logs.view_operationlog');
+});
+
 const hasLlmConfigsPermission = computed(() => {
   return authStore.hasPermission('langgraph_integration.view_llmconfig') ||
          authStore.hasPermission('llm_config.view_llmconfiguration') ||
@@ -529,7 +539,8 @@ const hasSystemMenuItems = computed(() => {
          hasLlmConfigsPermission.value ||
          hasApiKeysPermission.value ||
          hasMcpConfigsPermission.value ||
-         hasSkillsPermission.value;
+         hasSkillsPermission.value ||
+         hasOperationLogsPermission.value;
 });
 
 // 切换侧边栏收起状态
