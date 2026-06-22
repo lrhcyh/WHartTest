@@ -34,6 +34,7 @@ from wharttest_django.pagination import StandardPagination
 
 # 确保导入项目自定义的权限类
 from wharttest_django.permissions import HasModelPermission, permission_required
+from wharttest_django.pagination import StandardPagination
 
 
 def _normalize_media_url(url: str) -> str:
@@ -84,6 +85,7 @@ class TestCaseViewSet(viewsets.ModelViewSet):
         return str(value).lower() in {"1", "true", "yes"}
 
     def get_serializer_class(self):
+        """列表接口默认使用精简序列化器，详情/写入接口保留完整步骤数据。"""
         if self.action == "list" and not self._should_include_steps():
             return TestCaseListSerializer
         return TestCaseSerializer
@@ -108,12 +110,17 @@ class TestCaseViewSet(viewsets.ModelViewSet):
         project_pk = self.kwargs.get("project_pk")
         if project_pk:
             project = get_object_or_404(Project, pk=project_pk)
+            # 权限类 IsProjectMemberForTestCase 已经检查了用户是否是此项目的成员，
+            # 所以这里可以直接返回项目下的用例。列表接口默认不预取 steps，减少传输和查询开销；
+            # 思维导图等场景可通过 include_steps=true/1/yes 显式获取步骤详情。
             qs = TestCase.objects.filter(project=project).select_related(
                 "creator", "module"
             )
             if self.action != "list" or self._should_include_steps():
                 qs = qs.prefetch_related("steps")
             return qs
+        # 如果没有 project_pk (理论上不应该发生，因为路由是嵌套的)
+        # 返回空 queryset 或根据需求抛出错误
         return TestCase.objects.none()
 
     def perform_create(self, serializer):

@@ -41,9 +41,16 @@ class TestCaseStepSerializer(serializers.ModelSerializer):
 
 
 class TestCaseListSerializer(serializers.ModelSerializer):
-    """列表专用序列化器，不包含 steps 以减少数据传输量"""
+    """
+    用例列表序列化器。
 
+    列表接口只返回用例摘要信息，不返回嵌套的 steps，避免列表接口返回详情级数据。
+    详情、新建、更新接口仍使用 TestCaseSerializer，以保留步骤读写能力。
+    """
+
+    screenshots = serializers.SerializerMethodField()
     creator_detail = UserDetailSerializer(source="creator", read_only=True)
+    module_id = serializers.PrimaryKeyRelatedField(source="module", read_only=True)
     module_detail = serializers.StringRelatedField(source="module", read_only=True)
 
     class Meta:
@@ -57,6 +64,8 @@ class TestCaseListSerializer(serializers.ModelSerializer):
             "precondition",
             "level",
             "notes",
+            "screenshot",
+            "screenshots",
             "creator",
             "creator_detail",
             "created_at",
@@ -65,6 +74,11 @@ class TestCaseListSerializer(serializers.ModelSerializer):
             "test_type",
         ]
         read_only_fields = fields
+
+    def get_screenshots(self, obj):
+        """获取测试用例的所有截屏"""
+        screenshots = obj.screenshots.all()
+        return TestCaseScreenshotSerializer(screenshots, many=True).data
 
 
 class TestCaseSerializer(serializers.ModelSerializer):

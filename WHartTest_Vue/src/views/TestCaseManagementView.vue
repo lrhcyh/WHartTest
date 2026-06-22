@@ -774,18 +774,31 @@ const fetchTestCasesForMindmap = async (silent = false) => {
     mindmapLoading.value = true;
   }
   try {
-    const response = await getTestCaseList(currentProjectId.value, {
-      page: 1,
-      pageSize: 10000, // 足够大以拉取树子集下的全部用例
-      module_id: selectedModuleId.value || undefined, // 如果选择了模块，拉取当前模块下的用例
-      include_steps: true,
-    });
-    if (response.success && response.data) {
-      mindmapTestCases.value = response.data;
-    } else {
-      mindmapTestCases.value = [];
-      Message.error(response.error || '拉取脑图用例数据失败');
-    }
+    const pageSize = 200;
+    let page = 1;
+    let total = 0;
+    const allCases: TestCase[] = [];
+
+    do {
+      const response = await getTestCaseList(currentProjectId.value, {
+        page,
+        pageSize,
+        module_id: selectedModuleId.value || undefined,
+        include_steps: true,
+      });
+
+      if (!response.success || !response.data) {
+        mindmapTestCases.value = [];
+        Message.error(response.error || '拉取脑图用例数据失败');
+        return;
+      }
+
+      allCases.push(...response.data);
+      total = response.total ?? allCases.length;
+      page += 1;
+    } while (allCases.length < total);
+
+    mindmapTestCases.value = allCases;
   } catch (error) {
     console.error('拉取脑图用例出错:', error);
     mindmapTestCases.value = [];
