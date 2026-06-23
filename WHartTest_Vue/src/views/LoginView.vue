@@ -26,7 +26,7 @@
         <img :src="brandLogoUrl" alt="Logo" class="brand-logo" />
         <div class="brand-title-row">
           <h1 class="brand-title">{{ brandTitle }}</h1>
-          <img v-if="brandBadgeEnabled" :src="brandBadgeUrl" alt="PE" class="brand-pe-icon" />
+          <img v-if="brandBadgeEnabled" :src="brandBadgeUrl" alt="CE" class="brand-ce-icon" />
         </div>
         <p class="brand-subtitle">{{ brandSubtitle }}</p>
         <div class="brand-tags">
@@ -525,7 +525,7 @@ onBeforeUnmount(() => {
   text-shadow: 0 0 30px rgba(100, 180, 255, 0.3);
 }
 
-.brand-pe-icon {
+.brand-ce-icon {
   flex: 0 0 auto;
   width: 36px;
   height: 36px;
@@ -535,7 +535,7 @@ onBeforeUnmount(() => {
   filter: drop-shadow(0 4px 10px rgba(14, 165, 233, 0.22));
 }
 
-:root[data-theme='black'] .brand-pe-icon {
+:root[data-theme='black'] .brand-ce-icon {
   filter: drop-shadow(0 0 16px rgba(100, 180, 255, 0.45));
 }
 
@@ -1086,7 +1086,7 @@ onBeforeUnmount(() => {
     font-size: 32px;
   }
 
-  .brand-pe-icon {
+  .brand-ce-icon {
     width: 28px;
     height: 28px;
     margin-left: 8px;

@@ -6,6 +6,7 @@
         <div class="logo" unselectable="on">
           <img :src="brandLogoUrl" alt="WHartTest Logo" class="logo-icon" />
           <span class="logo-text">WHartTest</span>
+          <img :src="brandBadgeUrl" alt="CE" class="logo-ce-icon" />
         </div>
         <div class="project-selector" v-if="showProjectSelector">
           <a-select
@@ -280,7 +281,9 @@ import { useProjectStore } from '@/store/projectStore';
 import { useThemeStore } from '@/store/themeStore';
 import { useEnvironmentStore } from '@/features/api-testing/stores/environmentStore';
 import { useAppI18n } from '@/composables/useAppI18n';
-import { brandLogoUrl } from '@/utils/assetUrl';
+import { brandLogoUrl, getPublicAssetUrl } from '@/utils/assetUrl';
+
+const brandBadgeUrl = getPublicAssetUrl('CE.svg');
 import AppLocaleToggle from '@/components/AppLocaleToggle.vue';
 import {
   getCurrentVersion,
@@ -732,7 +735,7 @@ onMounted(async () => {
   margin: 0;
   margin-right: 20px;
   box-sizing: border-box;
-  width: 140px;
+  width: 150px;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -749,6 +752,15 @@ onMounted(async () => {
 
 .logo-text {
   flex-shrink: 0;
+}
+
+.logo-ce-icon {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 15px;
+  margin-left: 6px;
+  object-fit: contain;
+  transform: translateY(-25%);
 }
 
 .project-selector {

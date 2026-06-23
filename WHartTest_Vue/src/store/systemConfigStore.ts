@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { systemConfigService, type SystemConfig } from '@/services/systemConfigService';
 import { brandLogoUrl, getPublicAssetUrl } from '@/utils/assetUrl';
 
-const defaultBrandBadgeUrl = getPublicAssetUrl('PE.svg');
+const defaultBrandBadgeUrl = getPublicAssetUrl('CE.svg');
 
 export const useSystemConfigStore = defineStore('systemConfig', () => {
   const config = ref<SystemConfig>({
