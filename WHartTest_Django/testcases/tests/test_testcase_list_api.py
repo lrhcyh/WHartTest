@@ -114,3 +114,40 @@ class TestCaseListApiTests(APITestCase):
         self.assertIn("steps", response.data)
         self.assertEqual(len(response.data["steps"]), 1)
         self.assertEqual(response.data["steps"][0]["description"], "step description")
+
+    def test_expected_result_is_optional(self):
+        """用例步骤的预期结果应该是非必填的。"""
+        # 1. 验证模型允许 expected_result 为空
+        step = TestCaseStep.objects.create(
+            test_case=self.testcase,
+            step_number=2,
+            description="another step description",
+            creator=self.user,
+        )
+        self.assertEqual(step.expected_result, "")
+
+        # 2. 验证序列化器/API 接口在未提供或提供空 expected_result 时能正常保存
+        url = f"/api/projects/{self.project.id}/testcases/{self.testcase.id}/"
+        payload = {
+            "name": self.testcase.name,
+            "level": self.testcase.level,
+            "module_id": self.module.id,
+            "steps": [
+                {
+                    "step_number": 1,
+                    "description": "step 1",
+                    "expected_result": "" # 预期结果为空字符串
+                },
+                {
+                    "step_number": 2,
+                    "description": "step 2" # 预期结果字段未提供
+                }
+            ]
+        }
+        response = self.client.put(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        steps_data = response.data["steps"]
+        self.assertEqual(len(steps_data), 2)
+        self.assertEqual(steps_data[0]["expected_result"], "")
+        self.assertEqual(steps_data[1]["expected_result"], "")
+

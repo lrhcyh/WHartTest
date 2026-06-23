@@ -117,7 +117,7 @@ class TestCaseStep(models.Model):
     )
     step_number = models.PositiveIntegerField(_('步骤编号'))
     description = models.TextField(_('步骤描述'))
-    expected_result = models.TextField(_('预期结果'))
+    expected_result = models.TextField(_('预期结果'), blank=True, default='')
     creator = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,

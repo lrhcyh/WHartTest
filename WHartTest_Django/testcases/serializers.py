@@ -159,7 +159,11 @@ class TestCaseSerializer(serializers.ModelSerializer):
         for step_data in steps_data:
             # 确保步骤的 creator 与用例的 creator 一致
             TestCaseStep.objects.create(
-                test_case=test_case, creator=test_case.creator, **step_data
+                test_case=test_case,
+                creator=test_case.creator,
+                step_number=step_data.get("step_number"),
+                description=step_data.get("description"),
+                expected_result=step_data.get("expected_result") or "",
             )
         return test_case
 
@@ -205,8 +209,8 @@ class TestCaseSerializer(serializers.ModelSerializer):
                             "description", step_instance.description
                         )
                         step_instance.expected_result = step_data.get(
-                            "expected_result", step_instance.expected_result
-                        )
+                            "expected_result"
+                        ) or ""
                         # step_number 将在后面统一重新分配
                         final_steps_to_process.append(step_instance)
                     else:
@@ -220,7 +224,7 @@ class TestCaseSerializer(serializers.ModelSerializer):
                         test_case=instance,
                         creator=step_creator,
                         description=step_data.get("description"),
-                        expected_result=step_data.get("expected_result"),
+                        expected_result=step_data.get("expected_result") or "",
                         # step_number 将在后面统一重新分配
                     )
                     final_steps_to_process.append(new_step)
