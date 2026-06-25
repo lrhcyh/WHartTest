@@ -103,7 +103,7 @@ class ApiInterfaceViewSet(BaseModelViewSet):
             if env_config.get('db_config') and interface_type == 'sql':
                 runner.interface_data['db_config'] = env_config['db_config']
 
-            runner.run_interface()
+            runner.run_interface(env_config)
             response_data = runner.get_response()
 
             # Save result
@@ -234,7 +234,7 @@ class ApiInterfaceViewSet(BaseModelViewSet):
             if env_config.get('db_config') and interface_type == 'sql':
                 runner.interface_data['db_config'] = env_config['db_config']
 
-            runner.run_interface()
+            runner.run_interface(env_config)
             response_data = runner.get_response()
 
             return Response(response_data)
