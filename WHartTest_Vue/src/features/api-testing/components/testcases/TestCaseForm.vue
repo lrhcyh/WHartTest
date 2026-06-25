@@ -3,6 +3,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import { testcaseService } from '../../services/testcaseService'
 import { testReportService } from '../../services/testReportService'
+import { toArray } from '../../services/responseHelpers'
 import type { CreateTestCaseData, TestCaseStep } from '../../services/testcaseService'
 import type { ApiTestReportDetail } from '../../types/testcase'
 import type { ApiModule } from '../../types/module'
@@ -49,7 +50,7 @@ const fetchModules = async () => {
   try {
     const res = await moduleService.tree(projectStore.currentProjectId)
     if (res.success && res.data) {
-      modules.value = Array.isArray(res.data) ? res.data : (res.data as any).results || []
+      modules.value = toArray<ApiModule>((res.data as any)?.results ?? res.data)
     }
   } catch (error) {
     console.error('获取模块列表失败:', error)
@@ -412,7 +413,7 @@ const handleRun = async (data: { testCaseId: number, environmentId: number }) =>
         page_size: 1
       })
       if (historyRes.success && historyRes.data) {
-        const reports = Array.isArray(historyRes.data) ? historyRes.data : (historyRes.data as any).results || []
+        const reports = toArray<any>((historyRes.data as any)?.results ?? historyRes.data)
         if (reports.length > 0) {
           await fetchReportDetail(reports[0].id)
         } else {
@@ -459,7 +460,7 @@ const handleShowReport = async (tcId: number) => {
       page_size: 1
     })
     if (res.success && res.data) {
-      const reports = Array.isArray(res.data) ? res.data : (res.data as any).results || []
+      const reports = toArray<any>((res.data as any)?.results ?? res.data)
       if (reports.length > 0) {
         await fetchReportDetail(reports[0].id)
       } else {
