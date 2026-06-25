@@ -344,7 +344,8 @@ class InterfaceRunner(HttpRunner):
         try:
             if environment and isinstance(environment, dict) and environment.get('variables'):
                 self.variables.update(environment['variables'])
-                self.config.variables = self.variables
+            if self.variables and isinstance(self.variables, dict):
+                self.config.variables(**self.variables)
         except Exception as e:
             logger.error(f"Failed to update environment variables: {str(e)}")
 
