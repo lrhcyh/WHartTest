@@ -124,6 +124,7 @@ const updateSteps = (newSteps: TestCaseStep[]) => {
   }))
 
   formData.steps_info = steps.value.map((step, index) => ({
+    ...(step.id ? { id: step.id } : {}),
     name: step.name,
     interface_id: step.interface_info.id || 0,
     order: step.order || index + 1,
@@ -313,9 +314,11 @@ const handleSubmit = async (continueAction?: () => void) => {
 
   try {
     loading.value = true
-    const submitData: CreateTestCaseData = {
+    const submitData: CreateTestCaseData & { update_mode?: 'update' } = {
       ...formData,
+      ...(props.mode === 'edit' ? { update_mode: 'update' } : {}),
       steps_info: steps.value.map((step, index) => ({
+        ...(step.id ? { id: step.id } : {}),
         name: step.name,
         interface_id: step.interface_info.id || 0,
         interface_data: step.interface_data,
