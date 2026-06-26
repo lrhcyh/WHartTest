@@ -33,6 +33,8 @@ RUN if [ "$APT_BASE_URL" != "http://deb.debian.org" ]; then \
     fi && \
     apt-get -o Acquire::Retries=10 update && apt-get -o Acquire::Retries=10 install -y --fix-missing --no-install-recommends \
     build-essential \
+    ca-certificates \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 # 安装 uv（主镜像失败时自动切换到后备源）
@@ -76,26 +78,31 @@ RUN set -eux; \
 # 运行时会继承当前选择的 Hugging Face 下载地址
 ENV HOME=/root
 RUN mkdir -p /root/.cache/fastembed && \
-    /opt/venv/bin/python -c "\
-import os; \
-os.environ['FASTEMBED_CACHE_PATH'] = '/root/.cache/fastembed'; \
-endpoints = [os.environ.get('HF_ENDPOINT'), 'https://hf-mirror.com', 'https://huggingface.co']; \
-success = False; \
-for ep in endpoints: \
-    if not ep: continue; \
-    print('Trying to download model using HF_ENDPOINT:', ep); \
-    os.environ['HF_ENDPOINT'] = ep; \
-    try: \
-        from fastembed import SparseTextEmbedding; \
-        m = SparseTextEmbedding('Qdrant/bm25'); \
-        success = True; \
-        print('Successfully downloaded BM25 model using endpoint:', ep); \
-        break; \
-    except Exception as e: \
-        print(f'Failed download with endpoint {ep}: {e}'); \
-if not success: \
-    raise RuntimeError('Failed to download BM25 model from all endpoints'); \
-" && ls -la /root/.cache/fastembed/
+    /opt/venv/bin/python <<'EOF' && ls -la /root/.cache/fastembed/
+import os
+import traceback
+from fastembed import SparseTextEmbedding
+
+os.environ['FASTEMBED_CACHE_PATH'] = '/root/.cache/fastembed'
+endpoints = [os.environ.get('HF_ENDPOINT'), 'https://hf-mirror.com', 'https://huggingface.co']
+success = False
+for ep in endpoints:
+    if not ep:
+        continue
+    print(f"Trying to download model using HF_ENDPOINT: {ep}")
+    os.environ['HF_ENDPOINT'] = ep
+    try:
+        m = SparseTextEmbedding('Qdrant/bm25')
+        success = True
+        print(f"Successfully downloaded BM25 model using endpoint: {ep}")
+        break
+    except Exception as e:
+        traceback.print_exc()
+        print(f"Failed download with endpoint {ep}: {e}")
+
+if not success:
+    raise RuntimeError('Failed to download BM25 model from all endpoints')
+EOF
 
 # ============================================
 # 第二阶段：运行阶段（仅包含运行时依赖）
