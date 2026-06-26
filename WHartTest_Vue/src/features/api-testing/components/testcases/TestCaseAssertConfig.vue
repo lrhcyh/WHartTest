@@ -2,6 +2,7 @@
 import { ref, watch, onMounted, inject } from 'vue'
 import { IconDelete, IconPlus, IconCode } from '@arco-design/web-vue/es/icon'
 import { Message } from '@arco-design/web-vue'
+import ResponseJsonViewer from '../interfaces/ResponseJsonViewer.vue'
 
 interface Props {
   validators?: Array<Record<string, [string, string]>>
@@ -93,21 +94,6 @@ const removeRow = (index: number) => {
   }
 }
 
-const getJsonPaths = (obj: any, prefix = ''): { path: string; value: any }[] => {
-  const paths: { path: string; value: any }[] = []
-  if (obj === null || obj === undefined) return paths
-  if (typeof obj === 'object') {
-    for (const key of Object.keys(obj)) {
-      const fullPath = prefix ? `${prefix}.${key}` : key
-      paths.push({ path: fullPath, value: obj[key] })
-      if (typeof obj[key] === 'object' && obj[key] !== null) {
-        paths.push(...getJsonPaths(obj[key], fullPath))
-      }
-    }
-  }
-  return paths
-}
-
 const handleSelectPath = (path: string, value: string) => {
   if (currentEditingIndex.value >= 0 && currentEditingIndex.value < assertRules.value.length) {
     assertRules.value[currentEditingIndex.value].expression = path
@@ -116,7 +102,6 @@ const handleSelectPath = (path: string, value: string) => {
     }
     Message.success('已设置断言表达式')
   }
-  drawerVisible.value = false
 }
 
 const openResponseViewer = (index: number) => {
@@ -147,7 +132,7 @@ defineExpose({ getAssertRules })
           <div class="flex flex-1 gap-2">
             <div class="flex relative w-3/5">
               <a-input v-model="rule.expression" placeholder="断言表达式 (例如: body.data.code)" allow-clear class="w-full" />
-              <a-button type="text" class="absolute right-0 top-0 bottom-0" @click="openResponseViewer(index)" :disabled="!apiResponse">
+              <a-button type="text" class="assert-code-trigger absolute right-0 top-0 bottom-0 hover:text-blue-500" @click="openResponseViewer(index)" :disabled="!apiResponse">
                 <template #icon><icon-code /></template>
               </a-button>
             </div>
@@ -178,26 +163,22 @@ defineExpose({ getAssertRules })
       </a-button>
     </div>
 
-    <!-- 响应JSON路径选择抽屉 -->
-    <a-drawer v-model:visible="drawerVisible" title="从响应中选择路径" :width="500" unmount-on-close>
-      <div v-if="apiResponse" class="space-y-1">
-        <div
-          v-for="item in getJsonPaths(apiResponse)"
-          :key="item.path"
-          class="json-path-item"
-          @click="handleSelectPath(item.path, typeof item.value === 'object' ? JSON.stringify(item.value) : String(item.value))"
-        >
-          <span class="json-path-key">{{ item.path }}</span>
-          <span class="json-path-value">{{ typeof item.value === 'object' ? JSON.stringify(item.value) : String(item.value) }}</span>
-        </div>
-      </div>
-      <a-empty v-else description="暂无响应数据，请先调试接口" />
-    </a-drawer>
+    <!-- 响应JSON查看器 -->
+    <ResponseJsonViewer
+      v-model:visible="drawerVisible"
+      :response-data="apiResponse"
+      field-type="assert"
+      @select-path="handleSelectPath"
+    />
   </div>
 </template>
 
 <style lang="postcss" scoped>
 @reference "tailwindcss";
+.assert-code-trigger {
+  color: var(--tcf-text-subtle);
+}
+
 :deep(.arco-input-wrapper) {
   background: var(--tcf-control-bg) !important;
   border-color: var(--tcf-control-border) !important;
