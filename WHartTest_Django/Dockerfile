@@ -79,10 +79,22 @@ RUN mkdir -p /root/.cache/fastembed && \
     /opt/venv/bin/python -c "\
 import os; \
 os.environ['FASTEMBED_CACHE_PATH'] = '/root/.cache/fastembed'; \
-os.environ['HF_ENDPOINT'] = os.environ.get('HF_ENDPOINT', 'https://huggingface.co'); \
-from fastembed import SparseTextEmbedding; \
-m = SparseTextEmbedding('Qdrant/bm25'); \
-print('BM25 model downloaded to:', os.environ.get('FASTEMBED_CACHE_PATH')); \
+endpoints = [os.environ.get('HF_ENDPOINT'), 'https://hf-mirror.com', 'https://huggingface.co']; \
+success = False; \
+for ep in endpoints: \
+    if not ep: continue; \
+    print('Trying to download model using HF_ENDPOINT:', ep); \
+    os.environ['HF_ENDPOINT'] = ep; \
+    try: \
+        from fastembed import SparseTextEmbedding; \
+        m = SparseTextEmbedding('Qdrant/bm25'); \
+        success = True; \
+        print('Successfully downloaded BM25 model using endpoint:', ep); \
+        break; \
+    except Exception as e: \
+        print(f'Failed download with endpoint {ep}: {e}'); \
+if not success: \
+    raise RuntimeError('Failed to download BM25 model from all endpoints'); \
 " && ls -la /root/.cache/fastembed/
 
 # ============================================
@@ -117,6 +129,8 @@ RUN if [ "$APT_BASE_URL" != "http://deb.debian.org" ]; then \
     git \
     nodejs \
     npm \
+    # fastembed/onnxruntime 所需的 OpenMP 依赖
+    libgomp1 \
     # Playwright 所需的系统依赖
     libnss3 \
     libnspr4 \
