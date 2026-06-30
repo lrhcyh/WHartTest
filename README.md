@@ -4,7 +4,7 @@
 
 ## 项目简介
 
-WHartTest 是基于 **Django 5.2 + DRF** 与现代大模型技术打造的 **AI 驱动的智能自动化测试平台**。平台采用前后端分离的 Monorepo 架构，由 5 个子项目组成（Django 后端、Vue 前端、UI 自动化执行器、MCP 工具服务、Agent 技能库、在线文档编辑器），聚合自然语言理解、知识库检索与嵌入搜索能力，结合 **LangChain/LangGraph** 与 **MCP（Model Context Protocol）** 工具调用，实现从需求到可执行测试用例的自动化生成、管理与执行，为测试团队提供完整的智能测试管理解决方案。
+WHartTest 是基于 **Django 5.2 + DRF** 与现代大模型技术打造 of **AI 驱动的智能自动化测试平台**。平台采用前后端分离的 Monorepo 架构，由 5 个子项目组成（Django 后端、Vue 前端、UI 自动化执行器、MCP 工具服务、Agent 技能库、在线文档编辑器），聚合自然语言理解、知识库检索与嵌入搜索能力，结合 **LangChain/LangGraph** 与 **MCP（Model Context Protocol）** 工具调用，实现从需求到可执行测试用例 of 自动化生成、管理与执行，为测试团队提供完整的智能测试管理解决方案。
 
 ## 操作手册
 https://docs.wharttest.mgdaas.com/
@@ -60,7 +60,7 @@ https://docs.wharttest.mgdaas.com/
 - Skills 具备较高系统权限，建议仅在内网或可信环境中部署使用。
 
 ### 9. 任务中心与执行追踪
-- 提供统一任务中心，用于创建、执行和查看自动化任务。
+- 提供统一任务中心，用于创建、执行 and 查看自动化任务。
 - 支持任务日志查看、UI 用例选择、执行状态追踪与失败问题排查。
 - 结合功能用例、接口测试与 UI 自动化，形成统一的测试执行入口。
 

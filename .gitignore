@@ -33,7 +33,7 @@ data
 temp/
 tmp/
 docker-images
-
+PandaWiki-skill/
 # Cache directories
 .cache/
 .npm/
@@ -72,3 +72,4 @@ AGENTS.md
 WHartTest_IDEA_Plugin/
 WHartTest_VSCode_Extension/
 docx-editor/
+

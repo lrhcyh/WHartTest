@@ -2,6 +2,7 @@ import { request } from '@/utils/request';
 import { useProjectStore } from '@/store/projectStore';
 import type { ApiInterface } from '../types/interface';
 import type { ApiModule } from '../types/module';
+import { wrapListResponse, wrapOneResponse } from './responseHelpers';
 
 const base = (projectId: number) => `/projects/${projectId}/api-interfaces`;
 
@@ -91,23 +92,11 @@ function _normalizeListPayload(payload: any, fallbackTotal?: number): PaginatedD
 }
 
 function _wrapList(res: any): any {
-  if (!res.success) {
-    const err: any = new Error(res.error || res.message || '操作失败');
-    err.errors = res.errors;
-    throw err;
-  }
-
-  const { results, count } = _normalizeListPayload(res.data, res.total);
-  return { data: { results, count }, status: 'success', message: '' };
+  return wrapListResponse(res);
 }
 
 function _wrapOne(res: any): any {
-  if (!res.success) {
-    const err: any = new Error(res.error || res.message || '操作失败');
-    err.errors = res.errors;
-    throw err;
-  }
-  return { data: res.data ?? null, status: 'success', message: '' };
+  return wrapOneResponse(res);
 }
 
 export async function getInterfaces(params: Record<string, any> = {}) {
